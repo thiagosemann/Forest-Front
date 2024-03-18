@@ -4,6 +4,8 @@ import { UserService } from 'src/app/shared/service/user_service';
 import { User } from 'src/app/shared/utilitarios/user';
 import { FormBuilder, Validators, FormGroup, ValidatorFn, AbstractControl, FormControl } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
+import { BuildingService } from '../shared/service/buildings_service';
+import { Building } from '../shared/utilitarios/building';
 
 export const ConfirmValidator = (controlName: string, matchingControlName: string): ValidatorFn => {
   return (control: AbstractControl): {[key: string]: boolean} | null => {
@@ -28,6 +30,8 @@ export class UsersControlComponent implements OnInit {
   registerForm!: FormGroup;
   userID: string = '';
   userEditing : User | undefined;
+  buildings: Building[] = [];
+
   errorMessages: { [key: string]: string } = {
     first_name: 'Insira o primeiro nome',
     last_name: 'Insira o sobrenome',
@@ -42,6 +46,7 @@ export class UsersControlComponent implements OnInit {
     private ngZone: NgZone, // Adicione o NgZone
     private formBuilder: FormBuilder,
     private toastr: ToastrService,
+    private buildingService: BuildingService
 
   ) {
     this.myGroup = new FormGroup({
@@ -50,6 +55,8 @@ export class UsersControlComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.getAllBuildings();
+
     this.registerForm = this.formBuilder.group({
       first_name: ['', Validators.required],
       last_name: ['', Validators.required],
@@ -57,20 +64,42 @@ export class UsersControlComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       role: [''] // Defina o campo 'role' no FormGroup
     });
-    this.userService.getUsers().subscribe(
-      (users: User[]) => {
-        this.users = users;
-        console.log(this.users)
-      },
-      (error) => {
-        console.error('Error fetching users by building:', error);
-      }
-    );
-      this.user = this.authService.getUser(); // use o método apropriado para obter as informações do usuário
+    this.user = this.authService.getUser(); // use o método apropriado para obter as informações do usuário
 
   }
 
+  getAllBuildings():void{
+    this.buildingService.getAllBuildings().subscribe(
+      (buildings: Building[]) => {
+        this.buildings = buildings; // Set the value inside the subscription
+      },
+      (error) => {
+        console.error('Error fetching buildings:', error);
+      }
+    ); 
+  }
+
+  onBuildingSelect(event: any): void {
+    const buildingId = event.target.value;
+    if (buildingId) {
+      this.userService.getUsersByBuilding(parseInt(buildingId, 10)).subscribe(
+        (users: User[]) => {
+          if(users.length==0){
+            this.toastr.info("Prédio sem usuários cadastrados!")
+          }
+          this.users = users;
+        },
+        (error) => {
+          console.error('Error fetching users by building:', error);
+        }
+      );
+    } else {
+      this.users = [];
+    }
+  }
+
   editUser(userAux: User): void {
+    console.log(userAux)
     this.userEditing = userAux;
     this.registerForm.patchValue({
       first_name: this.userEditing.first_name,
@@ -119,39 +148,48 @@ export class UsersControlComponent implements OnInit {
       }
     }
     onSubmit(): void {
-      if (this.registerForm.valid) {
-        if (this.userEditing) {
-
-          const { id } = this.userEditing;
-          const updatedUser = { id, ...this.registerForm.value};
-         
-         this.userService.updateUser(updatedUser).subscribe(
-            (response) => {
-              // Lógica após a atualização bem-sucedida (por exemplo, exibir uma mensagem de sucesso)
-              let event ={
-                target:{
-                  value:this.userEditing!.building_id
-                }
-              }
-              this.toastr.success(response.message);
-              this.showEditComponent = false; // Feche o componente de edição após a atualização
-            },
-            (error) => {
-              console.error('Erro ao atualizar o usuário:', error);
-              // Lógica para lidar com erros (por exemplo, exibir uma mensagem de erro)
-              this.toastr.error('Erro ao atualizar o usuário');
-            }
-          );
-          
-        } 
-        
-      } else {
-        for (const controlName in this.registerForm.controls) {
-          const control = this.registerForm.get(controlName);
-          if (control && control.invalid) {
-            this.toastr.error(this.errorMessages[controlName]);
+        if (this.registerForm.valid) {
+          const cpf = this.registerForm.value.cpf;
+          if (!this.validarCPF(cpf)) {
+            this.toastr.warning('Por favor, insira um CPF válido.');
+            return; // Não envie o formulário se o CPF for inválido
           }
-        }
+          if (this.userEditing) {
+              const { id } = this.userEditing;
+              const updatedUser = { id, ...this.registerForm.value};
+      
+              this.userService.updateUser(updatedUser).subscribe(
+                  (response) => {
+                      // Encontrar o índice do usuário no array
+                      const index = this.users.findIndex(user => user.id === updatedUser.id);
+                      if (index !== -1) {
+                          // Substituir o usuário atualizado pelo antigo no array
+                          this.users[index] = updatedUser;
+                      }
+      
+                      // Lógica após a atualização bem-sucedida (por exemplo, exibir uma mensagem de sucesso)
+                      let event ={
+                          target:{
+                              value:this.userEditing!.building_id
+                          }
+                      }
+                      this.toastr.success(response.message);
+                      this.showEditComponent = false; // Feche o componente de edição após a atualização
+                  },
+                  (error) => {
+                      console.error('Erro ao atualizar o usuário:', error);
+                      // Lógica para lidar com erros (por exemplo, exibir uma mensagem de erro)
+                      this.toastr.error('Erro ao atualizar o usuário');
+                  }
+              );
+          } 
+      } else {
+          for (const controlName in this.registerForm.controls) {
+              const control = this.registerForm.get(controlName);
+              if (control && control.invalid) {
+                  this.toastr.error(this.errorMessages[controlName]);
+              }
+          }
       }
     }
     
@@ -165,4 +203,30 @@ export class UsersControlComponent implements OnInit {
       }
       return '';
     }
+
+    formatarCPF(cpf: string): string {
+      // Formatar o CPF como 000.000.000-00
+      return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+    }
+    validarCPF(cpf: string): boolean {
+      cpf = cpf.replace(/[^\d]+/g, ''); // Remove todos os caracteres não numéricos
+      if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false; // Verifica se o CPF tem 11 dígitos e se todos são iguais
+    
+      // Calcula o primeiro dígito verificador
+      let add = 0;
+      for (let i = 0; i < 9; i++) add += parseInt(cpf.charAt(i)) * (10 - i);
+      let rev = 11 - (add % 11);
+      if (rev === 10 || rev === 11) rev = 0;
+      if (rev !== parseInt(cpf.charAt(9))) return false;
+    
+      // Calcula o segundo dígito verificador
+      add = 0;
+      for (let i = 0; i < 10; i++) add += parseInt(cpf.charAt(i)) * (11 - i);
+      rev = 11 - (add % 11);
+      if (rev === 10 || rev === 11) rev = 0;
+      if (rev !== parseInt(cpf.charAt(10))) return false;
+    
+      return true; // Retorna verdadeiro se o CPF é válido
+    }
+    
 }

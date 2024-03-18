@@ -42,9 +42,9 @@
                 <div class="form-group mb-3">
                   <label class="form-label" for="role">Função do Usuário:</label>
                   <select id="role" name="role" class="form-control"  formControlName="role" *ngIf="user">
-                    <option value="sindico" *ngIf="user.role=='admin' || user.role=='sindico' ">Síndico</option>
-                    <option value="admin"   *ngIf="user.role=='admin'">Administrador</option>
-                    <option value="usuario">Usuário</option>
+                    <option value="sindico">Síndico</option>
+                    <option value="admin"  >Administrador</option>
+                    <option value="morador">Morador</option>
                   </select>
                 </div>
                 <div class="text-center text-md-start mt-4 pt-2">
@@ -66,6 +66,10 @@
   
   <div *ngIf="!showEditComponent" style="margin-top: 30px;">
     <div class="container" [formGroup]="myGroup">
+      <select id="building_id" name="building_id" class="form-control" formControlName="building_id" required  (change)="onBuildingSelect($event)">
+        <option value="" disabled selected>Selecione o prédio</option>
+        <option *ngFor="let building of buildings" [value]="building.id">{{ building.nome }}</option>
+      </select>
       <br>
       <div class="table-wrapper">
         <table class="table narrow-table">
@@ -84,7 +88,7 @@
             <tr *ngFor="let usuario of users; let i = index" [ngClass]="{'table-light': i % 2 === 0, 'table-light-gray': i % 2 !== 0}">
               <td>{{ usuario.first_name }}</td>
               <td class="hidden-small-screen">{{ usuario.last_name }}</td>
-              <td class="hidden-small-screen">{{ usuario.cpf }}</td>
+              <td class="hidden-small-screen" >{{ formatarCPF(usuario.cpf) }}</td>
               <td class="hidden-small-screen">{{ usuario.email }}</td>
               <td> <button class="btn btn-primary btn-sm" (click)="editUser(usuario)"  *ngIf="usuario.role!='admin' || user.role =='admin' "><i class="fas fa-edit"></i></button></td>
               <td> <button class="btn btn-warning btn-sm" (click)="resetPassword(usuario)" *ngIf="usuario.role!='admin' || user.role =='admin'"><i class="fa fa-refresh" aria-hidden="true"></i></button></td>

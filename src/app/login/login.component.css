@@ -50,7 +50,9 @@ body {
   }
 
   .logo {
-    max-width: 200px; /* Ajuste o tamanho do logo conforme necessário */
+    max-width: 400px; /* Ajuste o tamanho do logo conforme necessário */
+    margin-bottom: -80px;
+    
   }
   
 .rounded-image {
