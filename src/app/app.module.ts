@@ -22,6 +22,7 @@ import { ForgotPasswordComponent } from './forgot-password/forgot-password.compo
 import { ProfileComponent } from './profile/profile.component';
 import { RegisterComponent } from './register/register.component';
 import { UsersControlComponent } from './users-control/users-control.component';
+import { BuildingsControlComponent } from './buildings-control/buildings-control.component';
 
 @NgModule({
   declarations: [
@@ -34,7 +35,8 @@ import { UsersControlComponent } from './users-control/users-control.component';
     ProfileComponent,
     RegisterComponent,
     OrdenarPorPrecoPipe,
-    UsersControlComponent
+    UsersControlComponent,
+    BuildingsControlComponent
   ],
   imports: [
     BrowserModule,

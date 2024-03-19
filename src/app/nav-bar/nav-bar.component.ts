@@ -39,7 +39,7 @@ export class NavBarComponent implements OnInit {
       this.router.navigate(['/admin']);
   }
   predios(): void {
-    this.router.navigate(['/admin/buildings']);
+    this.router.navigate(['/predios']);
   }
   usuarios(): void {
     this.router.navigate(['/users']);
