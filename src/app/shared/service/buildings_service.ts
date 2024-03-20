@@ -28,4 +28,13 @@ export class BuildingService {
   createBuilding(building: Building): Observable<Building> {
     return this.http.post<Building>(this.apiUrl, building, { headers: this.getHeaders() });
   }
+
+  updateBuilding(building: Building): Observable<Building> {
+    const url = `${this.apiUrl}/${building.id}`;
+    return this.http.put<Building>(url, building, { headers: this.getHeaders() });
+  }
+  deleteBuilding(id: number): Observable<void> {
+    const url = `${this.apiUrl}/${id}`;
+    return this.http.delete<void>(url, { headers: this.getHeaders() });
+  }
 }

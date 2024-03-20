@@ -17,13 +17,13 @@ export class BuildingsControlComponent implements OnInit {
   showEditComponent: boolean = false;
   registerForm!: FormGroup;
   buildingEditing: Building | undefined;
+  botaoForm:string = "Atualizar";
 
   constructor(
     private buildingService: BuildingService,
     private userService: UserService,
     private formBuilder: FormBuilder,
     private toastr: ToastrService,
-    private ngZone: NgZone
   ) {
     this.registerForm = this.formBuilder.group({
       nome: ['', Validators.required],
@@ -39,6 +39,13 @@ export class BuildingsControlComponent implements OnInit {
     this.getAllBuildings();
   }
 
+  createNewBuilding(): void {
+    this.showEditComponent = true;
+    this.buildingEditing = undefined; // Resetar o prédio em edição
+    this.registerForm.reset(); // Resetar o formulário
+    this.botaoForm="Criar";
+  }
+
   getAllBuildings(): void {
     this.buildingService.getAllBuildings().subscribe(
       (buildings: Building[]) => {
@@ -51,6 +58,8 @@ export class BuildingsControlComponent implements OnInit {
   }
 
   editBuilding(building: Building): void {
+    this.botaoForm="Atualizar";
+
     this.buildingEditing = building;
     this.registerForm.patchValue({
       nome: building.nome,
@@ -70,18 +79,55 @@ export class BuildingsControlComponent implements OnInit {
   deleteBuilding(building: Building): void {
     const isConfirmed = window.confirm(`Você tem certeza de que deseja excluir o edifício ${building.nome}?`);
     if (isConfirmed) {
-
+      this.buildingService.deleteBuilding(building.id).subscribe(
+        () => {
+          this.toastr.success('Edifício excluído com sucesso!');
+          this.getAllBuildings(); // Atualiza a lista de edifícios após a exclusão
+        },
+        (error) => {
+          console.error('Erro ao excluir edifício:', error);
+          this.toastr.error('Erro ao excluir edifício. Por favor, tente novamente.');
+        }
+      );
     }
   }
 
   onSubmit(): void {
     if (this.registerForm.valid) {
       const buildingId = this.buildingEditing?.id;
-      const updatedBuilding: Building = { id: buildingId, ...this.registerForm.value };
-
-
+      const buildingData = this.registerForm.value;
+  
+      if (this.buildingEditing) {
+        // Atualizar prédio existente
+        const updatedBuilding: Building = { id: buildingId, ...buildingData };
+        this.buildingService.updateBuilding(updatedBuilding).subscribe(
+          (updatedBuilding: Building) => {
+            this.toastr.success('Edifício atualizado com sucesso!');
+            this.getAllBuildings(); // Atualizar lista de prédios após atualização
+            this.showEditComponent = false; // Ocultar componente de edição após atualização bem-sucedida
+          },
+          (error) => {
+            console.error('Erro ao atualizar edifício:', error);
+            this.toastr.error('Erro ao atualizar edifício. Por favor, tente novamente.');
+          }
+        );
+      } else {
+        // Criar novo prédio
+        this.buildingService.createBuilding(buildingData).subscribe(
+          (newBuilding: Building) => {
+            this.toastr.success('Edifício criado com sucesso!');
+            this.getAllBuildings(); // Atualizar lista de prédios após criação
+            this.showEditComponent = false; // Ocultar componente de edição após criação bem-sucedida
+          },
+          (error) => {
+            console.error('Erro ao criar edifício:', error);
+            this.toastr.error('Erro ao criar edifício. Por favor, tente novamente.');
+          }
+        );
+      }
     } else {
-      // Handle form validation errors
+      // Tratar erros de validação do formulário
     }
   }
+  
 }

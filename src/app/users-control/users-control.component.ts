@@ -31,7 +31,8 @@ export class UsersControlComponent implements OnInit {
   userID: string = '';
   userEditing : User | undefined;
   buildings: Building[] = [];
-
+  botaoForm:string = "Atualizar";
+  buildingId:number| undefined=undefined;
   errorMessages: { [key: string]: string } = {
     first_name: 'Insira o primeiro nome',
     last_name: 'Insira o sobrenome',
@@ -68,6 +69,13 @@ export class UsersControlComponent implements OnInit {
 
   }
 
+  createNewUser():void{
+    this.showEditComponent = true;
+    this.userEditing = undefined; // Resetar o prédio em edição
+    this.registerForm.reset(); // Resetar o formulário
+    this.botaoForm="Criar";
+  }
+
   getAllBuildings():void{
     this.buildingService.getAllBuildings().subscribe(
       (buildings: Building[]) => {
@@ -80,9 +88,9 @@ export class UsersControlComponent implements OnInit {
   }
 
   onBuildingSelect(event: any): void {
-    const buildingId = event.target.value;
-    if (buildingId) {
-      this.userService.getUsersByBuilding(parseInt(buildingId, 10)).subscribe(
+    this.buildingId = parseInt(event.target.value, 10);
+    if (this.buildingId) {
+      this.userService.getUsersByBuilding(this.buildingId).subscribe(
         (users: User[]) => {
           if(users.length==0){
             this.toastr.info("Prédio sem usuários cadastrados!")
@@ -99,6 +107,7 @@ export class UsersControlComponent implements OnInit {
   }
 
   editUser(userAux: User): void {
+    this.botaoForm="Atualizar";
     console.log(userAux)
     this.userEditing = userAux;
     this.registerForm.patchValue({
@@ -154,6 +163,7 @@ export class UsersControlComponent implements OnInit {
             this.toastr.warning('Por favor, insira um CPF válido.');
             return; // Não envie o formulário se o CPF for inválido
           }
+          
           if (this.userEditing) {
               const { id } = this.userEditing;
               const updatedUser = { id, ...this.registerForm.value};
@@ -182,6 +192,22 @@ export class UsersControlComponent implements OnInit {
                       this.toastr.error('Erro ao atualizar o usuário');
                   }
               );
+          }else{
+            // Criar novo prédio
+            const data = this.registerForm.value;
+            data.predio_id =  this.buildingId;
+            data.password =  "12345678";
+            
+            this.userService.addUser(data).subscribe(
+              (newUser: Building) => {
+                this.toastr.success('Usuário criado com sucesso!');
+                this.showEditComponent = false; // Ocultar componente de edição após criação bem-sucedida
+              },
+              (error) => {
+                console.error('Erro ao criar edifício:', error);
+                this.toastr.error(error.error.error);
+              }
+            );
           } 
       } else {
           for (const controlName in this.registerForm.controls) {

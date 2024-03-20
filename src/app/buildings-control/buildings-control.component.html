@@ -1,5 +1,7 @@
 <app-nav-bar class="mb-4"></app-nav-bar>
-
+<div class="container mt-4">
+    <button class="btn btn-primary" (click)="createNewBuilding()">Adicionar Novo Prédio</button>
+</div>
 <div *ngIf="showEditComponent" style="margin-top: 30px;">
     <div class="scrollable-container ">
         <div class="container">
@@ -43,7 +45,7 @@
                         <div class="text-center text-md-start mt-4 pt-2">
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <button type="submit" class="btn btn-success btn-lg px-4">Atualizar</button>
+                                    <button type="submit" class="btn btn-success btn-lg px-4">{{botaoForm}}</button>
                                 </div>
                                 <div class="col-md-6">
                                     <button type="button" class="btn btn-danger btn-lg px-4"

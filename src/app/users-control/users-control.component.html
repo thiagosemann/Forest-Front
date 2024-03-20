@@ -50,7 +50,7 @@
                 <div class="text-center text-md-start mt-4 pt-2">
                   <div class="row">
                     <div class="col-md-6 mb-3">
-                      <button type="submit" class="btn btn-success btn-lg px-4">Atualizar</button>
+                      <button type="submit" class="btn btn-success btn-lg px-4">{{botaoForm}}</button>
                     </div>
                     <div class="col-md-6">
                       <button type="button" class="btn btn-danger btn-lg px-4" (click)="cancelarEdit()">Cancelar</button>
@@ -70,7 +70,11 @@
         <option value="" disabled selected>Selecione o prédio</option>
         <option *ngFor="let building of buildings" [value]="building.id">{{ building.nome }}</option>
       </select>
+
       <br>
+      <div class="container" *ngIf="buildingId">
+        <button class="btn btn-primary" (click)="createNewUser()">Add User</button>
+     </div>
       <div class="table-wrapper">
         <table class="table narrow-table">
           <thead>
