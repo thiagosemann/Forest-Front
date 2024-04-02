@@ -28,6 +28,9 @@ export class NavBarComponent implements OnInit {
     this.toastr.error('Deslogado.');
     this.router.navigate(['/login']);
   }
+  gastosComuns(): void {
+    this.router.navigate(['/gastosComuns']);
+  }
 
   content(): void {
     this.router.navigate(['/content']);
@@ -44,9 +47,7 @@ export class NavBarComponent implements OnInit {
   usuarios(): void {
     this.router.navigate(['/users']);
   }
-  maquinas(): void {
-    this.router.navigate(['/admin/machinesControl']);
-  }
+
     
   toggleMenu(): void {
     this.isMenuOpen = !this.isMenuOpen;

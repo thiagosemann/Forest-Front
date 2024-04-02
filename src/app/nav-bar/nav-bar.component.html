@@ -6,9 +6,19 @@
 
   <div class="navbar-nav ms-auto" *ngIf="isDesktopView">
     <button class="navbar-perfil-btn" (click)="content()"><i class="fas fa-home"></i> Home</button>
-    <button class="navbar-perfil-btn" (click)="usuarios()"><i class="fas fa-gear"></i> Usuários</button>
-    <button class="navbar-perfil-btn" (click)="predios()"><i class="fas fa-gear"></i> Prédios</button>
+    <button class="navbar-perfil-btn" (click)="gastosComuns()"><i class="fas fa-user"></i> Gastos Comuns</button>
 
+    <!-- Cadastros submenu -->
+    <div class="dropdown">
+      <button class="navbar-perfil-btn dropdown-toggle" type="button" id="cadastrosDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="fas fa-gear"></i> Cadastros
+      </button>
+      <ul class="dropdown-menu" aria-labelledby="cadastrosDropdown">
+        <li><button class="dropdown-item" (click)="usuarios()">Usuários</button></li>
+        <li><button class="dropdown-item" (click)="predios()">Prédios</button></li>
+      </ul>
+    </div>
+    
     <button class="navbar-perfil-btn" (click)="profile()"><i class="fas fa-user"></i> Perfil</button>
     <button class="navbar-logout-btn" (click)="logout()"><i class="fas fa-sign-out-alt"></i> Sair</button>
   </div>
@@ -22,7 +32,6 @@
     <!-- Menu contendo os botões "Perfil" e "Sair" -->
     <div class="navbar-menu" *ngIf="isMenuOpen && !isDesktopView">
       <button class="navbar-perfil-btn" (click)="content()"><i class="fas fa-home"></i> Home</button>
-      <button class="navbar-perfil-btn" (click)="usuarios()"><i class="fas fa-gear"></i> Usuários</button>
       <button class="navbar-perfil-btn" (click)="profile()"><i class="fas fa-user"></i> Perfil</button>
       <button class="navbar-logout-btn" (click)="logout()"><i class="fas fa-sign-out-alt"></i> Sair</button>
     </div>

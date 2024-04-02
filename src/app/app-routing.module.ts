@@ -11,6 +11,7 @@ import { ProfileComponent } from './profile/profile.component';
 import { RegisterComponent } from './register/register.component';
 import { UsersControlComponent } from './users-control/users-control.component';
 import { BuildingsControlComponent } from './buildings-control/buildings-control.component';
+import { BuildingsReviewComponent } from './Gastos-Comun/buildings-review/buildings-review.component';
 
 
 const routes: Routes = [
@@ -22,7 +23,10 @@ const routes: Routes = [
   { path: 'profile', component: ProfileComponent, canActivate: [AuthGuardService] },
   { path: 'users', component: UsersControlComponent, canActivate: [AuthGuardService] },
   { path: 'predios', component: BuildingsControlComponent, canActivate: [AuthGuardService] },
+  { path: 'gastosComuns', component: BuildingsReviewComponent, canActivate: [AuthGuardService] },
 
+
+  
   { path: '', redirectTo: '/content', pathMatch: 'full' }, // redireciona para '/home' quando o caminho é vazio
   { path: '**', component: ContentComponent, canActivate: [AuthGuardService] }, // rota de fallback quando nenhuma outra corresponder
 

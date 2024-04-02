@@ -23,6 +23,7 @@ import { ProfileComponent } from './profile/profile.component';
 import { RegisterComponent } from './register/register.component';
 import { UsersControlComponent } from './users-control/users-control.component';
 import { BuildingsControlComponent } from './buildings-control/buildings-control.component';
+import { BuildingsReviewComponent } from './Gastos-Comun/buildings-review/buildings-review.component';
 
 @NgModule({
   declarations: [
@@ -36,7 +37,8 @@ import { BuildingsControlComponent } from './buildings-control/buildings-control
     RegisterComponent,
     OrdenarPorPrecoPipe,
     UsersControlComponent,
-    BuildingsControlComponent
+    BuildingsControlComponent,
+    BuildingsReviewComponent
   ],
   imports: [
     BrowserModule,

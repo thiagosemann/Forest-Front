@@ -1,0 +1,44 @@
+/* Add new styles for the uploaded files display */
+.uploaded-files {
+    margin-top: 10px;
+  }
+  
+  .uploaded-files ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .uploaded-files li {
+    display: inline-block;
+    margin-right: 10px;
+    background-color: #f8f9fa;
+    padding: 5px 10px;
+    border-radius: 4px;
+    position: relative;
+  }
+  
+  /* Adjust existing styles for file upload container */
+  .file-upload-container {
+    margin-bottom: 10px;
+  }
+  
+  /* Adjust existing styles for clear button */
+  .file-upload-clear-btn {
+    background-color: #dc3545;
+    color: white;
+    padding: 4px 8px;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    margin-left: 5px;
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    transition: background-color 0.3s;
+  }
+  
+  .file-upload-clear-btn:hover {
+    background-color: #c82333;
+  }
+  
