@@ -14,16 +14,29 @@ import { CommonExpense } from 'src/app/shared/utilitarios/commonExpense';
 export class BuildingsReviewComponent implements OnInit {
   buildings: Building[] = [];
   commonExepenses: CommonExpense[] = [];
-  buildingId: number | undefined = undefined;
+  buildingId: number | undefined = 1;
   myForm!: FormGroup; // Initialize myForm as a FormGroup
   addGastosView: boolean = false;
   selectedFiles: File[] = [];
   contasAdicionar : any[]=[];
-  months: string[] = [
-    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+  months: { monthNumber: number, monthName: string }[] = [
+    { monthNumber: 1, monthName: "Janeiro" },
+    { monthNumber: 2, monthName: "Fevereiro" },
+    { monthNumber: 3, monthName: "Março" },
+    { monthNumber: 4, monthName: "Abril" },
+    { monthNumber: 5, monthName: "Maio" },
+    { monthNumber: 6, monthName: "Junho" },
+    { monthNumber: 7, monthName: "Julho" },
+    { monthNumber: 8, monthName: "Agosto" },
+    { monthNumber: 9, monthName: "Setembro" },
+    { monthNumber: 10, monthName: "Outubro" },
+    { monthNumber: 11, monthName: "Novembro" },
+    { monthNumber: 12, monthName: "Dezembro" }
   ];
+  
+  years: string[] = ["2022", "2023","2024", "2025", "2026", "2027", "2028", "2029","2030" ];
 
+  
 
   constructor(
     private toastr: ToastrService,
@@ -35,19 +48,18 @@ export class BuildingsReviewComponent implements OnInit {
 
   ngOnInit(): void {
     this.getAllBuildings();
-    this.getAllCommonExpenses();
-
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth() + 1; // Os meses são indexados de 0 a 11, então somamos 1 para obter o mês atual
+    const currentYear = currentDate.getFullYear().toString(); // Obter o ano atual como uma string
     this.myForm = this.formBuilder.group({
-      building_id: ['', Validators.required], // Add form controls with validators if necessary
-      months: ['', Validators.required]
-      // Add other form controls as needed
+      building_id: [1, Validators.required], // Defina o prédio com id=1 como selecionado por padrão
+      months: [currentMonth, Validators.required], // Defina o mês atual como selecionado por padrão
+      years: [currentYear, Validators.required] // Defina o ano atual como selecionado por padrão
+      // Adicione outros controles de formulário conforme necessário
     });
+    this.loadExpenses();
   }
-
-  onBuildingSelect(event: any): void {
-    this.buildingId = parseInt(event.target.value, 10);
-  }
-
+  
   getAllBuildings(): void {
     this.buildingService.getAllBuildings().subscribe(
       (buildings: Building[]) => {
@@ -135,11 +147,12 @@ export class BuildingsReviewComponent implements OnInit {
             if(parseFloat(columns[2])<0){
               this.contasAdicionar.push(objAux)
             }
-            console.log('Valores das colunas:', columns);
-          }
+
+         }
 
         }
       };
+      console.log(this.contasAdicionar)
       // Ler o arquivo como texto
       reader.readAsText(selectedFile);
     }
@@ -152,10 +165,24 @@ export class BuildingsReviewComponent implements OnInit {
     }
     this.readFiles();
   }
-
-  corDaCelulaConta(valor: number): string {
-    let resp = valor < 0 ? 'text-danger' : 'text-success';
-    return resp
+ 
+  loadExpenses(): void {
+    const buildingId = this.myForm.get('building_id')?.value;
+    const month = this.myForm.get('months')?.value;
+    const year = this.myForm.get('years')?.value;
+  
+    if (buildingId && month && year) {
+      this.commonExepenseService.getExpensesByBuildingAndMonth(buildingId, month, year).subscribe(
+        (expenses: CommonExpense[]) => {
+          this.commonExepenses = expenses;
+          console.log(this.commonExepenses);
+        },
+        (error) => {
+          console.error('Error fetching expenses:', error);
+          this.commonExepenses = [];
+        }
+      );
+    }
   }
   
 }
