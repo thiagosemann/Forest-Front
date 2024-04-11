@@ -2,6 +2,23 @@
 .uploaded-files {
     margin-top: 10px;
   }
+  .custom-input {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 8px 12px;
+    font-size: 14px;
+    color: #333;
+    background-color: #fff;
+    transition: border-color 0.3s ease;
+    width: 100%;
+  }
+  
+  .custom-input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  }
+  
   
   .uploaded-files ul {
     list-style-type: none;
@@ -15,6 +32,38 @@
     padding: 5px 10px;
     border-radius: 4px;
     position: relative;
+  }
+
+  .file-upload-input {
+    
+    display: none; /* Oculta o input de arquivo padrão */
+
+  }
+  .custom-file-upload {
+    /* Estilo para o botão de upload personalizado */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 8px 12px;
+    font-size: 14px;
+    color: #333;
+    background-color: #fff;
+    transition: border-color 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .custom-file-upload:hover {
+    /* Estilo hover para o botão de upload personalizado */
+    background-color: #f0f0f0;
+  }
+  
+  /* Estilize o texto do botão de upload */
+  .custom-file-upload::before {
+    content: 'Selecione o arquivo'; /* Texto do botão */
+  }
+  
+  .custom-file-upload::after {
+    content: '\1F4C2'; /* Ícone de arquivo Unicode (pode ser substituído por um ícone de sua escolha) */
+    margin-left: 5px; /* Espaçamento entre o texto e o ícone */
   }
   
   /* Adjust existing styles for file upload container */
@@ -106,3 +155,19 @@
 .table tr:hover {
   background-color: #ddd;
 }
+
+.custom-select {
+  border-radius: 5px;
+  color: #828886;
+  font-weight: bold;
+  font-family: LayarBahtera Doomsday;
+  text-align: left;
+  padding-left: 15px; /* Adiciona margem à esquerda para o texto */
+  /* Adicione outros estilos personalizados conforme necessário */
+}
+
+.custom-select::placeholder {
+  opacity: 0.9; /* Altere o valor conforme necessário para ajustar a opacidade */
+  color: #a2a8a6;
+}
+

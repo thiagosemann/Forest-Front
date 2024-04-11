@@ -15,20 +15,20 @@
     <form [formGroup]="myForm"> <!-- Wrap your form controls within a formGroup directive -->
       <div class="row">
         <div class="col-md-4">
-          <select id="building_id" name="building_id" class="form-control" formControlName="building_id" required (change)="loadExpenses()">
+          <select id="building_id" name="building_id" class="form-control custom-select" formControlName="building_id" required (change)="loadExpenses()">
             <option value="" disabled selected>Selecione o prédio</option>
             <option *ngFor="let building of buildings" [value]="building.id">{{ building.nome }}</option>
           </select>
         </div>
         <div class="col-md-4">
-          <select id="months" name="months" class="form-control" formControlName="months" required (change)="loadExpenses()">
+          <select id="months" name="months" class="form-control custom-select" formControlName="months" required (change)="loadExpenses()">
             <option value="" disabled selected>Selecione o mês</option>
             <option *ngFor="let month of months" [value]="month.monthNumber">{{ month.monthName }}</option>
           </select>
         </div>
         
         <div class="col-md-4">
-          <select id="years" name="years" class="form-control" formControlName="years" required (change)="loadExpenses()">
+          <select id="years" name="years" class="form-control custom-select" formControlName="years" required (change)="loadExpenses()">
             <option value="" disabled selected>Selecione o ano</option>
             <option *ngFor="let year of years" [value]="year">{{ year }}</option>
           </select>
@@ -106,21 +106,30 @@
           <!-- Aqui você pode iterar sobre os dados das contas e preencher as linhas da tabela -->
           <tr *ngFor="let contaAdd of contasAdicionar">
             <td>{{ contaAdd.data }}</td>
-            <td>{{ contaAdd.detalhe }}</td>
-            <td class="text-danger">R$ {{ contaAdd.valor*(-1) }}</td>
+            <td><input class="custom-input" type="text" [(ngModel)]="contaAdd.detalhe"></td>
+            <td class="text-danger">R$ {{ contaAdd.valor*(-1) | number:'1.2-2' }}</td>
             <td>
-              <select>
+              <select class="custom-select"  [(ngModel)]="contaAdd.tipo">
                 <option>Rateio</option>
-                <option>Fundo de Reservar</option>
+                <option>Fundo de Reserva</option>
                 <option>Provisão</option>
               </select>
             </td>
             <td>
-              <select>
-                <option>A vista</option>
-                <option>1 X</option>
-                <option>2 X</option>
-                <option>3 X</option>
+              <select class="custom-select"  [(ngModel)]="contaAdd.parcelas">
+                <option value="1">A vista</option>
+                <option value="2">2 X</option>
+                <option value="3">3 X</option>
+                <option value="4">4 X</option>
+                <option value="5">5 X</option>
+                <option value="6">6 X</option>
+                <option value="7">7 X</option>
+                <option value="8">8 X</option>
+                <option value="9">9 X</option>
+                <option value="10">10 X</option>
+                <option value="11">11 X</option>
+                <option value="12">12 X</option>
+                
               </select>
             </td>
             <td>
@@ -135,7 +144,7 @@
       </table>
     </div>
     <div style="text-align: right; margin-right: 50px;">
-      <button class="btn btn-primary" (click)="toggleAddGastosView()">Salvar</button>
+      <button class="btn btn-primary" (click)="submitGastos()">Inserir</button>
     </div>
 
   
@@ -143,4 +152,3 @@
   
 
 </div>
-

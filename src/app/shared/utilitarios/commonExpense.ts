@@ -1,5 +1,5 @@
 export interface CommonExpense {
-    id: number;
+    id?: number;
     data_gasto: string;
     detalhes: string;
     valor: number;

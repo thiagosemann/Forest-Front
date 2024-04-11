@@ -29,6 +29,10 @@ export class CommonExpenseService {
     return this.http.post<CommonExpense>(this.apiUrl, expense, { headers: this.getHeaders() });
   }
 
+  createCommonExpenses(expenses: CommonExpense[]): Observable<CommonExpense[]> {
+    return this.http.post<CommonExpense[]>(`${this.apiUrl}/array`, expenses, { headers: this.getHeaders() });
+  }
+
   updateCommonExpense(expense: CommonExpense): Observable<CommonExpense> {
     const url = `${this.apiUrl}/${expense.id}`;
     return this.http.put<CommonExpense>(url, expense, { headers: this.getHeaders() });

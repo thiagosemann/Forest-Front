@@ -122,41 +122,49 @@ export class BuildingsReviewComponent implements OnInit {
 
   }
   readFiles(): void {
-    this.contasAdicionar=[];
-    // Iterar sobre os arquivos selecionados
+    this.contasAdicionar = [];
+  
     for (const selectedFile of this.selectedFiles) {
       const reader = new FileReader();
+  
       reader.onload = (event) => {
-        // Callback executado quando o arquivo é lido com sucesso
-        const fileContent = event.target?.result as string; // Conteúdo do arquivo como string
-        // Agora você pode processar o conteúdo do arquivo CSV, por exemplo, dividindo-o por linhas e colunas
-        const lines = fileContent.split('\n'); // Separar o conteúdo em linhas
-        // Processar cada linha do arquivo CSV
+        const fileContent = event.target?.result as string;
+        const lines = fileContent.split('\n');
+  
         for (const line of lines) {
-          // Dividir a linha em colunas usando ";"
           const columns = line.split(';');
-          // Agora você pode trabalhar com os valores das colunas
-          if(columns.length==4 && columns[0]!="Data Lançamento"){
-
-            const objAux={
-              data:columns[0],
-              detalhe:columns[1],
-              valor:parseFloat(columns[2]),
-              adicionar:true
+  
+          if (columns.length === 4 && columns[0] !== "Data Lançamento") {
+            const valorString = columns[2].replace(',', '.').replace(/\./g, '').replace(/(?!^)(?=\d{2}$)/, '.'); // Substituir a vírgula por ponto e manter apenas o último ponto
+  
+            let valorFloat = parseFloat(valorString);
+            if (!isNaN(valorFloat)) { // Verificar se a conversão para float foi bem-sucedida
+              // Formatando para sempre ter dois dígitos após a vírgula
+              valorFloat = parseFloat(valorFloat.toFixed(2));
+  
+              if (valorFloat < 0) {
+                const objAux = {
+                  data: columns[0],
+                  detalhe: columns[1],
+                  valor: valorFloat,
+                  adicionar: true,
+                  tipo: "Rateio",
+                  parcelas: "1"
+                };
+  
+                this.contasAdicionar.push(objAux);
+                console.log(valorString);
+              }
             }
-            if(parseFloat(columns[2])<0){
-              this.contasAdicionar.push(objAux)
-            }
-
-         }
-
+          }
         }
       };
-      console.log(this.contasAdicionar)
-      // Ler o arquivo como texto
+  
       reader.readAsText(selectedFile);
     }
   }
+  
+  
   
 
   deleteFile(index: number): void {
@@ -184,5 +192,53 @@ export class BuildingsReviewComponent implements OnInit {
       );
     }
   }
+
+  submitGastos(): void {
+    let contasAdd: CommonExpense[] = [];
+    this.contasAdicionar.forEach(conta => {
+      if (conta.adicionar) {
+        const parcelas = parseInt(conta.parcelas);
+        const dataParts = conta.data.split('/');
+        const dia = parseInt(dataParts[0]);
+        const mes = parseInt(dataParts[1]) - 1; // Ajuste para começar do zero
+        const ano = parseInt(dataParts[2]);
+        let dataGasto = new Date(ano, mes, dia); // Criar o objeto Date com os valores corretos
+               
+        for (let i = 0; i < parcelas; i++) {
+          const obj: CommonExpense = {
+            data_gasto: `${dataGasto.getFullYear()}-${dataGasto.getMonth() + 1}-${dataGasto.getDate()}`, // Formatando a data com template literals
+            detalhes: conta.detalhe,
+            valor: parseFloat(conta.valor)*-1,
+            tipo: conta.tipo,
+            parcela: i + 1,
+            total_parcelas: parcelas,
+            predio_id: this.buildingId!,
+          };
+          contasAdd.push(obj);
+           // Incrementar o mês para a próxima parcela
+          dataGasto.setMonth(dataGasto.getMonth()+1)
+
+        }
+      }
+    });
+    console.log(contasAdd)
+    // Chamada para enviar o array de despesas comuns para o servidor
+    this.commonExepenseService.createCommonExpenses(contasAdd).subscribe(
+      (createdExpenses: CommonExpense[]) => {
+        console.log('Despesas comuns criadas com sucesso:', createdExpenses);
+        this.contasAdicionar = [];
+        this.loadExpenses();
+      },
+      (error) => {
+        console.error('Erro ao criar despesas comuns:', error);
+      }
+    );
+    
+  }
+  
+  
+  
+  
+  
   
 }
