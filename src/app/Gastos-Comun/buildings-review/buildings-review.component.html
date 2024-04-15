@@ -1,13 +1,33 @@
 <app-nav-bar class="mb-4"></app-nav-bar>
 <div class="container" style="margin-top: 20px;">
-  <ng-container *ngIf="!addGastosView">
-    <button class="btn btn-primary" (click)="toggleAddGastosView()">Adicionar Gasto Manual</button>
-    <button class="btn btn-primary" (click)="toggleAddGastosView()">Adicionar Gastos em Lote</button>
-  </ng-container>
-  <ng-container *ngIf="addGastosView">
-    <button class="btn btn-primary" (click)="toggleAddGastosView() ">Voltar</button>
-  </ng-container>
+  <div class="row">
+    <div class="col-md-5">
+      <ng-container *ngIf="!addGastosView">
+        <button class="btn btn-primary" (click)="toggleAddGastosView()">Adicionar Gasto Manual</button>
+        <button class="btn btn-primary" (click)="toggleAddGastosView()">Adicionar Gastos em Lote</button>
+      </ng-container>
+      <ng-container *ngIf="addGastosView">
+        <button class="btn btn-primary" (click)="toggleAddGastosView() ">Voltar</button>
+      </ng-container>
+    </div>
+    <div class="col-md-7">
+      <div class="row">
+        <div class="col-md-3"><span class="spanText1">Rateio :</span><span class="spanText2"> R$ {{rateio.toFixed(2)}}</span></div>
+        <div class="col-md-3"><span class="spanText1">Provisão:</span><span class="spanText2"> R$ {{provisao.toFixed(2)}}</span></div>
+        <div class="col-md-3" *ngIf="inseridoBool"><span class="spanText1"> Inserido:</span><span class="spanText2">R$ {{inserido.toFixed(2)}}</span></div>
+        <div class="col-md-3">
+          <div class="col-md-12">
+            <span class="spanText1">Total :</span><span class="spanText2"> R$ {{valorTotal.toFixed(2)}}</span>
+          </div>
+          <div class="col-md-12">
+            <span class="spanText1">Por Apt :</span><span class="spanText2"> R$ {{valorTotalPorApt.toFixed(2)}}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+
 
 <div *ngIf="!addGastosView" style="margin-top: 30px;">
   <div class="container">
@@ -107,16 +127,16 @@
           <tr *ngFor="let contaAdd of contasAdicionar">
             <td>{{ contaAdd.data }}</td>
             <td><input class="custom-input" type="text" [(ngModel)]="contaAdd.detalhe"></td>
-            <td class="text-danger">R$ {{ contaAdd.valor*(-1) | number:'1.2-2' }}</td>
+            <td class="text-danger">R$ {{ contaAdd.valor| number:'1.2-2' }}</td>
             <td>
-              <select class="custom-select"  [(ngModel)]="contaAdd.tipo">
+              <select class="custom-select"  [(ngModel)]="contaAdd.tipo" >
                 <option>Rateio</option>
                 <option>Fundo de Reserva</option>
                 <option>Provisão</option>
               </select>
             </td>
             <td>
-              <select class="custom-select"  [(ngModel)]="contaAdd.parcelas">
+              <select class="custom-select"  [(ngModel)]="contaAdd.parcelas" (change)="selectContaAddChange(contaAdd)">
                 <option value="1">A vista</option>
                 <option value="2">2 X</option>
                 <option value="3">3 X</option>
@@ -134,7 +154,7 @@
             </td>
             <td>
               <label class="custom-checkbox">
-                <input type="checkbox" [(ngModel)]="contaAdd.adicionar">
+                <input type="checkbox" [(ngModel)]="contaAdd.adicionar" (click)="checkBoxCliked(contaAdd)">
                 <span class="checkmark"></span>
               </label>
             </td>

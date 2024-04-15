@@ -19,6 +19,13 @@ export class BuildingsReviewComponent implements OnInit {
   addGastosView: boolean = false;
   selectedFiles: File[] = [];
   contasAdicionar : any[]=[];
+  rateio:number=0;
+  provisao:number=0;
+  inserido:number=0;
+  inseridoBool:boolean=false;
+  valorTotalPorApt:number=0;
+  
+  valorTotal:number=0;
   months: { monthNumber: number, monthName: string }[] = [
     { monthNumber: 1, monthName: "Janeiro" },
     { monthNumber: 2, monthName: "Fevereiro" },
@@ -63,6 +70,7 @@ export class BuildingsReviewComponent implements OnInit {
   getAllBuildings(): void {
     this.buildingService.getAllBuildings().subscribe(
       (buildings: Building[]) => {
+        console.log(buildings)
         this.buildings = buildings;
       },
       (error) => {
@@ -83,6 +91,7 @@ export class BuildingsReviewComponent implements OnInit {
   }
   toggleAddGastosView(): void {
     this.addGastosView = !this.addGastosView;
+    this.inseridoBool = !this.inseridoBool;
   }
 
   formatarData(data: string): string {
@@ -141,23 +150,23 @@ export class BuildingsReviewComponent implements OnInit {
             if (!isNaN(valorFloat)) { // Verificar se a conversão para float foi bem-sucedida
               // Formatando para sempre ter dois dígitos após a vírgula
               valorFloat = parseFloat(valorFloat.toFixed(2));
-  
               if (valorFloat < 0) {
                 const objAux = {
                   data: columns[0],
                   detalhe: columns[1],
-                  valor: valorFloat,
+                  valor: valorFloat*-1,
                   adicionar: true,
                   tipo: "Rateio",
                   parcelas: "1"
                 };
-  
+                this.inserido += valorFloat*-1;
                 this.contasAdicionar.push(objAux);
                 console.log(valorString);
               }
             }
           }
         }
+        this.calculateValorTotal();
       };
   
       reader.readAsText(selectedFile);
@@ -178,18 +187,36 @@ export class BuildingsReviewComponent implements OnInit {
     const buildingId = this.myForm.get('building_id')?.value;
     const month = this.myForm.get('months')?.value;
     const year = this.myForm.get('years')?.value;
-  
+    this.rateio = 0;
+    this.provisao = 0;
+    this.commonExepenses = [];  
     if (buildingId && month && year) {
       this.commonExepenseService.getExpensesByBuildingAndMonth(buildingId, month, year).subscribe(
-        (expenses: CommonExpense[]) => {
-          this.commonExepenses = expenses;
-          console.log(this.commonExepenses);
+        (expenses: any[]) => {
+          expenses.forEach(expense=>{
+            expense.valor = parseFloat(expense.valor);
+            if(expense.tipo=="Rateio"){
+              this.rateio += expense.valor
+            }else if(expense.tipo=="Provisão"){
+              this.provisao += expense.valor
+            }
+            this.commonExepenses.push(expense);
+            
+          })
+          this.calculateValorTotal();
         },
         (error) => {
           console.error('Error fetching expenses:', error);
           this.commonExepenses = [];
         }
       );
+    }
+  }
+  calculateValorTotal():void{
+    this.valorTotal = this.inserido + this.provisao + this.rateio;
+    let building = this.buildings.find(building=>building.id === this.buildingId);
+    if(building && building.qnt_Apartamentos){
+      this.valorTotalPorApt = this.valorTotal / building?.qnt_Apartamentos;
     }
   }
 
@@ -208,7 +235,7 @@ export class BuildingsReviewComponent implements OnInit {
           const obj: CommonExpense = {
             data_gasto: `${dataGasto.getFullYear()}-${dataGasto.getMonth() + 1}-${dataGasto.getDate()}`, // Formatando a data com template literals
             detalhes: conta.detalhe,
-            valor: parseFloat(conta.valor)*-1,
+            valor: (parseFloat(conta.valor)*-1)/parcelas,
             tipo: conta.tipo,
             parcela: i + 1,
             total_parcelas: parcelas,
@@ -217,7 +244,6 @@ export class BuildingsReviewComponent implements OnInit {
           contasAdd.push(obj);
            // Incrementar o mês para a próxima parcela
           dataGasto.setMonth(dataGasto.getMonth()+1)
-
         }
       }
     });
@@ -233,12 +259,24 @@ export class BuildingsReviewComponent implements OnInit {
         console.error('Erro ao criar despesas comuns:', error);
       }
     );
-    
   }
-  
-  
-  
-  
-  
-  
+
+  checkBoxCliked(conta:any):void{
+    if(conta.adicionar){
+      this.inserido-= conta.valor;
+    }else{
+      this.inserido+= conta.valor;
+    }
+    this.calculateValorTotal();
+  }
+
+  selectContaAddChange(conta:any):void{
+    console.log(this.contasAdicionar)
+    this.inserido = 0;
+    this.contasAdicionar.forEach(conta=>{
+      this.inserido+=conta.valor/conta.parcelas;  
+    })
+
+    this.calculateValorTotal();
+  }
 }

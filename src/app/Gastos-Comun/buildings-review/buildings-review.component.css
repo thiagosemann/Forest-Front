@@ -39,6 +39,19 @@
     display: none; /* Oculta o input de arquivo padrão */
 
   }
+  .spanText1 {
+    font-size: 18px;
+    font-family: LayarBahtera Doomsday;
+    font-weight: bold;
+    color: #828886;
+  }
+  .spanText2 {
+    font-size: 18px;
+    font-family: LayarBahtera Doomsday;
+    font-weight: bolder;
+    color:#156e45;
+  }
+  
   .custom-file-upload {
     /* Estilo para o botão de upload personalizado */
     border: 1px solid #ccc;
