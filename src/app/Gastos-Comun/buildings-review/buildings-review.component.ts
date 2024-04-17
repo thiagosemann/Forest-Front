@@ -16,7 +16,7 @@ export class BuildingsReviewComponent implements OnInit {
   commonExepenses: CommonExpense[] = [];
   buildingId: number | undefined = 1;
   myForm!: FormGroup; // Initialize myForm as a FormGroup
-  addGastosView: boolean = false;
+  gastosView: string = "inicial";
   selectedFiles: File[] = [];
   contasAdicionar : any[]=[];
   rateio:number=0;
@@ -89,9 +89,16 @@ export class BuildingsReviewComponent implements OnInit {
       }
     );
   }
-  toggleAddGastosView(): void {
-    this.addGastosView = !this.addGastosView;
-    this.inseridoBool = !this.inseridoBool;
+  toggleAddGastosView(tela:string): void {
+    if(tela=="inicial"){
+      this.gastosView='inicial'
+    }else if(tela=="manual"){
+      this.gastosView='manual'
+    }else if(tela=="lote"){
+      this.gastosView='lote'
+    }
+
+
   }
 
   formatarData(data: string): string {
@@ -279,4 +286,30 @@ export class BuildingsReviewComponent implements OnInit {
 
     this.calculateValorTotal();
   }
+
+  deleteExpense(expense: CommonExpense): void {
+    console.log(expense)
+    if(expense.total_parcelas>1){
+      confirm("Deseja deletar todas as parcelas?")
+      return 
+    }
+    if (confirm("Tem certeza que deseja excluir esta despesa comum?") && expense.id ) {
+      this.commonExepenseService.deleteCommonExpense(expense.id).subscribe(
+        () => {
+          // Remover a despesa excluída do array local
+          const index = this.commonExepenses.findIndex(e => e.id === expense.id);
+          console.log(index)
+          if (index !== -1) {
+            this.commonExepenses.splice(index, 1);
+            this.toastr.success('Despesa excluída com sucesso.');
+          }
+        },
+        (error) => {
+          console.error('Erro ao excluir despesa:', error);
+          this.toastr.error('Erro ao excluir despesa. Por favor, tente novamente mais tarde.');
+        }
+      );
+    }
+  }
+  
 }

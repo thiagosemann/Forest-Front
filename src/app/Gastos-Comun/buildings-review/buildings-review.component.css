@@ -35,9 +35,7 @@
   }
 
   .file-upload-input {
-    
     display: none; /* Oculta o input de arquivo padrão */
-
   }
   .spanText1 {
     font-size: 18px;
@@ -130,7 +128,7 @@
 }
 
 .table-wrapper::-webkit-scrollbar {
-  width: 4px;
+  width: 6px;
 }
 
 .table-wrapper::-webkit-scrollbar-thumb {
@@ -150,8 +148,8 @@
 .table th,
 .table td {
   border: 1px solid #dddddd;
-  text-align: left;
-  padding: 8px;
+  text-align: center;
+  padding: 1px;
 }
 
 .table th {
@@ -167,6 +165,11 @@
 
 .table tr:hover {
   background-color: #ddd;
+}
+
+.custom-btn-sm {
+  height: 30px;
+  font-size: 12px;
 }
 
 .custom-select {
