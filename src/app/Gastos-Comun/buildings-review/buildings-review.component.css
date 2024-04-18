@@ -187,3 +187,19 @@
   color: #a2a8a6;
 }
 
+.custom-input {
+  border-radius: 5px;
+  height: 40px;
+  color: #828886;
+  font-weight: bold;
+  font-family: LayarBahtera Doomsday;
+  text-align: left;
+  padding-left: 20px; /* Adiciona margem à esquerda para o texto */
+  /* Adicione outros estilos personalizados conforme necessário */
+}
+.custom-input::placeholder {
+  opacity: 0.8; /* Altere o valor conforme necessário para ajustar a opacidade */
+  color:#a2a8a6 ;
+}
+
+

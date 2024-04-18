@@ -24,7 +24,8 @@ export class BuildingsReviewComponent implements OnInit {
   inserido:number=0;
   inseridoBool:boolean=false;
   valorTotalPorApt:number=0;
-  
+  manualGastoForm!: FormGroup;
+
   valorTotal:number=0;
   months: { monthNumber: number, monthName: string }[] = [
     { monthNumber: 1, monthName: "Janeiro" },
@@ -63,6 +64,11 @@ export class BuildingsReviewComponent implements OnInit {
       months: [currentMonth, Validators.required], // Defina o mês atual como selecionado por padrão
       years: [currentYear, Validators.required] // Defina o ano atual como selecionado por padrão
       // Adicione outros controles de formulário conforme necessário
+    });
+    this.manualGastoForm = this.formBuilder.group({
+      detalhe: ['', Validators.required],
+      data: ['', Validators.required],
+      valor: ['', [Validators.required, Validators.min(0.01)]],
     });
     this.loadExpenses();
   }
@@ -309,6 +315,39 @@ export class BuildingsReviewComponent implements OnInit {
           this.toastr.error('Erro ao excluir despesa. Por favor, tente novamente mais tarde.');
         }
       );
+    }
+  }
+
+  submitManualGasto(): void {
+    if (this.manualGastoForm.valid) {
+      // Aqui você pode acessar os valores do formulário
+      const detalhe = this.manualGastoForm.get('detalhe')?.value;
+      const data = this.manualGastoForm.get('data')?.value;
+      const valor = this.manualGastoForm.get('valor')?.value;
+
+      // Lógica para enviar os dados do gasto manualmente
+      console.log('Detalhe:', detalhe);
+      console.log('Data:', data);
+      console.log('Valor:', valor);
+
+      // Lógica para enviar os dados para o serviço ou API
+      // Exemplo:
+      // this.gastoService.adicionarGastoManualmente(detalhe, data, valor).subscribe(
+      //   (response) => {
+      //     // Lógica de sucesso
+      //     this.toastr.success('Gasto manual adicionado com sucesso.');
+      //   },
+      //   (error) => {
+      //     // Lógica de erro
+      //     console.error('Erro ao adicionar gasto manualmente:', error);
+      //     this.toastr.error('Erro ao adicionar gasto manualmente. Por favor, tente novamente mais tarde.');
+      //   }
+      // );
+
+      // Após o envio bem-sucedido, você pode limpar o formulário
+      this.manualGastoForm.reset();
+    } else {
+      this.toastr.error('Por favor, preencha todos os campos corretamente.');
     }
   }
   

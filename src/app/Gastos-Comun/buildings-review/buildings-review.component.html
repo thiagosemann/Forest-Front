@@ -173,8 +173,32 @@
   <div class="container">
     <div class="mb-3">
       <div class="row">
-        <div class="col-md-12">
-          Manual
+        <div class="col-md-4"></div>
+        <div class="col-md-4">
+          <h4>Inserir gasto manual</h4>
+          <form [formGroup]="manualGastoForm" (ngSubmit)="submitManualGasto()">
+              <div class="col-md-12 mb-3">
+                <div class="form-group">
+                  <input type="text" class="form-control custom-input "  placeholder="Detalhe do gasto:" id="detalhe" formControlName="detalhe" required>
+                </div>
+              </div>
+              <div class="col-md-12 mb-3">
+                <div class="form-group">
+                  <input type="date" class="form-control custom-input "  placeholder="Data do gasto:" id="data" formControlName="data" required>
+                </div>
+              </div>
+              <div class="col-md-12 mb-3">
+                <div class="form-group">
+                  <input type="number" class="form-control custom-input " placeholder="Quantidade de parcelas" id="valor" formControlName="valor" step="0.01" required>
+                </div>
+              </div>
+              <div class="col-md-12 mb-3">
+                <div class="form-group">
+                  <input type="number" class="form-control custom-input " placeholder="Valor:" id="valor" formControlName="valor" step="0.01" required>
+                </div>
+              </div>
+            <button type="submit" class="btn btn-primary">Inserir Gasto</button>
+          </form>
         </div>
       </div>
     </div>
