@@ -3,8 +3,10 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms'; // Import V
 import { ToastrService } from 'ngx-toastr';
 import { BuildingService } from 'src/app/shared/service/buildings_service';
 import { CommonExpenseService } from 'src/app/shared/service/commonExpense_service';
+import { ExpenseTypeService } from 'src/app/shared/service/tipoGasto_service';
 import { Building } from 'src/app/shared/utilitarios/building';
 import { CommonExpense } from 'src/app/shared/utilitarios/commonExpense';
+import { ExpenseType } from 'src/app/shared/utilitarios/expenseType';
 
 @Component({
   selector: 'app-buildings-review',
@@ -25,7 +27,7 @@ export class BuildingsReviewComponent implements OnInit {
   inseridoBool:boolean=false;
   valorTotalPorApt:number=0;
   manualGastoForm!: FormGroup;
-
+  expenseTypes:ExpenseType[]=[];
   valorTotal:number=0;
   months: { monthNumber: number, monthName: string }[] = [
     { monthNumber: 1, monthName: "Janeiro" },
@@ -51,11 +53,12 @@ export class BuildingsReviewComponent implements OnInit {
     private buildingService: BuildingService,
     private formBuilder: FormBuilder,
     private commonExepenseService: CommonExpenseService,
-
+    private expenseTypeService: ExpenseTypeService
   ) {}
 
   ngOnInit(): void {
     this.getAllBuildings();
+    this.getAllExpenses();
     const currentDate = new Date();
     const currentMonth = currentDate.getMonth() + 1; // Os meses são indexados de 0 a 11, então somamos 1 para obter o mês atual
     const currentYear = currentDate.getFullYear().toString(); // Obter o ano atual como uma string
@@ -84,6 +87,22 @@ export class BuildingsReviewComponent implements OnInit {
       }
     );
   }
+  getAllExpenses(): void {
+    this.expenseTypeService.getAllExpenseTypes().subscribe(
+      (expenseTypes: ExpenseType[]) => {
+        this.expenseTypes = expenseTypes;
+      },
+      (error) => {
+        console.error('Error fetching buildings:', error);
+      }
+    );
+  }
+
+  getExpenseDetalhes(commonExpense:CommonExpense):string{
+    let expenseAux = this.expenseTypes.find(expense=>expense.id === commonExpense.tipoGasto_id)
+    return expenseAux?.detalhes || ""
+  }
+
   getAllCommonExpenses(): void {
     this.commonExepenseService.getAllCommonExpenses().subscribe(
       (expenses: CommonExpense[]) => {
@@ -166,7 +185,7 @@ export class BuildingsReviewComponent implements OnInit {
               if (valorFloat < 0) {
                 const objAux = {
                   data: columns[0],
-                  detalhe: columns[1],
+                  nome_original: columns[1],
                   valor: valorFloat*-1,
                   adicionar: true,
                   tipo: "Rateio",
@@ -235,6 +254,7 @@ export class BuildingsReviewComponent implements OnInit {
 
   submitGastos(): void {
     let contasAdd: CommonExpense[] = [];
+    let verificacao =0;
     this.contasAdicionar.forEach(conta => {
       if (conta.adicionar) {
         const parcelas = parseInt(conta.parcelas);
@@ -247,13 +267,17 @@ export class BuildingsReviewComponent implements OnInit {
         for (let i = 0; i < parcelas; i++) {
           const obj: CommonExpense = {
             data_gasto: `${dataGasto.getFullYear()}-${dataGasto.getMonth() + 1}-${dataGasto.getDate()}`, // Formatando a data com template literals
-            detalhes: conta.detalhe,
+            nome_original: conta.nome_original,
             valor: (parseFloat(conta.valor)*-1)/parcelas,
             tipo: conta.tipo,
             parcela: i + 1,
             total_parcelas: parcelas,
             predio_id: this.buildingId!,
+            tipoGasto_id:Number(conta.tipoGasto_id)
           };
+          if(conta.nome_original==""){verificacao++;}
+          if(!conta.tipoGasto_id){verificacao++;}
+
           contasAdd.push(obj);
            // Incrementar o mês para a próxima parcela
           dataGasto.setMonth(dataGasto.getMonth()+1)
@@ -261,17 +285,25 @@ export class BuildingsReviewComponent implements OnInit {
       }
     });
     console.log(contasAdd)
+
+    // Verificar se o contasADD em ttodos os valores para serem enviados, caso o 
     // Chamada para enviar o array de despesas comuns para o servidor
-    this.commonExepenseService.createCommonExpenses(contasAdd).subscribe(
-      (createdExpenses: CommonExpense[]) => {
-        console.log('Despesas comuns criadas com sucesso:', createdExpenses);
-        this.contasAdicionar = [];
-        this.loadExpenses();
-      },
-      (error) => {
-        console.error('Erro ao criar despesas comuns:', error);
-      }
-    );
+    if(verificacao==0){
+      this.commonExepenseService.createCommonExpenses(contasAdd).subscribe(
+        (createdExpenses: CommonExpense[]) => {
+          console.log('Despesas comuns criadas com sucesso:', createdExpenses);
+          this.contasAdicionar = [];
+          this.loadExpenses();
+        },
+        (error) => {
+          console.error('Erro ao criar despesas comuns:', error);
+        }
+      );
+    }else{
+      this.toastr.warning("Preencha todos os campos!")
+    }
+
+    
   }
 
   checkBoxCliked(conta:any):void{

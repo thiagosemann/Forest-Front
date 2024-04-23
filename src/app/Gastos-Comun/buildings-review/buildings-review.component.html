@@ -74,7 +74,7 @@
         <tbody>
           <!-- Aqui você pode iterar sobre os dados das contas e preencher as linhas da tabela -->
           <tr *ngFor="let expense of commonExepenses">
-            <td>{{ expense.detalhes }}</td>
+            <td>{{ getExpenseDetalhes(expense) }}</td>
             <td>{{ formatarData(expense.data_gasto)}}</td>
             <td>R$ {{ expense.valor }}</td>
             <td>{{ expense.tipo }}</td>
@@ -117,6 +117,7 @@
           <tr>
             <th scope="col">Data</th>
             <th scope="col">Detalhe</th>
+            <th scope="col">Original</th>
             <th scope="col">Valor</th>
             <th scope="col">Tipo</th>
             <th scope="col">Parcelar?</th>
@@ -127,7 +128,13 @@
           <!-- Aqui você pode iterar sobre os dados das contas e preencher as linhas da tabela -->
           <tr *ngFor="let contaAdd of contasAdicionar">
             <td>{{ contaAdd.data }}</td>
-            <td><input class="custom-input" type="text" [(ngModel)]="contaAdd.detalhe"></td>
+            <td> 
+              <select id="years" name="years" class="form-control custom-select" [(ngModel)]="contaAdd.tipoGasto_id" required>
+                <option *ngFor="let expenseType of expenseTypes" [value]="expenseType.id">{{ expenseType.detalhes }}</option>
+              </select>
+            </td>
+            
+            <td><input class="custom-input" type="text" [(ngModel)]="contaAdd.nome_original"></td>
             <td class="text-danger">R$ {{ contaAdd.valor| number:'1.2-2' }}</td>
             <td>
               <select class="custom-select"  [(ngModel)]="contaAdd.tipo" >
