@@ -31,7 +31,9 @@ export class NavBarComponent implements OnInit {
   gastosComuns(): void {
     this.router.navigate(['/gastosComuns']);
   }
-
+  gastosIndividuais(): void {
+    this.router.navigate(['/gastosIndividuais']);
+  }
   content(): void {
     this.router.navigate(['/content']);
   }

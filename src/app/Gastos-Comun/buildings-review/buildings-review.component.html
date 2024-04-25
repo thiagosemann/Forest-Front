@@ -138,9 +138,9 @@
             <td class="text-danger">R$ {{ contaAdd.valor| number:'1.2-2' }}</td>
             <td>
               <select class="custom-select"  [(ngModel)]="contaAdd.tipo" >
-                <option>Rateio</option>
-                <option>Fundo de Reserva</option>
-                <option>Provisão</option>
+                <option value="Rateio">Rateio</option>
+                <option value="Fundo de Reserva">Fundo de Reserva</option>
+                <option value="Provisão">Provisão</option>
               </select>
             </td>
             <td>
@@ -186,7 +186,25 @@
           <form [formGroup]="manualGastoForm" (ngSubmit)="submitManualGasto()">
               <div class="col-md-12 mb-3">
                 <div class="form-group">
-                  <input type="text" class="form-control custom-input "  placeholder="Detalhe do gasto:" id="detalhe" formControlName="detalhe" required>
+                  <select id="detalhe" name="detalhe" class="form-control custom-select" formControlName="detalhe" required>
+                    <option value="Selecione" disabled>Selecione</option>
+                    <option *ngFor="let expenseType of expenseTypes" [value]="expenseType.id">{{ expenseType.detalhes }}</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-12 mb-3">
+                <div class="form-group">
+                  <select id="tipo" name="tipo" class="form-control custom-select" formControlName="tipo" required>
+                    <option value="Selecione" disabled>Selecione</option>
+                    <option value="Rateio">Rateio</option>
+                    <option value="Fundo de Reserva">Fundo de Reserva</option>
+                    <option value="Provisão">Provisão</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-12 mb-3">
+                <div class="form-group">
+                  <input type="text" class="form-control custom-input "  placeholder="Nome do gasto:" id="nome_original" formControlName="nome_original" required>
                 </div>
               </div>
               <div class="col-md-12 mb-3">
@@ -196,14 +214,20 @@
               </div>
               <div class="col-md-12 mb-3">
                 <div class="form-group">
-                  <input type="number" class="form-control custom-input " placeholder="Quantidade de parcelas" id="valor" formControlName="valor" step="0.01" required>
+                  <input type="number" class="form-control custom-input " placeholder="Valor Total:" id="valorTotal" formControlName="valorTotal" step="0.01" required (change)="changeInputParcela()">
                 </div>
               </div>
               <div class="col-md-12 mb-3">
                 <div class="form-group">
-                  <input type="number" class="form-control custom-input " placeholder="Valor:" id="valor" formControlName="valor" step="0.01" required>
+                  <input type="number" class="form-control custom-input " placeholder="Quantidade de parcelas" id="parcela" formControlName="parcela" step="1" min="1"required (change)="changeInputParcela()">
                 </div>
               </div>
+              <div class="col-md-12 mb-3" *ngIf="valorParcela > 1">
+                <div class="form-group">
+                  <span class="spanValorParcela">Valor da parcela: <span style="color:#198754;">R$ {{valorParcela.toFixed(2)}}</span></span>
+                </div>
+              </div>
+              
             <button type="submit" class="btn btn-primary">Inserir Gasto</button>
           </form>
         </div>

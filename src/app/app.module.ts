@@ -24,6 +24,7 @@ import { RegisterComponent } from './register/register.component';
 import { UsersControlComponent } from './users-control/users-control.component';
 import { BuildingsControlComponent } from './buildings-control/buildings-control.component';
 import { BuildingsReviewComponent } from './Gastos-Comun/buildings-review/buildings-review.component';
+import { GastosIndividuaisComponent } from './gastos-individuais/gastos-individuais.component';
 
 @NgModule({
   declarations: [
@@ -38,7 +39,8 @@ import { BuildingsReviewComponent } from './Gastos-Comun/buildings-review/buildi
     OrdenarPorPrecoPipe,
     UsersControlComponent,
     BuildingsControlComponent,
-    BuildingsReviewComponent
+    BuildingsReviewComponent,
+    GastosIndividuaisComponent
   ],
   imports: [
     BrowserModule,

@@ -43,7 +43,7 @@ export class BuildingsReviewComponent implements OnInit {
     { monthNumber: 11, monthName: "Novembro" },
     { monthNumber: 12, monthName: "Dezembro" }
   ];
-  
+  valorParcela:number=0;
   years: string[] = ["2022", "2023","2024", "2025", "2026", "2027", "2028", "2029","2030" ];
 
   
@@ -69,9 +69,12 @@ export class BuildingsReviewComponent implements OnInit {
       // Adicione outros controles de formulário conforme necessário
     });
     this.manualGastoForm = this.formBuilder.group({
-      detalhe: ['', Validators.required],
+      detalhe: ['Selecione', Validators.required],
+      nome_original: ['', Validators.required],
+      tipo: ['Selecione', Validators.required],   
       data: ['', Validators.required],
-      valor: ['', [Validators.required, Validators.min(0.01)]],
+      valorTotal: ['', [Validators.required, Validators.min(0.01)]],
+      parcela:['1', [Validators.required, Validators.min(1)]]
     });
     this.loadExpenses();
   }
@@ -133,6 +136,8 @@ export class BuildingsReviewComponent implements OnInit {
     const ano = dataObj.getFullYear();
     return `${dia}/${mes}/${ano}`;
   }
+
+
   
   // Método chamado quando um arquivo é selecionado
   onFileSelected(event: any): void {
@@ -268,7 +273,7 @@ export class BuildingsReviewComponent implements OnInit {
           const obj: CommonExpense = {
             data_gasto: `${dataGasto.getFullYear()}-${dataGasto.getMonth() + 1}-${dataGasto.getDate()}`, // Formatando a data com template literals
             nome_original: conta.nome_original,
-            valor: (parseFloat(conta.valor)*-1)/parcelas,
+            valor: (parseFloat(conta.valor))/parcelas,
             tipo: conta.tipo,
             parcela: i + 1,
             total_parcelas: parcelas,
@@ -285,20 +290,10 @@ export class BuildingsReviewComponent implements OnInit {
       }
     });
     console.log(contasAdd)
-
     // Verificar se o contasADD em ttodos os valores para serem enviados, caso o 
     // Chamada para enviar o array de despesas comuns para o servidor
     if(verificacao==0){
-      this.commonExepenseService.createCommonExpenses(contasAdd).subscribe(
-        (createdExpenses: CommonExpense[]) => {
-          console.log('Despesas comuns criadas com sucesso:', createdExpenses);
-          this.contasAdicionar = [];
-          this.loadExpenses();
-        },
-        (error) => {
-          console.error('Erro ao criar despesas comuns:', error);
-        }
-      );
+      this.sendCommonExpenses(contasAdd);
     }else{
       this.toastr.warning("Preencha todos os campos!")
     }
@@ -327,10 +322,11 @@ export class BuildingsReviewComponent implements OnInit {
 
   deleteExpense(expense: CommonExpense): void {
     console.log(expense)
-    if(expense.total_parcelas>1){
+    /*if(expense.total_parcelas>1){
       confirm("Deseja deletar todas as parcelas?")
       return 
     }
+    */
     if (confirm("Tem certeza que deseja excluir esta despesa comum?") && expense.id ) {
       this.commonExepenseService.deleteCommonExpense(expense.id).subscribe(
         () => {
@@ -353,34 +349,88 @@ export class BuildingsReviewComponent implements OnInit {
   submitManualGasto(): void {
     if (this.manualGastoForm.valid) {
       // Aqui você pode acessar os valores do formulário
-      const detalhe = this.manualGastoForm.get('detalhe')?.value;
-      const data = this.manualGastoForm.get('data')?.value;
-      const valor = this.manualGastoForm.get('valor')?.value;
+      const detalheId = this.manualGastoForm.get('detalhe')?.value;
+      const nome_original = this.manualGastoForm.get('nome_original')?.value;
+      const tipo = this.manualGastoForm.get('tipo')?.value;
+      const valorTotal = this.manualGastoForm.get('valorTotal')?.value;
+      const parcela = this.manualGastoForm.get('parcela')?.value;
 
-      // Lógica para enviar os dados do gasto manualmente
-      console.log('Detalhe:', detalhe);
-      console.log('Data:', data);
-      console.log('Valor:', valor);
 
-      // Lógica para enviar os dados para o serviço ou API
-      // Exemplo:
-      // this.gastoService.adicionarGastoManualmente(detalhe, data, valor).subscribe(
-      //   (response) => {
-      //     // Lógica de sucesso
-      //     this.toastr.success('Gasto manual adicionado com sucesso.');
-      //   },
-      //   (error) => {
-      //     // Lógica de erro
-      //     console.error('Erro ao adicionar gasto manualmente:', error);
-      //     this.toastr.error('Erro ao adicionar gasto manualmente. Por favor, tente novamente mais tarde.');
-      //   }
-      // );
-
-      // Após o envio bem-sucedido, você pode limpar o formulário
+      // Obter a data do formulário
+      let data = this.manualGastoForm.get('data')?.value;
+      data = new Date(data); // Converter para objeto Date
+  
+      let commonExpenses: CommonExpense[] = [];
+  
+      if (parcela == 1) {
+        let commonExpenseAux: CommonExpense = {
+          data_gasto: `${data.getFullYear()}-${data.getMonth() + 1}-${data.getDate()}`, // Formatando a data
+          nome_original: nome_original,
+          valor: Number(valorTotal),
+          tipo: tipo,
+          parcela: 1,
+          total_parcelas: 1,
+          predio_id: this.buildingId!,
+          tipoGasto_id: detalheId,
+        };
+        commonExpenses.push(commonExpenseAux);
+      } else {
+        for (let i = 0; i < parcela; i++) {
+          let newDate = new Date(data);
+          newDate.setMonth(newDate.getMonth() + i); // Adicionar um mês para cada parcela
+         
+          let commonExpenseAux: CommonExpense = {
+            data_gasto:  `${newDate.getFullYear()}-${newDate.getMonth() + 1}-${newDate.getDate()}`,
+            nome_original: nome_original,
+            valor: Number(valorTotal) / Number(parcela),
+            tipo: tipo,
+            parcela: i + 1,
+            total_parcelas: parcela,
+            predio_id: this.buildingId!,
+            tipoGasto_id: detalheId,
+          };
+          commonExpenses.push(commonExpenseAux);
+        }
+      }
+      this.sendCommonExpenses(commonExpenses);
       this.manualGastoForm.reset();
+      this.valorParcela = 0;
+      this.manualGastoForm.get('parcela')?.setValue(1);
     } else {
       this.toastr.error('Por favor, preencha todos os campos corretamente.');
     }
   }
+
+  sendCommonExpenses(commonExpenses:CommonExpense[]):void{
+    this.commonExepenseService.createCommonExpenses(commonExpenses).subscribe(
+      (createdExpenses: CommonExpense[]) => {
+        console.log('Despesas comuns criadas com sucesso:', createdExpenses);
+        this.contasAdicionar = [];
+        this.loadExpenses();
+        this.toastr.success("Gastos enviados com sucesso!")
+        this.toggleAddGastosView("inicial")
+      },
+      (error) => {
+        console.error('Erro ao criar despesas comuns:', error);
+        this.toastr.error('Erro ao criar despesas comuns:', error)
+      }
+    );
+  }
   
+  
+  changeInputParcela():void{
+    const parcela = this.manualGastoForm.get('parcela')?.value;
+    if(Number(parcela)==0){
+      this.manualGastoForm.get('parcela')?.setValue(1);
+    }
+    const valor = this.manualGastoForm.get('valorTotal')?.value;
+    console.log('valor:', valor);
+    console.log('parcela:', parcela);
+    if(Number(parcela)==1){
+      this.valorParcela= 0;
+    }else{
+      this.valorParcela = Number(valor)/Number(parcela);
+    }
+
+  }
 }
