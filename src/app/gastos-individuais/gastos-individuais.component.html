@@ -1,4 +1,58 @@
 <app-nav-bar class="mb-4"></app-nav-bar>
-<div class="container" style="margin-top: 20px;">
-  Gastos Individuais
+<div class="container" style="margin-top: 30px;">
+  <h3>Tela de Gastos Individuais</h3>
+  <form [formGroup]="myForm"> <!-- Wrap your form controls within a formGroup directive -->
+    <div class="row">
+      <div class="col-md-4">
+        <select id="building_id" name="building_id" class="form-control custom-select" formControlName="building_id" required (change)="selectBuilding()">
+          <option value="0" disabled selected>Selecione o prédio</option>
+          <option *ngFor="let building of buildings" [value]="building.id">{{ building.nome }}</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <select id="months" name="months" class="form-control custom-select" formControlName="months" required >
+          <option value="" disabled selected>Selecione o mês</option>
+          <option *ngFor="let month of months" [value]="month.monthNumber">{{ month.monthName }}</option>
+        </select>
+      </div>
+      
+      <div class="col-md-4">
+        <select id="years" name="years" class="form-control custom-select" formControlName="years" required >
+          <option value="" disabled selected>Selecione o ano</option>
+          <option *ngFor="let year of years" [value]="year">{{ year }}</option>
+        </select>
+      </div>
+      
+    </div>
+    <!-- Add other form controls within the formGroup -->
+  </form>
+  <!-- Tabela de contas -->
+  <div class="table-wrapper">
+    <table class="table mt-4">
+      <thead>
+        <tr>
+          <th scope="col" style="width: 30%;">Apartamento</th>
+          <th scope="col" style="width: 10%;">Fracao</th>
+          <th scope="col" style="width: 10%;">Valor</th>
+          <th scope="col" style="width: 10%;">Tipo</th>
+          <th scope="col" style="width: 10%;">Parcela</th>
+          <th scope="col" style="width: 10%;">Total de parcelas</th>
+          <th scope="col" style="width: 10%;">Ação</th>      
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Aqui você pode iterar sobre os dados das contas e preencher as linhas da tabela -->
+        <tr *ngFor="let apartamento of apartamentos" >
+          <td>{{apartamento.nome}}</td>
+          <td>{{apartamento.fracao}}</td>
+          <td>{{apartamento.nome}}</td>
+          <td>{{apartamento.nome}}</td>
+          <td>{{apartamento.nome}}</td>
+          <td>{{apartamento.nome}}</td>
+          <td>{{apartamento.nome}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
 </div>

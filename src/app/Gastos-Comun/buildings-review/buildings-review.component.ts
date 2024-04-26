@@ -63,7 +63,7 @@ export class BuildingsReviewComponent implements OnInit {
     const currentMonth = currentDate.getMonth() + 1; // Os meses são indexados de 0 a 11, então somamos 1 para obter o mês atual
     const currentYear = currentDate.getFullYear().toString(); // Obter o ano atual como uma string
     this.myForm = this.formBuilder.group({
-      building_id: [1, Validators.required], // Defina o prédio com id=1 como selecionado por padrão
+      building_id: [0, Validators.required], // Defina o prédio com id=1 como selecionado por padrão
       months: [currentMonth, Validators.required], // Defina o mês atual como selecionado por padrão
       years: [currentYear, Validators.required] // Defina o ano atual como selecionado por padrão
       // Adicione outros controles de formulário conforme necessário

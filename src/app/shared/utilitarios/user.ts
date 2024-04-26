@@ -17,6 +17,9 @@ export interface User {
     valorTotal?:number;
     isEditing?: boolean ; // Add the isEditing property here
     editValue?: string;
+    apartamento_id?:number;
+    apartamento_name?:string;
+    
     [key: string]: any; // Índice para acessar propriedades com base em uma string
 
   }
