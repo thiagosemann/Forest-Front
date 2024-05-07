@@ -23,6 +23,7 @@ export class GastosIndividuaisComponent implements OnInit {
   apartamentos: Apartamento[] = [];
   dataModel: any[] = [];
   gastosIndividuais:any[]=[];
+  saveData:boolean =false;
   months: { monthNumber: number; monthName: string }[] = [
     { monthNumber: 1, monthName: 'Janeiro' },
     { monthNumber: 2, monthName: 'Fevereiro' },
@@ -114,6 +115,7 @@ export class GastosIndividuaisComponent implements OnInit {
 handleFileInput(event: any): void {
     // Começar a girar o spinner
     this.uploading = true;
+    this.saveData = true;
     this.gastosIndividuais=[];
     const file = event.target.files[0]; // Obter o arquivo selecionado
     const reader = new FileReader();
@@ -160,6 +162,10 @@ handleFileInput(event: any): void {
   
     // Ler o conteúdo do arquivo como um array buffer
     reader.readAsArrayBuffer(file);
+  }
+  saveGastosIndividuais():void{
+    this.saveData = false;
+
   }
 
   

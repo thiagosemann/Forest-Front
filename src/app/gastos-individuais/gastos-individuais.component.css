@@ -92,3 +92,111 @@
 .btn-success input[type=file] {
     display: none;
 }
+.custom-input {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: #333;
+  background-color: #fff;
+  transition: border-color 0.3s ease;
+  width: 100%;
+}
+
+.custom-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+/* Estilos para a tabela e cabeçalho sticky */
+.table-wrapper {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.table-wrapper::-webkit-scrollbar {
+  width: 6px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+  background-color: #B7B7B7;
+  border-radius: 4px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb:hover {
+  background-color: #555;
+}
+
+.table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.table th,
+.table td {
+  border: 1px solid #dddddd;
+  text-align: center;
+  padding: 1px; /* Aumente o padding para fornecer mais espaço */
+}
+
+
+.table th {
+  background-color: #198754;
+  color: #fff;
+  position: sticky;
+  top: 0;
+}
+
+.table tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+.table tr:hover {
+  background-color: #ddd;
+}
+/* Estilos para os botões */
+.btn-primary,
+.btn-primary:hover {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.btn-primary:focus,
+.btn-primary.focus {
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.5);
+}
+
+.btn-success,
+.btn-success:hover {
+  background-color: #198754;
+  border-color: #198754;
+}
+
+.btn-success:focus,
+.btn-success.focus {
+  box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.5);
+}
+
+/* Estilos para os ícones */
+.btn i {
+  margin-right: 5px;
+}
+
+/* Estilos para o botão de upload */
+.btn-success input[type=file] {
+  display: none;
+}
+.btn-save {
+  background-color: orange;
+  border-color: orange;
+}
+
+.btn-save:hover {
+  background-color: darkorange;
+  border-color: darkorange;
+}
+
+.btn-save:focus {
+  box-shadow: 0 0 0 0.2rem rgba(255, 165, 0, 0.5);
+}
+

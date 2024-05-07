@@ -24,11 +24,19 @@
       </div>
       <div class="col-md-3">
         <ng-container *ngIf="apartamentos.length > 0">
-          <label class="btn btn-success" >
-            <i class="fas fa-upload"></i> Inserir
-            <input type="file" style="display: none;" (change)="handleFileInput($event)">
-            <span *ngIf="uploading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-          </label>
+          <ng-container *ngIf="saveData">
+            <button class="btn btn-save" (click)="saveGastosIndividuais()">
+              <i class="fas fa-save"></i>Salvar
+            </button>
+          </ng-container>
+          <ng-container *ngIf="!saveData">
+            <label class="btn btn-success" >
+              <i class="fas fa-upload"></i> Inserir
+              <input type="file" style="display: none;" (change)="handleFileInput($event)">
+              <span *ngIf="uploading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            </label>
+          </ng-container>
+
           <button class="btn btn-primary" (click)="downloadModel()" style="margin-left: 5px;">
             <i class="fas fa-download"></i> Modelo
           </button>
@@ -53,7 +61,6 @@
           <th scope="col" style="width: 10%;">Multa</th>
           <th scope="col" style="width: 10%;">Lavanderia</th>     
           <th scope="col" style="width: 5%;">Total</th>     
-          <th scope="col" style="width: 5%;">Ação</th>        
         </tr>
       </thead>
       <tbody>
@@ -69,7 +76,7 @@
           <td>{{gastoIndividual.multa}}</td>
           <td>R$ 0,00</td>
           <td>--</td>
-          <td>--</td>
+
         </tr>
       </tbody>
     </table>
