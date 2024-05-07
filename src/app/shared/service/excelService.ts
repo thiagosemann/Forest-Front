@@ -9,30 +9,32 @@ export class ExcelService {
 
   constructor() { }
 
-  exportToExcel(data: any[], fileName: string) {
-    const mappedData = data.map(item => ({
-      "Apartamento": item.userApt,
-      "Nome": item.userName,
-      "CPF": item.userCPF,
-      "Máquina":item.machine,
-      "Horário Inicial": item.start_time,
-      "Horário Final": item.end_time,
-      "Data": item.date,
-      "Valor": item.total_cost
-    }));
+exportToExcel(data: any[], fileName: string) {
+    // Criar uma planilha a partir dos dados fornecidos
   
-    const worksheet: XLSX.WorkSheet = XLSX.utils.json_to_sheet(mappedData, {
+    const worksheet: XLSX.WorkSheet = XLSX.utils.json_to_sheet(data, {
       header: [
-        "Apartamento", "Nome", "CPF","Máquina", "Horário Inicial", "Horário Final", "Data", "Valor"
-      ]
+        "Apartamento", "Água(m3)", "Gás(m3)","Lazer", "Lavanderia", "Multa"]
     });
-  
+    // Definir largura de coluna para a coluna A (Apartamento) como 20
+    const columnWidths = [{ wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }]; // Definir larguras para cada coluna, você pode ajustar conforme necessário
+
+    // Aplicar as larguras das colunas
+    worksheet['!cols'] = columnWidths;
+
+    // Criar o livro de trabalho
     const workbook: XLSX.WorkBook = { Sheets: { 'data': worksheet }, SheetNames: ['data'] };
+
+    // Converter o livro de trabalho em uma matriz de bytes
     const excelBuffer: any = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-  
+
+    // Criar um blob a partir dos bytes
     const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+    // Salvar o arquivo
     FileSaver.saveAs(blob, fileName + '.xlsx');
-  }
+}
+
   
   
 }

@@ -60,3 +60,35 @@
   .table tr:hover {
     background-color: #ddd;
   }
+  /* Estilos para os botões */
+.btn-primary,
+.btn-primary:hover {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-primary:focus,
+.btn-primary.focus {
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.5);
+}
+
+.btn-success,
+.btn-success:hover {
+    background-color: #198754;
+    border-color: #198754;
+}
+
+.btn-success:focus,
+.btn-success.focus {
+    box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.5);
+}
+
+/* Estilos para os ícones */
+.btn i {
+    margin-right: 5px;
+}
+
+/* Estilos para o botão de upload */
+.btn-success input[type=file] {
+    display: none;
+}

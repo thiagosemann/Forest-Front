@@ -3,26 +3,38 @@
   <h3>Tela de Gastos Individuais</h3>
   <form [formGroup]="myForm"> <!-- Wrap your form controls within a formGroup directive -->
     <div class="row">
-      <div class="col-md-4">
+      <div class="col-md-3">
         <select id="building_id" name="building_id" class="form-control custom-select" formControlName="building_id" required (change)="selectBuilding()">
           <option value="0" disabled selected>Selecione o prédio</option>
           <option *ngFor="let building of buildings" [value]="building.id">{{ building.nome }}</option>
         </select>
       </div>
-      <div class="col-md-4">
+      <div class="col-md-3">
         <select id="months" name="months" class="form-control custom-select" formControlName="months" required >
           <option value="" disabled selected>Selecione o mês</option>
           <option *ngFor="let month of months" [value]="month.monthNumber">{{ month.monthName }}</option>
         </select>
       </div>
       
-      <div class="col-md-4">
+      <div class="col-md-3">
         <select id="years" name="years" class="form-control custom-select" formControlName="years" required >
           <option value="" disabled selected>Selecione o ano</option>
           <option *ngFor="let year of years" [value]="year">{{ year }}</option>
         </select>
       </div>
-      
+      <div class="col-md-3">
+        <ng-container *ngIf="apartamentos.length > 0">
+          <label class="btn btn-success" >
+            <i class="fas fa-upload"></i> Inserir
+            <input type="file" style="display: none;" (change)="handleFileInput($event)">
+            <span *ngIf="uploading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          </label>
+          <button class="btn btn-primary" (click)="downloadModel()" style="margin-left: 5px;">
+            <i class="fas fa-download"></i> Modelo
+          </button>
+        </ng-container>
+      </div>
+
     </div>
     <!-- Add other form controls within the formGroup -->
   </form>
@@ -31,25 +43,33 @@
     <table class="table mt-4">
       <thead>
         <tr>
-          <th scope="col" style="width: 30%;">Apartamento</th>
+          <th scope="col" style="width: 10%;">Apartamento</th>
           <th scope="col" style="width: 10%;">Fracao</th>
-          <th scope="col" style="width: 10%;">Valor</th>
-          <th scope="col" style="width: 10%;">Tipo</th>
-          <th scope="col" style="width: 10%;">Parcela</th>
-          <th scope="col" style="width: 10%;">Total de parcelas</th>
-          <th scope="col" style="width: 10%;">Ação</th>      
+          <th scope="col" style="width: 10%;">Uso (m3)</th>
+          <th scope="col" style="width: 10%;">Água</th>
+          <th scope="col" style="width: 10%;">Uso (m3)</th>
+          <th scope="col" style="width: 10%;">Gás</th>
+          <th scope="col" style="width: 10%;">Lazer</th>
+          <th scope="col" style="width: 10%;">Multa</th>
+          <th scope="col" style="width: 10%;">Lavanderia</th>     
+          <th scope="col" style="width: 5%;">Total</th>     
+          <th scope="col" style="width: 5%;">Ação</th>        
         </tr>
       </thead>
       <tbody>
         <!-- Aqui você pode iterar sobre os dados das contas e preencher as linhas da tabela -->
-        <tr *ngFor="let apartamento of apartamentos" >
-          <td>{{apartamento.nome}}</td>
-          <td>{{apartamento.fracao}}</td>
-          <td>{{apartamento.nome}}</td>
-          <td>{{apartamento.nome}}</td>
-          <td>{{apartamento.nome}}</td>
-          <td>{{apartamento.nome}}</td>
-          <td>{{apartamento.nome}}</td>
+        <tr *ngFor="let gastoIndividual of gastosIndividuais" >
+          <td>{{gastoIndividual.apt_name}}</td>
+          <td>{{gastoIndividual.apt_fracao}}</td>
+          <td>{{gastoIndividual.agua}}</td>
+          <td>R$ 0,00</td>
+          <td>{{gastoIndividual.gas}}</td>
+          <td>{{gastoIndividual.lazer}}</td>
+          <td>{{gastoIndividual.lavanderia}}</td>
+          <td>{{gastoIndividual.multa}}</td>
+          <td>R$ 0,00</td>
+          <td>--</td>
+          <td>--</td>
         </tr>
       </tbody>
     </table>
