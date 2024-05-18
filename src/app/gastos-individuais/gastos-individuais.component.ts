@@ -9,6 +9,8 @@ import { ApartamentoService } from '../shared/service/apartamento_service';
 import { Apartamento } from '../shared/utilitarios/apartamento';
 import { ExcelService } from '../shared/service/excelService';
 import * as XLSX from 'xlsx';
+import { GastoIndividual } from '../shared/utilitarios/gastoIndividual';
+import { GastosIndividuaisService } from '../shared/service/gastosIndividuais_service';
 
 @Component({
   selector: 'app-gastos-individuais',
@@ -22,7 +24,7 @@ export class GastosIndividuaisComponent implements OnInit {
   users: User[] = [];
   apartamentos: Apartamento[] = [];
   dataModel: any[] = [];
-  gastosIndividuais:any[]=[];
+  gastosIndividuais:GastoIndividual[]=[];
   saveData:boolean =false;
   months: { monthNumber: number; monthName: string }[] = [
     { monthNumber: 1, monthName: 'Janeiro' },
@@ -47,7 +49,8 @@ export class GastosIndividuaisComponent implements OnInit {
     private formBuilder: FormBuilder,
     private userService: UserService,
     private apartamentoService: ApartamentoService,
-    private excelService: ExcelService
+    private excelService: ExcelService,
+    private gastosIndividuaisService: GastosIndividuaisService
   ) {}
 
   ngOnInit(): void {
@@ -74,31 +77,22 @@ export class GastosIndividuaisComponent implements OnInit {
     });
   }
 
-  selectBuilding(): void {
-    this.selectedBuildingId = this.myForm.get('building_id')?.value;
-    if (this.selectedBuildingId) {
-      this.apartamentoService.getApartamentosByBuildingId(this.selectedBuildingId).subscribe({
-        next: (apartamentos: Apartamento[]) => {
-          console.log(apartamentos);
-          this.apartamentos = apartamentos;
-          this.apartamentos.forEach(apartamento=>{
-            let apartamentoAux = {
-              id_apt: apartamento.id,
-              apt_name: apartamento.nome,
-              apt_fracao: apartamento.fracao,
-              agua: 0,
-              gas: 0,
-              lazer: 0,
-              lavanderia: 0,
-              multa: 0
-            }
-            this.gastosIndividuais.push(apartamentoAux)
-          })
+  loadExpenses(): void {
+    const buildingId = this.myForm.get('building_id')?.value;
+    const month = this.myForm.get('months')?.value;
+    const year = this.myForm.get('years')?.value;
+    this.gastosIndividuais = [];
+    if (buildingId && month && year) {
+      this.gastosIndividuaisService.getIndividualExpensesByAptMonthAndYear(buildingId, month, year).subscribe(
+        (gastosIndividuais: GastoIndividual[]) => {
+          console.log(gastosIndividuais)
+          this.gastosIndividuais = gastosIndividuais;
         },
-        error: (error) => {
-          console.error('Error fetching users:', error);
+        (error) => {
+          console.error('Error fetching expenses:', error);
+       
         }
-      });
+      );
     } else {
       this.users = [];
     }
@@ -134,12 +128,14 @@ handleFileInput(event: any): void {
         let apartamento = this.apartamentos.find(apartamento => apartamento.nome === row[0]);
    
         if (apartamento) {
-          let apartamentoAux = {
-            id_apt: apartamento.id,
+          let apartamentoAux : GastoIndividual = {
+            apt_id: apartamento.id,
             apt_name: apartamento.nome,
             apt_fracao: apartamento.fracao,
-            agua: row[1],
-            gas: row[2],
+            aguaM3: row[1],
+            aguaValor: 0,              
+            gasM3: row[2],
+            gasValor: 0,
             lazer: row[3],
             lavanderia: row[4],
             multa: row[5]
@@ -164,9 +160,22 @@ handleFileInput(event: any): void {
     reader.readAsArrayBuffer(file);
   }
   saveGastosIndividuais():void{
-    this.saveData = false;
-
+    //this.saveData = false;
+    console.log(this.gastosIndividuais)
   }
+
+  cancelGastosIndividuais():void{
+    this.saveData = false;
+    this.gastosIndividuais.forEach(gasto=>{
+      gasto.aguaM3=0;
+      gasto.gasM3=0;
+      gasto.lazer=0;
+      gasto.lavanderia=0;
+      gasto.multa=0;
+    })
+  }
+
+
 
   
 }

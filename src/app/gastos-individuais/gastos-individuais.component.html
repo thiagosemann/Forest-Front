@@ -4,29 +4,32 @@
   <form [formGroup]="myForm"> <!-- Wrap your form controls within a formGroup directive -->
     <div class="row">
       <div class="col-md-3">
-        <select id="building_id" name="building_id" class="form-control custom-select" formControlName="building_id" required (change)="selectBuilding()">
+        <select id="building_id" name="building_id" class="form-control custom-select" formControlName="building_id" required (change)="loadExpenses()">
           <option value="0" disabled selected>Selecione o prédio</option>
           <option *ngFor="let building of buildings" [value]="building.id">{{ building.nome }}</option>
         </select>
       </div>
-      <div class="col-md-3">
-        <select id="months" name="months" class="form-control custom-select" formControlName="months" required >
+      <div class="col-md-2">
+        <select id="months" name="months" class="form-control custom-select" formControlName="months" required (change)="loadExpenses()" >
           <option value="" disabled selected>Selecione o mês</option>
           <option *ngFor="let month of months" [value]="month.monthNumber">{{ month.monthName }}</option>
         </select>
       </div>
       
-      <div class="col-md-3">
-        <select id="years" name="years" class="form-control custom-select" formControlName="years" required >
+      <div class="col-md-2">
+        <select id="years" name="years" class="form-control custom-select" formControlName="years" required (change)="loadExpenses()" >
           <option value="" disabled selected>Selecione o ano</option>
           <option *ngFor="let year of years" [value]="year">{{ year }}</option>
         </select>
       </div>
-      <div class="col-md-3">
+      <div class="col-md-5">
         <ng-container *ngIf="apartamentos.length > 0">
           <ng-container *ngIf="saveData">
             <button class="btn btn-save" (click)="saveGastosIndividuais()">
               <i class="fas fa-save"></i>Salvar
+            </button>
+            <button class="btn btn-danger" style="margin-left: 5px;" (click)="cancelGastosIndividuais()">
+              <i class="fas fa-cancel"></i>Cancelar
             </button>
           </ng-container>
           <ng-container *ngIf="!saveData">
@@ -68,15 +71,14 @@
         <tr *ngFor="let gastoIndividual of gastosIndividuais" >
           <td>{{gastoIndividual.apt_name}}</td>
           <td>{{gastoIndividual.apt_fracao}}</td>
-          <td>{{gastoIndividual.agua}}</td>
-          <td>R$ 0,00</td>
-          <td>{{gastoIndividual.gas}}</td>
+          <td>{{gastoIndividual.aguaM3}}</td>
+          <td>{{gastoIndividual.aguaValor}}</td>
+          <td>{{gastoIndividual.gasM3}}</td>
+          <td>{{gastoIndividual.gasValor}}</td>
           <td>{{gastoIndividual.lazer}}</td>
-          <td>{{gastoIndividual.lavanderia}}</td>
           <td>{{gastoIndividual.multa}}</td>
-          <td>R$ 0,00</td>
-          <td>--</td>
-
+          <td>{{gastoIndividual.lavanderia}}</td>
+          <td>{{gastoIndividual.valorTotal}}</td>
         </tr>
       </tbody>
     </table>
