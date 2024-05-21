@@ -25,6 +25,8 @@ export class GastosIndividuaisComponent implements OnInit {
   apartamentos: Apartamento[] = [];
   dataModel: any[] = [];
   gastosIndividuais:GastoIndividual[]=[];
+  gastosIndividuaisInsert:GastoIndividual[]=[];
+  
   saveData:boolean =false;
   months: { monthNumber: number; monthName: string }[] = [
     { monthNumber: 1, monthName: 'Janeiro' },
@@ -40,6 +42,8 @@ export class GastosIndividuaisComponent implements OnInit {
     { monthNumber: 11, monthName: 'Novembro' },
     { monthNumber: 12, monthName: 'Dezembro' }
   ];
+  filteredMonths: { monthNumber: number; monthName: string }[] = [];
+
   years: string[] = ['2022', '2023', '2024', '2025', '2026', '2027', '2028', '2029', '2030'];
   uploading: boolean = false;
 
@@ -58,11 +62,24 @@ export class GastosIndividuaisComponent implements OnInit {
     const currentDate = new Date();
     const currentMonth = currentDate.getMonth() + 1;
     const currentYear = currentDate.getFullYear().toString();
+
+    this.filteredMonths = this.months.filter(month => month.monthNumber <= currentMonth);
+
     this.myForm = this.formBuilder.group({
       building_id: [0, Validators.required],
       months: [currentMonth, Validators.required],
       years: [currentYear, Validators.required]
     });
+
+    this.myForm.get('years')?.valueChanges.subscribe(year => {
+      if (year === currentYear) {
+        this.filteredMonths = this.months.filter(month => month.monthNumber <= currentMonth);
+      } else {
+        this.filteredMonths = this.months;
+      }
+      this.myForm.get('months')?.setValue(null); // Reset the month selection when year changes
+    });
+
   }
 
   getAllBuildings(): void {
@@ -76,26 +93,73 @@ export class GastosIndividuaisComponent implements OnInit {
       }
     });
   }
+  getAllApartamentosByBuildingId(buildingId:number,createGastos:boolean): void {
+    this.apartamentoService.getApartamentosByBuildingId(buildingId).subscribe({
+      next: (apartamentos: Apartamento[]) => {
+        console.log(apartamentos);
+        this.apartamentos = apartamentos;
+        if(createGastos){
+          this.createGastoIndividualInsert()
+        }
+      },
+      error: (error) => {
+        console.error('Error fetching buildings:', error);
+      }
+    });
+  }
 
   loadExpenses(): void {
     const buildingId = this.myForm.get('building_id')?.value;
     const month = this.myForm.get('months')?.value;
     const year = this.myForm.get('years')?.value;
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth() + 1;
+    const currentYear = currentDate.getFullYear().toString();
     this.gastosIndividuais = [];
-    if (buildingId && month && year) {
-      this.gastosIndividuaisService.getIndividualExpensesByAptMonthAndYear(buildingId, month, year).subscribe(
-        (gastosIndividuais: GastoIndividual[]) => {
-          console.log(gastosIndividuais)
-          this.gastosIndividuais = gastosIndividuais;
-        },
-        (error) => {
-          console.error('Error fetching expenses:', error);
-       
-        }
-      );
-    } else {
-      this.users = [];
+    this.gastosIndividuaisInsert = [];
+
+
+    if(month!=currentMonth || year!=currentYear){
+      this.getAllApartamentosByBuildingId(buildingId,false);
+
+      if (buildingId && month && year) {
+        this.gastosIndividuaisService.getIndividualExpensesByAptMonthAndYear(buildingId, month, year).subscribe(
+          (gastosIndividuais: GastoIndividual[]) => {
+            console.log(gastosIndividuais)
+            this.gastosIndividuais = gastosIndividuais;
+          },
+          (error) => {
+            this.toastr.error(error.error.message)
+            console.error('Error fetching expenses:', error);
+          }
+        );
+      } else {
+        this.users = [];
+      }
+    }else{
+      this.getAllApartamentosByBuildingId(buildingId,true);
+
     }
+  }
+
+  createGastoIndividualInsert():void{
+    this.gastosIndividuaisInsert = [];
+    this.apartamentos.forEach(apartamento=>{
+      let apartamentoAux : GastoIndividual = {
+        apt_id: apartamento.id,
+        apt_name: apartamento.nome,
+        apt_fracao: apartamento.fracao,
+        aguaM3: 0,
+        aguaValor: 0,              
+        gasM3: 0,
+        gasValor: 0,
+        lazer: 0,
+        lavanderia: 0,
+        multa: 0
+      }
+      this.gastosIndividuaisInsert.push(apartamentoAux)
+    })
+    console.log(this.gastosIndividuaisInsert)
   }
 
   downloadModel(): void {
@@ -110,7 +174,7 @@ handleFileInput(event: any): void {
     // Começar a girar o spinner
     this.uploading = true;
     this.saveData = true;
-    this.gastosIndividuais=[];
+    this.gastosIndividuaisInsert=[];
     const file = event.target.files[0]; // Obter o arquivo selecionado
     const reader = new FileReader();
   
@@ -126,25 +190,31 @@ handleFileInput(event: any): void {
       const jsonData: any[] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
       jsonData.forEach((row: any[]) => {
         let apartamento = this.apartamentos.find(apartamento => apartamento.nome === row[0]);
-   
+        let aguaM3 = row[1];
+        let gasM3 = row[2];
+        let lazer = row[3];
+        let lavanderia = row[4];
+        let multa = row[5];
+        console.log(multa)
+
         if (apartamento) {
           let apartamentoAux : GastoIndividual = {
             apt_id: apartamento.id,
             apt_name: apartamento.nome,
             apt_fracao: apartamento.fracao,
-            aguaM3: row[1],
+            aguaM3: aguaM3  || 0,
             aguaValor: 0,              
-            gasM3: row[2],
+            gasM3: gasM3  || 0,
             gasValor: 0,
-            lazer: row[3],
-            lavanderia: row[4],
-            multa: row[5]
+            lazer: lazer  || 0,
+            lavanderia: lavanderia  || 0,
+            multa: multa || 0
           }
-          this.gastosIndividuais.push(apartamentoAux)
+          this.gastosIndividuaisInsert.push(apartamentoAux)
         }
       })
   
-      console.log('Conteúdo do arquivo:', this.gastosIndividuais);
+      console.log('Conteúdo do arquivo:', this.gastosIndividuaisInsert);
   
       // Parar de girar o spinner após o carregamento
       this.uploading = false;

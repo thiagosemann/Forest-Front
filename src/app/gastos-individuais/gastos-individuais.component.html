@@ -12,7 +12,7 @@
       <div class="col-md-2">
         <select id="months" name="months" class="form-control custom-select" formControlName="months" required (change)="loadExpenses()" >
           <option value="" disabled selected>Selecione o mês</option>
-          <option *ngFor="let month of months" [value]="month.monthNumber">{{ month.monthName }}</option>
+          <option *ngFor="let month of filteredMonths" [value]="month.monthNumber">{{ month.monthName }}</option>
         </select>
       </div>
       
@@ -23,7 +23,7 @@
         </select>
       </div>
       <div class="col-md-5">
-        <ng-container *ngIf="apartamentos.length > 0">
+        <ng-container *ngIf="gastosIndividuaisInsert.length > 0">
           <ng-container *ngIf="saveData">
             <button class="btn btn-save" (click)="saveGastosIndividuais()">
               <i class="fas fa-save"></i>Salvar
@@ -68,18 +68,34 @@
       </thead>
       <tbody>
         <!-- Aqui você pode iterar sobre os dados das contas e preencher as linhas da tabela -->
-        <tr *ngFor="let gastoIndividual of gastosIndividuais" >
-          <td>{{gastoIndividual.apt_name}}</td>
-          <td>{{gastoIndividual.apt_fracao}}</td>
-          <td>{{gastoIndividual.aguaM3}}</td>
-          <td>{{gastoIndividual.aguaValor}}</td>
-          <td>{{gastoIndividual.gasM3}}</td>
-          <td>{{gastoIndividual.gasValor}}</td>
-          <td>{{gastoIndividual.lazer}}</td>
-          <td>{{gastoIndividual.multa}}</td>
-          <td>{{gastoIndividual.lavanderia}}</td>
-          <td>{{gastoIndividual.valorTotal}}</td>
-        </tr>
+        <ng-container *ngIf="gastosIndividuais.length>0">
+          <tr *ngFor="let gastoIndividual of gastosIndividuais" >
+            <td>{{gastoIndividual.apt_name}}</td>
+            <td>{{gastoIndividual.apt_fracao}}</td>
+            <td>{{gastoIndividual.aguaM3}}</td>
+            <td>{{gastoIndividual.aguaValor}}</td>
+            <td>{{gastoIndividual.gasM3}}</td>
+            <td>{{gastoIndividual.gasValor}}</td>
+            <td>{{gastoIndividual.lazer}}</td>
+            <td>{{gastoIndividual.multa}}</td>
+            <td>{{gastoIndividual.lavanderia}}</td>
+            <td>{{gastoIndividual.valorTotal}}</td>
+          </tr>
+        </ng-container>
+        <ng-container *ngIf="gastosIndividuaisInsert.length>0">
+          <tr *ngFor="let gastoIndividual of gastosIndividuaisInsert" >
+            <td>{{gastoIndividual.apt_name}}</td>
+            <td>{{gastoIndividual.apt_fracao}}</td>
+            <td>{{gastoIndividual.aguaM3}}</td>
+            <td>{{gastoIndividual.aguaValor}}</td>
+            <td>{{gastoIndividual.gasM3}}</td>
+            <td>{{gastoIndividual.gasValor}}</td>
+            <td>{{gastoIndividual.lazer}}</td>
+            <td>{{gastoIndividual.multa}}</td>
+            <td>{{gastoIndividual.lavanderia}}</td>
+            <td>{{gastoIndividual.valorTotal}}</td>
+          </tr>
+        </ng-container>
       </tbody>
     </table>
   </div>
