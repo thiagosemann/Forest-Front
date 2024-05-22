@@ -127,6 +127,9 @@ export class GastosIndividuaisComponent implements OnInit {
           (gastosIndividuais: GastoIndividual[]) => {
             console.log(gastosIndividuais)
             this.gastosIndividuais = gastosIndividuais;
+            this.gastosIndividuais.forEach(gasto=>{
+              gasto.valorTotal = Number(gasto.aguaValor)+ Number(gasto.gasValor) + Number(gasto.lavanderia) + Number(gasto.multa) + Number(gasto.lazer);
+            })
           },
           (error) => {
             this.toastr.error(error.error.message)
@@ -203,12 +206,14 @@ handleFileInput(event: any): void {
             apt_name: apartamento.nome,
             apt_fracao: apartamento.fracao,
             aguaM3: aguaM3  || 0,
-            aguaValor: 0,              
+            aguaValor: aguaM3*10,              
             gasM3: gasM3  || 0,
-            gasValor: 0,
+            gasValor: gasM3*10,
             lazer: lazer  || 0,
             lavanderia: lavanderia  || 0,
-            multa: multa || 0
+            multa: multa || 0,
+            valorTotal: aguaM3*10 + gasM3*10 + lazer + lavanderia + multa
+            
           }
           this.gastosIndividuaisInsert.push(apartamentoAux)
         }
@@ -245,7 +250,13 @@ handleFileInput(event: any): void {
     })
   }
 
-
+    // Método para formatar valores em Real (R$)
+    formatCurrency(value: number| undefined): string {
+      if(value){
+        return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+      }
+      return "R$ 0,00"
+    }
 
   
 }

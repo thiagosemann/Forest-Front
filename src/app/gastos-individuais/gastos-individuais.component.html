@@ -55,7 +55,7 @@
       <thead>
         <tr>
           <th scope="col" style="width: 10%;">Apartamento</th>
-          <th scope="col" style="width: 10%;">Fracao</th>
+          <th scope="col" style="width: 5%;">Fracao</th>
           <th scope="col" style="width: 10%;">Uso (m3)</th>
           <th scope="col" style="width: 10%;">Água</th>
           <th scope="col" style="width: 10%;">Uso (m3)</th>
@@ -63,37 +63,37 @@
           <th scope="col" style="width: 10%;">Lazer</th>
           <th scope="col" style="width: 10%;">Multa</th>
           <th scope="col" style="width: 10%;">Lavanderia</th>     
-          <th scope="col" style="width: 5%;">Total</th>     
+          <th scope="col" style="width: 10%;">Total</th>     
         </tr>
       </thead>
       <tbody>
         <!-- Aqui você pode iterar sobre os dados das contas e preencher as linhas da tabela -->
-        <ng-container *ngIf="gastosIndividuais.length>0">
-          <tr *ngFor="let gastoIndividual of gastosIndividuais" >
-            <td>{{gastoIndividual.apt_name}}</td>
-            <td>{{gastoIndividual.apt_fracao}}</td>
-            <td>{{gastoIndividual.aguaM3}}</td>
-            <td>{{gastoIndividual.aguaValor}}</td>
-            <td>{{gastoIndividual.gasM3}}</td>
-            <td>{{gastoIndividual.gasValor}}</td>
-            <td>{{gastoIndividual.lazer}}</td>
-            <td>{{gastoIndividual.multa}}</td>
-            <td>{{gastoIndividual.lavanderia}}</td>
-            <td>{{gastoIndividual.valorTotal}}</td>
+        <ng-container *ngIf="gastosIndividuais.length > 0">
+          <tr *ngFor="let gastoIndividual of gastosIndividuais">
+            <td>{{ gastoIndividual.apt_name }}</td>
+            <td>{{ gastoIndividual.apt_fracao }}</td>
+            <td>{{ gastoIndividual.aguaM3 }}</td>
+            <td>{{ formatCurrency(gastoIndividual.aguaValor) }}</td>
+            <td>{{ gastoIndividual.gasM3 }}</td>
+            <td>{{ formatCurrency(gastoIndividual.gasValor) }}</td>
+            <td>{{ formatCurrency(gastoIndividual.lazer) }}</td>
+            <td>{{ formatCurrency(gastoIndividual.multa) }}</td>
+            <td>{{ formatCurrency(gastoIndividual.lavanderia) }}</td>
+            <td>{{ formatCurrency(gastoIndividual.valorTotal) }}</td>
           </tr>
         </ng-container>
-        <ng-container *ngIf="gastosIndividuaisInsert.length>0">
-          <tr *ngFor="let gastoIndividual of gastosIndividuaisInsert" >
-            <td>{{gastoIndividual.apt_name}}</td>
-            <td>{{gastoIndividual.apt_fracao}}</td>
-            <td>{{gastoIndividual.aguaM3}}</td>
-            <td>{{gastoIndividual.aguaValor}}</td>
-            <td>{{gastoIndividual.gasM3}}</td>
-            <td>{{gastoIndividual.gasValor}}</td>
-            <td>{{gastoIndividual.lazer}}</td>
-            <td>{{gastoIndividual.multa}}</td>
-            <td>{{gastoIndividual.lavanderia}}</td>
-            <td>{{gastoIndividual.valorTotal}}</td>
+        <ng-container *ngIf="gastosIndividuaisInsert.length > 0">
+          <tr *ngFor="let gastoIndividual of gastosIndividuaisInsert">
+            <td>{{ gastoIndividual.apt_name }}</td>
+            <td>{{ gastoIndividual.apt_fracao }}</td>
+            <td>{{ gastoIndividual.aguaM3 }}</td>
+            <td>{{ formatCurrency(gastoIndividual.aguaValor) }}</td>
+            <td>{{ gastoIndividual.gasM3 }}</td>
+            <td>{{ formatCurrency(gastoIndividual.gasValor) }}</td>
+            <td>{{ formatCurrency(gastoIndividual.lazer) }}</td>
+            <td>{{ formatCurrency(gastoIndividual.multa) }}</td>
+            <td>{{ formatCurrency(gastoIndividual.lavanderia) }}</td>
+            <td>{{ formatCurrency(gastoIndividual.valorTotal) }}</td>
           </tr>
         </ng-container>
       </tbody>
