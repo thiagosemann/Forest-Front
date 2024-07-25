@@ -158,12 +158,6 @@ export class UsersControlComponent implements OnInit {
     }
     onSubmit(): void {
         if (this.registerForm.valid) {
-          const cpf = this.registerForm.value.cpf;
-          if (!this.validarCPF(cpf)) {
-            this.toastr.warning('Por favor, insira um CPF válido.');
-            return; // Não envie o formulário se o CPF for inválido
-          }
-          
           if (this.userEditing) {
               const { id } = this.userEditing;
               const updatedUser = { id, ...this.registerForm.value};

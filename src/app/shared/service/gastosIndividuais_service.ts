@@ -25,8 +25,8 @@ export class GastosIndividuaisService {
     return this.http.get<GastoIndividual>(url, { headers: this.getHeaders() });
   }
 
-  createGastoIndividual(expense: GastoIndividual): Observable<GastoIndividual> {
-    return this.http.post<GastoIndividual>(this.apiUrl, expense, { headers: this.getHeaders() });
+  createGastoIndividual(expenses: GastoIndividual[]): Observable<GastoIndividual[]> {
+    return this.http.post<GastoIndividual[]>(this.apiUrl, expenses, { headers: this.getHeaders() });
   }
 
   updateGastoIndividual(expense: GastoIndividual): Observable<GastoIndividual> {

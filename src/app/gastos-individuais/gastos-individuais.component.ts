@@ -63,7 +63,6 @@ export class GastosIndividuaisComponent implements OnInit {
     const currentMonth = currentDate.getMonth() + 1;
     const currentYear = currentDate.getFullYear().toString();
 
-    this.filteredMonths = this.months.filter(month => month.monthNumber <= currentMonth);
 
     this.myForm = this.formBuilder.group({
       building_id: [0, Validators.required],
@@ -72,11 +71,6 @@ export class GastosIndividuaisComponent implements OnInit {
     });
 
     this.myForm.get('years')?.valueChanges.subscribe(year => {
-      if (year === currentYear) {
-        this.filteredMonths = this.months.filter(month => month.monthNumber <= currentMonth);
-      } else {
-        this.filteredMonths = this.months;
-      }
       this.myForm.get('months')?.setValue(null); // Reset the month selection when year changes
     });
 
@@ -97,7 +91,15 @@ export class GastosIndividuaisComponent implements OnInit {
     this.apartamentoService.getApartamentosByBuildingId(buildingId).subscribe({
       next: (apartamentos: Apartamento[]) => {
         console.log(apartamentos);
-        this.apartamentos = apartamentos;
+        if(apartamentos.length==0){
+          this.toastr.error("Prédio sem apartamentos cadastrados!")
+        }
+        apartamentos.forEach(apartamento=>{
+          if(!apartamento.nome.toUpperCase().includes("VAGA")){
+            this.apartamentos.push(apartamento)
+          }
+        })
+       
         if(createGastos){
           this.createGastoIndividualInsert()
         }
@@ -119,8 +121,8 @@ export class GastosIndividuaisComponent implements OnInit {
     this.gastosIndividuaisInsert = [];
 
 
-    if(month!=currentMonth || year!=currentYear){
-      this.getAllApartamentosByBuildingId(buildingId,false);
+   
+     // this.getAllApartamentosByBuildingId(buildingId,false);
 
       if (buildingId && month && year) {
         this.gastosIndividuaisService.getIndividualExpensesByAptMonthAndYear(buildingId, month, year).subscribe(
@@ -130,23 +132,24 @@ export class GastosIndividuaisComponent implements OnInit {
             this.gastosIndividuais.forEach(gasto=>{
               gasto.valorTotal = Number(gasto.aguaValor)+ Number(gasto.gasValor) + Number(gasto.lavanderia) + Number(gasto.multa) + Number(gasto.lazer);
             })
+            if(this.gastosIndividuais.length ==0){
+              this.getAllApartamentosByBuildingId(buildingId,true);
+            }
           },
           (error) => {
-            this.toastr.error(error.error.message)
+            this.getAllApartamentosByBuildingId(buildingId,true);
             console.error('Error fetching expenses:', error);
           }
         );
       } else {
         this.users = [];
       }
-    }else{
-      this.getAllApartamentosByBuildingId(buildingId,true);
 
-    }
   }
 
   createGastoIndividualInsert():void{
     this.gastosIndividuaisInsert = [];
+    const today = this.getTodayDate();
     this.apartamentos.forEach(apartamento=>{
       let apartamentoAux : GastoIndividual = {
         apt_id: apartamento.id,
@@ -158,7 +161,8 @@ export class GastosIndividuaisComponent implements OnInit {
         gasValor: 0,
         lazer: 0,
         lavanderia: 0,
-        multa: 0
+        multa: 0,
+        data_gasto:today
       }
       this.gastosIndividuaisInsert.push(apartamentoAux)
     })
@@ -199,7 +203,7 @@ handleFileInput(event: any): void {
         let lavanderia = row[4];
         let multa = row[5];
         console.log(multa)
-
+        let today = this.getTodayDate() ;
         if (apartamento) {
           let apartamentoAux : GastoIndividual = {
             apt_id: apartamento.id,
@@ -212,8 +216,8 @@ handleFileInput(event: any): void {
             lazer: lazer  || 0,
             lavanderia: lavanderia  || 0,
             multa: multa || 0,
-            valorTotal: aguaM3*10 + gasM3*10 + lazer + lavanderia + multa
-            
+            valorTotal: aguaM3*10 + gasM3*10 + lazer + lavanderia + multa,
+            data_gasto: today
           }
           this.gastosIndividuaisInsert.push(apartamentoAux)
         }
@@ -236,7 +240,17 @@ handleFileInput(event: any): void {
   }
   saveGastosIndividuais():void{
     //this.saveData = false;
-    console.log(this.gastosIndividuais)
+    console.log(this.gastosIndividuaisInsert)
+    this.gastosIndividuaisService.createGastoIndividual(this.gastosIndividuaisInsert).subscribe(
+      (gastosIndividuais: GastoIndividual[]) => {
+        console.log('Despesas comuns criadas com sucesso:', gastosIndividuais);
+      },
+      (error) => {
+        console.error('Erro ao criar despesas comuns:', error);
+        this.toastr.error('Erro ao criar despesas comuns:', error)
+      }
+    );
+    this.saveData = false;
   }
 
   cancelGastosIndividuais():void{
@@ -256,6 +270,15 @@ handleFileInput(event: any): void {
         return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
       }
       return "R$ 0,00"
+    }
+    
+    getTodayDate(): string {
+      const date = new Date();
+      let day = date.getDate().toString().padStart(2,'0');
+      let month = (date.getMonth()+1).toString().padStart(2,'0');
+      let year = date.getFullYear().toString();
+
+      return year + '-' + month + '-' + day;
     }
 
   

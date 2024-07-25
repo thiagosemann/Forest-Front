@@ -221,14 +221,14 @@ export class BuildingsReviewComponent implements OnInit {
   }
  
   loadExpenses(): void {
-    const buildingId = this.myForm.get('building_id')?.value;
+    this.buildingId = Number(this.myForm.get('building_id')?.value);
     const month = this.myForm.get('months')?.value;
     const year = this.myForm.get('years')?.value;
     this.rateio = 0;
     this.provisao = 0;
     this.commonExepenses = [];  
-    if (buildingId && month && year) {
-      this.commonExepenseService.getExpensesByBuildingAndMonth(buildingId, month, year).subscribe(
+    if ( this.buildingId && month && year) {
+      this.commonExepenseService.getExpensesByBuildingAndMonth( this.buildingId, month, year).subscribe(
         (expenses: any[]) => {
           expenses.forEach(expense=>{
             expense.valor = parseFloat(expense.valor);

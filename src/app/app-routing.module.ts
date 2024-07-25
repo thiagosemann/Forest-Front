@@ -13,6 +13,7 @@ import { UsersControlComponent } from './users-control/users-control.component';
 import { BuildingsControlComponent } from './buildings-control/buildings-control.component';
 import { BuildingsReviewComponent } from './Gastos-Comun/buildings-review/buildings-review.component';
 import { GastosIndividuaisComponent } from './gastos-individuais/gastos-individuais.component';
+import { RateioComponent } from './rateio/rateio.component';
 
 
 const routes: Routes = [
@@ -26,6 +27,7 @@ const routes: Routes = [
   { path: 'predios', component: BuildingsControlComponent, canActivate: [AuthGuardService] },
   { path: 'gastosComuns', component: BuildingsReviewComponent, canActivate: [AuthGuardService] },
   { path: 'gastosIndividuais', component: GastosIndividuaisComponent, canActivate: [AuthGuardService] },
+  { path: 'rateio', component: RateioComponent, canActivate: [AuthGuardService] },
 
 
   

@@ -49,6 +49,9 @@ export class NavBarComponent implements OnInit {
   usuarios(): void {
     this.router.navigate(['/users']);
   }
+  rateio(): void {
+    this.router.navigate(['/rateio']);
+  }
 
     
   toggleMenu(): void {

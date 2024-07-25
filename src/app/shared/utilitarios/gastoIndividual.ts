@@ -11,5 +11,5 @@ export interface GastoIndividual {
     apt_name?:string;
     apt_fracao?:number;
     valorTotal?:number
-    
+    data_gasto:string;
 }

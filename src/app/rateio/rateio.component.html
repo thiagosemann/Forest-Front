@@ -1,0 +1,65 @@
+<app-nav-bar class="mb-4"></app-nav-bar>
+<div class="container">
+  <h3>Rateio</h3>
+  <form [formGroup]="myForm"> <!-- Wrap your form controls within a formGroup directive -->
+    <div class="row">
+      <div class="col-md-3">
+        <select id="building_id" name="building_id" class="form-control custom-select" formControlName="building_id" required (change)="changeSelect()">
+          <option value="0" disabled selected>Selecione o prédio</option>
+          <option *ngFor="let building of buildings" [value]="building.id">{{ building.nome }}</option>
+        </select>
+      </div>
+      <div class="col-md-1">
+        <select id="months" name="months" class="form-control custom-select" formControlName="months" required (change)="changeSelect()">
+          <option value="" disabled selected>Selecione o mês</option>
+          <option *ngFor="let month of months" [value]="month.monthNumber">{{ month.monthName }}</option>
+        </select>
+      </div>
+      
+      <div class="col-md-1">
+        <select id="years" name="years" class="form-control custom-select" formControlName="years" required (change)="changeSelect()">
+          <option value="" disabled selected>Selecione o ano</option>
+          <option *ngFor="let year of years" [value]="year">{{ year }}</option>
+        </select>
+      </div>
+      <ng-container >
+        <div class="col-md-7">
+          <div class="row">
+            <div class="col-md-4"><span class="spanText1">Individual :</span><span class="spanText2"> {{formatCurrency(gastoIndividualValorTotal)}}</span></div>
+            <div class="col-md-4"><span class="spanText1">Comum:</span><span class="spanText2"> {{formatCurrency(gastoComumValorTotal)}}</span></div>
+            <div class="col-md-4"><span class="spanText1">Total :</span><span class="spanText2"> {{formatCurrency(gastoIndividualValorTotal+gastoComumValorTotal)}}</span></div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+    <!-- Add other form controls within the formGroup -->
+  </form>
+  
+  <!-- Tabela de contas -->
+  <div class="table-wrapper">
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col" style="width: 30%;">Apartamento</th>
+          <th scope="col" style="width: 10%;">Fração</th>
+          <th scope="col" style="width: 20%;">Valor Individual</th>
+          <th scope="col" style="width: 20%;">Valor Comum</th>
+          <th scope="col" style="width: 20%;">Valor Total</th>
+
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Aqui você pode iterar sobre os dados das contas e preencher as linhas da tabela -->
+        <tr *ngFor="let user of usersRateio">
+          <td>{{user.apt_name}}</td>
+          <td>{{user.apt_fracao}}</td>
+          <td>{{formatCurrency(user.valorTotal)}}</td>
+          <td>{{formatCurrency(user.apt_fracao*gastoComumValor) }}</td>
+          <td>{{formatCurrency(user.apt_fracao*gastoComumValor + user.valorTotal ) }}</td>
+          
+        </tr>
+
+      </tbody>
+    </table>
+  </div>
+</div>
