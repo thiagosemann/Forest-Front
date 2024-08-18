@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { CommonExpense } from '../utilitarios/commonExpense'; // Certifique-se de importar o modelo correto
+import { CommonExpense } from '../../utilitarios/commonExpense';
 
 @Injectable({
   providedIn: 'root'

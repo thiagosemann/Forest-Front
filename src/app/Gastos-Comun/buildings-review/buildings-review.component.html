@@ -184,7 +184,16 @@
         <div class="col-md-4">
           <h4>Inserir gasto manual</h4>
           <form [formGroup]="manualGastoForm" (ngSubmit)="submitManualGasto()">
-              <div class="col-md-12 mb-3">
+            <div class="col-md-12 mb-3">
+              <div class="form-group">
+                <select id="predioID" name="predioID" class="form-control custom-select" formControlName="predioID" required>
+                  <option value="Selecione" disabled>Selecione</option>
+                  <option *ngFor="let building of buildings" [value]="building.id">{{ building.nome }}</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="col-md-12 mb-3">
                 <div class="form-group">
                   <select id="detalhe" name="detalhe" class="form-control custom-select" formControlName="detalhe" required>
                     <option value="Selecione" disabled>Selecione</option>

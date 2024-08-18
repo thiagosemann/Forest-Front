@@ -11,18 +11,21 @@
       </div>
       <div class="col-md-2">
         <select id="months" name="months" class="form-control custom-select" formControlName="months" required (change)="loadExpenses()" >
-          <option value="" disabled selected>Selecione o mês</option>
+          <option value="0" disabled selected>Selecione o mês</option>
           <option *ngFor="let month of months" [value]="month.monthNumber">{{ month.monthName }}</option>
         </select>
       </div>
       
       <div class="col-md-2">
         <select id="years" name="years" class="form-control custom-select" formControlName="years" required (change)="loadExpenses()" >
-          <option value="" disabled selected>Selecione o ano</option>
+          <option value="0" disabled selected>Selecione o ano</option>
           <option *ngFor="let year of years" [value]="year">{{ year }}</option>
         </select>
       </div>
-      <div class="col-md-5">
+      <div *ngIf="loading" class="spinner-border text-success col-md-5" role="status">
+        <span class="visually-hidden">Carregando...</span>
+      </div>
+      <div  *ngIf="!loading" class="col-md-5">
         <ng-container *ngIf="gastosIndividuaisInsert.length > 0">
           <ng-container *ngIf="saveData">
             <button class="btn btn-save" (click)="saveGastosIndividuais()">
@@ -44,8 +47,11 @@
           </button>
         </ng-container>
         <ng-container *ngIf="gastosIndividuais.length > 0">
-            <button class="btn btn-danger" style="margin-left: 5px;" (click)="cancelGastosIndividuais()">
-              <i class="fas fa-trash"></i>Deletar
+            <button class="btn btn-primary" style="margin-left: 5px;" (click)="downloadFilledSheet()">
+              <i class="fas fa-download"></i> Baixar Dados
+            </button>
+            <button class="btn btn-danger" style="margin-left: 5px;" (click)="deleteAll()">
+              <i class="fas fa-trash"></i>Deletar todos
             </button>
            </ng-container>
       </div>
@@ -53,9 +59,10 @@
     </div>
     <!-- Add other form controls within the formGroup -->
   </form>
+
   <!-- Tabela de contas -->
-  <div class="table-wrapper">
-    <table class="table">
+  <div class="table-wrapper"  *ngIf="gastosIndividuais.length > 0 || gastosIndividuaisInsert.length > 0 ">
+    <table class="table" *ngIf="!loading">
       <thead>
         <tr>
           <th scope="col" style="width: 10%;">Apartamento</th>
@@ -72,7 +79,7 @@
       </thead>
       <tbody>
         <!-- Aqui você pode iterar sobre os dados das contas e preencher as linhas da tabela -->
-        <ng-container *ngIf="gastosIndividuais.length > 0">
+        <ng-container>
           <tr *ngFor="let gastoIndividual of gastosIndividuais">
             <td>{{ gastoIndividual.apt_name }}</td>
             <td>{{ gastoIndividual.apt_fracao }}</td>

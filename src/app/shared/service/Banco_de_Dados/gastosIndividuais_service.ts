@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { GastoIndividual } from '../utilitarios/gastoIndividual';
+import { GastoIndividual } from '../../utilitarios/gastoIndividual';
 
 @Injectable({
   providedIn: 'root'
@@ -48,4 +48,9 @@ export class GastosIndividuaisService {
     const url = `${this.apiUrl}/predios/${predio_id}/month/${month}/year/${year}`;
     return this.http.get<GastoIndividual[]>(url, { headers: this.getHeaders() });
   }
+  deleteIndividualExpensesByAptMonthAndYear(predio_id: number, month: number, year: number): Observable<void> {
+    const url = `${this.apiUrl}/predios/${predio_id}/month/${month}/year/${year}`;
+    return this.http.delete<void>(url, { headers: this.getHeaders() });
+  }
+  
 }

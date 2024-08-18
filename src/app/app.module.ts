@@ -26,6 +26,7 @@ import { BuildingsControlComponent } from './buildings-control/buildings-control
 import { BuildingsReviewComponent } from './Gastos-Comun/buildings-review/buildings-review.component';
 import { GastosIndividuaisComponent } from './gastos-individuais/gastos-individuais.component';
 import { RateioComponent } from './rateio/rateio.component';
+import { VagasComponent } from './vagas/vagas.component';
 
 @NgModule({
   declarations: [
@@ -42,7 +43,8 @@ import { RateioComponent } from './rateio/rateio.component';
     BuildingsControlComponent,
     BuildingsReviewComponent,
     GastosIndividuaisComponent,
-    RateioComponent
+    RateioComponent,
+    VagasComponent
   ],
   imports: [
     BrowserModule,

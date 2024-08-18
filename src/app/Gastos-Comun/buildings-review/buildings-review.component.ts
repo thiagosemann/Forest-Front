@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms'; // Import Validators
 import { ToastrService } from 'ngx-toastr';
-import { BuildingService } from 'src/app/shared/service/buildings_service';
-import { CommonExpenseService } from 'src/app/shared/service/commonExpense_service';
+import { BuildingService } from 'src/app/shared/service/Banco_de_Dados/buildings_service';
+import { CommonExpenseService } from 'src/app/shared/service/Banco_de_Dados/commonExpense_service';
 import { ExpenseTypeService } from 'src/app/shared/service/tipoGasto_service';
 import { Building } from 'src/app/shared/utilitarios/building';
 import { CommonExpense } from 'src/app/shared/utilitarios/commonExpense';
@@ -70,11 +70,12 @@ export class BuildingsReviewComponent implements OnInit {
     });
     this.manualGastoForm = this.formBuilder.group({
       detalhe: ['Selecione', Validators.required],
+      predioID:['Selecione', Validators.required],
       nome_original: ['', Validators.required],
       tipo: ['Selecione', Validators.required],   
       data: ['', Validators.required],
       valorTotal: ['', [Validators.required, Validators.min(0.01)]],
-      parcela:['1', [Validators.required, Validators.min(1)]]
+      parcela:['1', [Validators.required, Validators.min(1)]]      
     });
     this.loadExpenses();
   }
@@ -354,6 +355,8 @@ export class BuildingsReviewComponent implements OnInit {
       const tipo = this.manualGastoForm.get('tipo')?.value;
       const valorTotal = this.manualGastoForm.get('valorTotal')?.value;
       const parcela = this.manualGastoForm.get('parcela')?.value;
+      const predioID = this.manualGastoForm.get('predioID')?.value;
+
 
 
       // Obter a data do formulário
@@ -370,7 +373,7 @@ export class BuildingsReviewComponent implements OnInit {
           tipo: tipo,
           parcela: 1,
           total_parcelas: 1,
-          predio_id: this.buildingId!,
+          predio_id: predioID,
           tipoGasto_id: detalheId,
         };
         commonExpenses.push(commonExpenseAux);
@@ -386,12 +389,13 @@ export class BuildingsReviewComponent implements OnInit {
             tipo: tipo,
             parcela: i + 1,
             total_parcelas: parcela,
-            predio_id: this.buildingId!,
+            predio_id: predioID,
             tipoGasto_id: detalheId,
           };
           commonExpenses.push(commonExpenseAux);
         }
       }
+      console.log(commonExpenses)
       this.sendCommonExpenses(commonExpenses);
       this.manualGastoForm.reset();
       this.valorParcela = 0;

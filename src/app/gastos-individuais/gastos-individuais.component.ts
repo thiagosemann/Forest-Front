@@ -1,16 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { Building } from '../shared/utilitarios/building';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms'; // Import Validators
-import { BuildingService } from '../shared/service/buildings_service';
 import { ToastrService } from 'ngx-toastr';
 import { User } from '../shared/utilitarios/user';
-import { UserService } from '../shared/service/user_service';
-import { ApartamentoService } from '../shared/service/apartamento_service';
 import { Apartamento } from '../shared/utilitarios/apartamento';
 import { ExcelService } from '../shared/service/excelService';
 import * as XLSX from 'xlsx';
 import { GastoIndividual } from '../shared/utilitarios/gastoIndividual';
-import { GastosIndividuaisService } from '../shared/service/gastosIndividuais_service';
+import { BuildingService } from '../shared/service/Banco_de_Dados/buildings_service';
+import { ApartamentoService } from '../shared/service/Banco_de_Dados/apartamento_service';
+import { GastosIndividuaisService } from '../shared/service/Banco_de_Dados/gastosIndividuais_service';
 
 @Component({
   selector: 'app-gastos-individuais',
@@ -21,12 +20,16 @@ export class GastosIndividuaisComponent implements OnInit {
   buildings: Building[] = [];
   myForm!: FormGroup;
   selectedBuildingId: number = 0;
+  selectedMonth: number = 0;
+  selectedYear: number = 0;
+  
   users: User[] = [];
   apartamentos: Apartamento[] = [];
   dataModel: any[] = [];
   gastosIndividuais:GastoIndividual[]=[];
   gastosIndividuaisInsert:GastoIndividual[]=[];
-  
+  loading: boolean = false;
+
   saveData:boolean =false;
   months: { monthNumber: number; monthName: string }[] = [
     { monthNumber: 1, monthName: 'Janeiro' },
@@ -51,7 +54,6 @@ export class GastosIndividuaisComponent implements OnInit {
     private toastr: ToastrService,
     private buildingService: BuildingService,
     private formBuilder: FormBuilder,
-    private userService: UserService,
     private apartamentoService: ApartamentoService,
     private excelService: ExcelService,
     private gastosIndividuaisService: GastosIndividuaisService
@@ -59,19 +61,10 @@ export class GastosIndividuaisComponent implements OnInit {
 
   ngOnInit(): void {
     this.getAllBuildings();
-    const currentDate = new Date();
-    const currentMonth = currentDate.getMonth() + 1;
-    const currentYear = currentDate.getFullYear().toString();
-
-
     this.myForm = this.formBuilder.group({
       building_id: [0, Validators.required],
-      months: [currentMonth, Validators.required],
-      years: [currentYear, Validators.required]
-    });
-
-    this.myForm.get('years')?.valueChanges.subscribe(year => {
-      this.myForm.get('months')?.setValue(null); // Reset the month selection when year changes
+      months: [0, Validators.required],
+      years: [0, Validators.required]
     });
 
   }
@@ -88,6 +81,7 @@ export class GastosIndividuaisComponent implements OnInit {
     });
   }
   getAllApartamentosByBuildingId(buildingId:number,createGastos:boolean): void {
+    this.apartamentos=[];
     this.apartamentoService.getApartamentosByBuildingId(buildingId).subscribe({
       next: (apartamentos: Apartamento[]) => {
         console.log(apartamentos);
@@ -111,21 +105,18 @@ export class GastosIndividuaisComponent implements OnInit {
   }
 
   loadExpenses(): void {
-    const buildingId = this.myForm.get('building_id')?.value;
-    const month = this.myForm.get('months')?.value;
-    const year = this.myForm.get('years')?.value;
-    const currentDate = new Date();
-    const currentMonth = currentDate.getMonth() + 1;
-    const currentYear = currentDate.getFullYear().toString();
+    if(this.loading){
+      return
+    }
+    this.loading = true;
+    this.selectedBuildingId = this.myForm.get('building_id')?.value;
+    this.selectedMonth = this.myForm.get('months')?.value;
+    this.selectedYear = this.myForm.get('years')?.value;
     this.gastosIndividuais = [];
     this.gastosIndividuaisInsert = [];
 
-
-   
-     // this.getAllApartamentosByBuildingId(buildingId,false);
-
-      if (buildingId && month && year) {
-        this.gastosIndividuaisService.getIndividualExpensesByAptMonthAndYear(buildingId, month, year).subscribe(
+      if (this.selectedBuildingId && this.selectedMonth && this.selectedYear) {
+        this.gastosIndividuaisService.getIndividualExpensesByAptMonthAndYear(this.selectedBuildingId, this.selectedMonth, this.selectedYear).subscribe(
           (gastosIndividuais: GastoIndividual[]) => {
             console.log(gastosIndividuais)
             this.gastosIndividuais = gastosIndividuais;
@@ -133,19 +124,36 @@ export class GastosIndividuaisComponent implements OnInit {
               gasto.valorTotal = Number(gasto.aguaValor)+ Number(gasto.gasValor) + Number(gasto.lavanderia) + Number(gasto.multa) + Number(gasto.lazer);
             })
             if(this.gastosIndividuais.length ==0){
-              this.getAllApartamentosByBuildingId(buildingId,true);
+              this.getAllApartamentosByBuildingId(this.selectedBuildingId,true);
             }
+            this.loadingToFalse();
+
           },
           (error) => {
-            this.getAllApartamentosByBuildingId(buildingId,true);
+            this.toastr.info("Nenhum gasto inserido para esse mês.")
+            this.getAllApartamentosByBuildingId(this.selectedBuildingId,true);
             console.error('Error fetching expenses:', error);
+            this.loadingToFalse();
           }
         );
       } else {
         this.users = [];
+        this.loadingToFalse();
       }
 
   }
+  loadingToFalse():void{
+    console.log(this.selectedBuildingId)
+    console.log(this.selectedMonth)
+    console.log(this.selectedYear)
+    console.log(this.months)
+    this.myForm.get('building_id')?.setValue(this.selectedBuildingId);
+    this.myForm.get('years')?.setValue(this.selectedYear);
+    this.myForm.get('months')?.setValue(this.selectedMonth);
+    console.log(this.myForm.get('months')?.value)
+    this.loading = false;
+  }
+
 
   createGastoIndividualInsert():void{
     this.gastosIndividuaisInsert = [];
@@ -175,6 +183,34 @@ export class GastosIndividuaisComponent implements OnInit {
       this.dataModel.push({ Apartamento: apartamento.nome });
     });
     this.excelService.exportToExcel(this.dataModel, 'modelo');
+  }
+
+  downloadFilledSheet(): void {
+    if (this.gastosIndividuais.length === 0) {
+      this.toastr.info('Não há dados para exportar.');
+      return;
+    }
+  
+    // Criar uma matriz com os dados que você deseja exportar
+    const wsData: any[][] = [
+      ['Apartamento', 'Água(m3)', 'Gás(m3)', 'Lazer', 'Lavanderia', 'Multa'],
+      ...this.gastosIndividuais.map(gasto => [
+        gasto.apt_name,
+        gasto.aguaM3,
+        gasto.gasM3,
+        gasto.lazer,
+        gasto.lavanderia,
+        gasto.multa
+      ])
+    ];
+  
+    // Criação da planilha e aba
+    const ws: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet(wsData);
+    const wb: XLSX.WorkBook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Gastos Individuais');
+  
+    // Gerar e baixar o arquivo Excel
+    XLSX.writeFile(wb, `Gastos_Individuais_${this.selectedMonth}_${this.selectedYear}.xlsx`);
   }
 
 handleFileInput(event: any): void {
@@ -264,22 +300,47 @@ handleFileInput(event: any): void {
     })
   }
 
-    // Método para formatar valores em Real (R$)
-    formatCurrency(value: number| undefined): string {
-      if(value){
-        return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
-      }
-      return "R$ 0,00"
+  deleteAll(): void {
+    if (!this.selectedBuildingId || !this.selectedMonth || !this.selectedYear) {
+      this.toastr.error('Por favor, selecione um prédio, mês e ano antes de deletar.');
+      return;
     }
-    
-    getTodayDate(): string {
-      const date = new Date();
-      let day = date.getDate().toString().padStart(2,'0');
-      let month = (date.getMonth()+1).toString().padStart(2,'0');
-      let year = date.getFullYear().toString();
+  
+    // Adiciona a confirmação antes de deletar
+    const confirmation = window.confirm('Tem certeza de que deseja excluir todos os gastos individuais para o mês selecionado?');
+  
+    if (confirmation) {
+      this.gastosIndividuaisService.deleteIndividualExpensesByAptMonthAndYear(this.selectedBuildingId, this.selectedMonth, this.selectedYear).subscribe({
+        next: () => {
+          this.toastr.success('Todos os gastos individuais foram deletados com sucesso.');
+          this.loadExpenses(); // Recarrega a lista de gastos após a exclusão
+        },
+        error: (error) => {
+          console.error('Erro ao deletar os gastos individuais:', error);
+          this.toastr.error('Erro ao deletar os gastos individuais.');
+        }
+      });
+    }
+  }
+  
+  
 
-      return year + '-' + month + '-' + day;
+  // Método para formatar valores em Real (R$)
+  formatCurrency(value: number| undefined): string {
+    if(value){
+      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
     }
+    return "R$ 0,00"
+  }
+  
+  getTodayDate(): string {
+    const date = new Date();
+    let day = date.getDate().toString().padStart(2,'0');
+    let month = (date.getMonth()+1).toString().padStart(2,'0');
+    let year = date.getFullYear().toString();
+
+    return year + '-' + month + '-' + day;
+  }
 
   
 }

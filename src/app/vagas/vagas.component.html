@@ -1,0 +1,33 @@
+<app-nav-bar class="mb-4"></app-nav-bar>
+
+<div *ngIf="showEditComponent" style="margin-top: 30px;">
+  <!-- Componente de edição de vaga -->
+</div>
+
+<div *ngIf="!showEditComponent" style="margin-top: 30px;">
+  <div class="container" >
+    <br>
+    <div class="table-wrapper">
+      <table class="table narrow-table">
+        <thead>
+          <tr>
+            <th scope="col" style="width: 20%;">Nome</th>
+            <th scope="col" style="width: 20%;" class="hidden-small-screen">Apartamento</th>
+            <th scope="col" style="width: 25%;" class="hidden-small-screen">Prédio</th>
+            <th scope="col" style="width: 5%;">Editar</th>
+            <th scope="col" style="width: 5%;">Excluir</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let vaga of vagas; let i = index" [ngClass]="{'table-light': i % 2 === 0, 'table-light-gray': i % 2 !== 0}">
+            <td>{{ vaga.nome }}</td>
+            <td class="hidden-small-screen">{{ vaga.apartamento_id }}</td>
+            <td class="hidden-small-screen">{{ vaga.predio_id }}</td>
+            <td><button class="btn btn-primary btn-sm" (click)="editVaga(vaga)"><i class="fas fa-edit"></i></button></td>
+            <td><button class="btn btn-danger btn-sm" (click)="deleteVaga(vaga)"><i class="fas fa-trash"></i></button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

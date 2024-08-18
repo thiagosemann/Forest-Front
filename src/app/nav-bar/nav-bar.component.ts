@@ -46,6 +46,9 @@ export class NavBarComponent implements OnInit {
   predios(): void {
     this.router.navigate(['/predios']);
   }
+  vagas(): void {
+    this.router.navigate(['/vagas']);
+  }
   usuarios(): void {
     this.router.navigate(['/users']);
   }

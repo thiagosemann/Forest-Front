@@ -4,8 +4,8 @@ import { UserService } from 'src/app/shared/service/user_service';
 import { User } from 'src/app/shared/utilitarios/user';
 import { FormBuilder, Validators, FormGroup, ValidatorFn, AbstractControl, FormControl } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
-import { BuildingService } from '../shared/service/buildings_service';
 import { Building } from '../shared/utilitarios/building';
+import { BuildingService } from '../shared/service/Banco_de_Dados/buildings_service';
 
 export const ConfirmValidator = (controlName: string, matchingControlName: string): ValidatorFn => {
   return (control: AbstractControl): {[key: string]: boolean} | null => {

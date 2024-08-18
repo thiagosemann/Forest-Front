@@ -1,10 +1,9 @@
 import { Component, OnInit, NgZone } from '@angular/core';
-import { BuildingService } from '../shared/service/buildings_service';
 import { Building } from '../shared/utilitarios/building';
-import { UserService } from '../shared/service/user_service';
 import { User } from '../shared/utilitarios/user';
 import { FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
+import { BuildingService } from '../shared/service/Banco_de_Dados/buildings_service';
 
 @Component({
   selector: 'app-buildings-control',
@@ -21,7 +20,6 @@ export class BuildingsControlComponent implements OnInit {
 
   constructor(
     private buildingService: BuildingService,
-    private userService: UserService,
     private formBuilder: FormBuilder,
     private toastr: ToastrService,
   ) {

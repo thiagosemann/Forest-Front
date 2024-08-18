@@ -2,14 +2,14 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms'; // Import Validators
 import { Building } from '../shared/utilitarios/building';
 import { ToastrService } from 'ngx-toastr';
-import { BuildingService } from '../shared/service/buildings_service';
-import { CommonExpenseService } from '../shared/service/commonExpense_service';
 import { ExpenseTypeService } from '../shared/service/tipoGasto_service';
 import { CommonExpense } from '../shared/utilitarios/commonExpense';
-import { ApartamentoService } from '../shared/service/apartamento_service';
 import { Apartamento } from '../shared/utilitarios/apartamento';
 import { GastoIndividual } from '../shared/utilitarios/gastoIndividual';
-import { GastosIndividuaisService } from '../shared/service/gastosIndividuais_service';
+import { BuildingService } from '../shared/service/Banco_de_Dados/buildings_service';
+import { CommonExpenseService } from '../shared/service/Banco_de_Dados/commonExpense_service';
+import { ApartamentoService } from '../shared/service/Banco_de_Dados/apartamento_service';
+import { GastosIndividuaisService } from '../shared/service/Banco_de_Dados/gastosIndividuais_service';
 
 @Component({
   selector: 'app-rateio',

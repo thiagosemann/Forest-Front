@@ -14,6 +14,7 @@ import { BuildingsControlComponent } from './buildings-control/buildings-control
 import { BuildingsReviewComponent } from './Gastos-Comun/buildings-review/buildings-review.component';
 import { GastosIndividuaisComponent } from './gastos-individuais/gastos-individuais.component';
 import { RateioComponent } from './rateio/rateio.component';
+import { VagasComponent } from './vagas/vagas.component';
 
 
 const routes: Routes = [
@@ -25,6 +26,7 @@ const routes: Routes = [
   { path: 'profile', component: ProfileComponent, canActivate: [AuthGuardService] },
   { path: 'users', component: UsersControlComponent, canActivate: [AuthGuardService] },
   { path: 'predios', component: BuildingsControlComponent, canActivate: [AuthGuardService] },
+  { path: 'vagas', component: VagasComponent, canActivate: [AuthGuardService] },
   { path: 'gastosComuns', component: BuildingsReviewComponent, canActivate: [AuthGuardService] },
   { path: 'gastosIndividuais', component: GastosIndividuaisComponent, canActivate: [AuthGuardService] },
   { path: 'rateio', component: RateioComponent, canActivate: [AuthGuardService] },
