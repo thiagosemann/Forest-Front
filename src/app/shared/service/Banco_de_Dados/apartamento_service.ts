@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Apartamento } from '../../utilitarios/apartamento';
+import { environment } from 'enviroments';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApartamentoService {
-  private apiUrl = 'http://localhost:80/apartamentos';
+  private apiUrl = environment.backendUrl + '/apartamentos';
 
   constructor(private http: HttpClient) { }
 

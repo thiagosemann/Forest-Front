@@ -1,13 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
-import { User } from '../utilitarios/user';
+import { User } from '../../utilitarios/user';
+import { environment } from 'enviroments';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
-  private url = 'http://localhost:80';
+  private url = environment.backendUrl;
+
   private users: User[] = [];
   private userListSubject: Subject<User[]> = new Subject<User[]>();
 

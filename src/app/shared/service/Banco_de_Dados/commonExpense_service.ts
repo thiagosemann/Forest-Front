@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { CommonExpense } from '../../utilitarios/commonExpense';
+import { environment } from 'enviroments';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CommonExpenseService {
-  private apiUrl = 'http://localhost:80/commonexpenses'; // Atualize a URL conforme necessário
+  private apiUrl = environment.backendUrl + '/commonexpenses';
 
   constructor(private http: HttpClient) { }
 

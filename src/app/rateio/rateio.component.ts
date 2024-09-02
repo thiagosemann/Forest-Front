@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms'; // Import Validators
 import { Building } from '../shared/utilitarios/building';
 import { ToastrService } from 'ngx-toastr';
-import { ExpenseTypeService } from '../shared/service/tipoGasto_service';
+import { ExpenseTypeService } from '../shared/service/Banco_de_Dados/tipoGasto_service';
 import { CommonExpense } from '../shared/utilitarios/commonExpense';
 import { Apartamento } from '../shared/utilitarios/apartamento';
 import { GastoIndividual } from '../shared/utilitarios/gastoIndividual';

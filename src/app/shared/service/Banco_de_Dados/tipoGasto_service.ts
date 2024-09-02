@@ -1,13 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ExpenseType } from '../utilitarios/expenseType';
+import { ExpenseType } from '../../utilitarios/expenseType';
+import { environment } from 'enviroments';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ExpenseTypeService {
-  private apiUrl = 'http://localhost:80/expensetypes';
+  private apiUrl = environment.backendUrl + '/expensetypes';
 
   constructor(private http: HttpClient) { }
 

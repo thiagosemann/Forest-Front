@@ -3,7 +3,7 @@ import { FormBuilder, Validators, FormGroup, ValidatorFn, AbstractControl, FormC
 import { ToastrService } from 'ngx-toastr';
 import { ActivatedRoute, Router } from '@angular/router';
 import { User } from '../shared/utilitarios/user';
-import { UserService } from '../shared/service/user_service';
+import { UserService } from '../shared/service/Banco_de_Dados/user_service';
 
 
 export const ConfirmValidator = (controlName: string, matchingControlName: string): ValidatorFn => {
