@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthenticationService } from 'src/app/shared/service/authentication';
 import { User } from 'src/app/shared/utilitarios/user';
-import { UserService } from 'src/app/shared/service/user_service';
 import { ToastrService } from 'ngx-toastr';
 import { NgForm } from '@angular/forms';
+import { UserService } from '../shared/service/Banco_de_Dados/user_service';
 
 @Component({
   selector: 'app-profile',

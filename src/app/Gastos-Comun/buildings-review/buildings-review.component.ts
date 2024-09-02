@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms'; // Import V
 import { ToastrService } from 'ngx-toastr';
 import { BuildingService } from 'src/app/shared/service/Banco_de_Dados/buildings_service';
 import { CommonExpenseService } from 'src/app/shared/service/Banco_de_Dados/commonExpense_service';
-import { ExpenseTypeService } from 'src/app/shared/service/tipoGasto_service';
+import { ExpenseTypeService } from 'src/app/shared/service/Banco_de_Dados/tipoGasto_service';
 import { Building } from 'src/app/shared/utilitarios/building';
 import { CommonExpense } from 'src/app/shared/utilitarios/commonExpense';
 import { ExpenseType } from 'src/app/shared/utilitarios/expenseType';
