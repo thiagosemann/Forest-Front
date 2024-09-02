@@ -1,12 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { User } from '../utilitarios/user';
+import { User } from '../../utilitarios/user';
+import { environment } from 'enviroments';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthenticationService {
-  private url = 'http://localhost:80/login';
+  private url = environment.backendUrl + '/login';
+
   private user: User | null = null;
 
   constructor(private http: HttpClient) {}

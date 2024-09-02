@@ -1,11 +1,11 @@
 import { Component, OnInit, NgZone,Output, EventEmitter } from '@angular/core';
-import { AuthenticationService } from 'src/app/shared/service/authentication';
 import { User } from 'src/app/shared/utilitarios/user';
 import { FormBuilder, Validators, FormGroup, ValidatorFn, AbstractControl, FormControl } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { Building } from '../shared/utilitarios/building';
 import { BuildingService } from '../shared/service/Banco_de_Dados/buildings_service';
 import { UserService } from '../shared/service/Banco_de_Dados/user_service';
+import { AuthenticationService } from '../shared/service/Banco_de_Dados/authentication';
 
 export const ConfirmValidator = (controlName: string, matchingControlName: string): ValidatorFn => {
   return (control: AbstractControl): {[key: string]: boolean} | null => {
