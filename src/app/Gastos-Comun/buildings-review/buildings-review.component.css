@@ -2,22 +2,7 @@
 .uploaded-files {
     margin-top: 10px;
   }
-  .custom-input {
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 8px 12px;
-    font-size: 14px;
-    color: #333;
-    background-color: #fff;
-    transition: border-color 0.3s ease;
-    width: 100%;
-  }
-  
-  .custom-input:focus {
-    outline: none;
-    border-color: #007bff;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-  }
+
   
   
   .uploaded-files ul {
@@ -178,28 +163,43 @@
   font-weight: bold;
   font-family: LayarBahtera Doomsday;
   text-align: left;
-  padding-left: 15px; /* Adiciona margem à esquerda para o texto */
+  width: 100%;
   /* Adicione outros estilos personalizados conforme necessário */
+  
 }
 
 .custom-select::placeholder {
   opacity: 0.9; /* Altere o valor conforme necessário para ajustar a opacidade */
   color: #a2a8a6;
 }
+.custom-select:focus {
+  outline: none;
+  border-color: #198754;
+  box-shadow: 0 0 0 0.2rem rgba(0, 255, 179, 0.212);
+}
 
 .custom-input {
   border-radius: 5px;
-  height: 40px;
+  border: 1px solid #ccc;
   color: #828886;
   font-weight: bold;
   font-family: LayarBahtera Doomsday;
   text-align: left;
-  padding-left: 20px; /* Adiciona margem à esquerda para o texto */
-  /* Adicione outros estilos personalizados conforme necessário */
+  transition: border-color 0.3s ease;
+  width: 100%;
+  padding: 8px 12px;
+  
 }
 .custom-input::placeholder {
   opacity: 0.8; /* Altere o valor conforme necessário para ajustar a opacidade */
   color:#a2a8a6 ;
+}
+
+
+.custom-input:focus {
+  outline: none;
+  border-color: #198754;
+  box-shadow: 0 0 0 0.2rem rgba(0, 255, 179, 0.212);
 }
 .spanValorParcela{
   color: #828886;
@@ -207,3 +207,22 @@
   font-family: LayarBahtera Doomsday;
 }
 
+.checkbox-cell {
+  text-align: center; /* Centraliza o conteúdo horizontalmente */
+  vertical-align: middle; /* Centraliza o conteúdo verticalmente */
+}
+
+.custom-checkbox input[type="checkbox"] {
+  /* Caso deseje customizar ainda mais o estilo do checkbox */
+  transform: scale(1.2); /* Aumenta o tamanho do checkbox */
+}
+
+.red-trash {
+  color: red;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.red-trash:hover {
+  color: darkred;
+}

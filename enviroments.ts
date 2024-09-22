@@ -1,5 +1,6 @@
 export const environment = {
     production: false,
-    backendUrl: 'https://www.forest.app.br' // Substitua pela URL do seu backend
+   // backendUrl: 'https://www.forest.app.br'
+    backendUrl: 'http://localhost:21055'
   };
   

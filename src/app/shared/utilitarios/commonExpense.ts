@@ -7,5 +7,7 @@ export interface CommonExpense {
     parcela: number;
     total_parcelas: number;
     predio_id: number;
-    tipoGasto_id:number;
+    tipoGasto_id?:number;
+    tipo_Gasto_Extra:string;
+    
 }

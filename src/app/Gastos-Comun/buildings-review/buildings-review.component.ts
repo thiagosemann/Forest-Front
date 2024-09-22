@@ -17,6 +17,8 @@ export class BuildingsReviewComponent implements OnInit {
   buildings: Building[] = [];
   commonExepenses: CommonExpense[] = [];
   buildingId: number | undefined = 1;
+  buildingIdForCommonExpenses: number | undefined = 0;
+  labelGastoIndividualProvisao:string="";
   myForm!: FormGroup; // Initialize myForm as a FormGroup
   gastosView: string = "inicial";
   selectedFiles: File[] = [];
@@ -121,11 +123,17 @@ export class BuildingsReviewComponent implements OnInit {
   toggleAddGastosView(tela:string): void {
     if(tela=="inicial"){
       this.gastosView='inicial'
-    }else if(tela=="manual"){
-      this.gastosView='manual'
     }else if(tela=="lote"){
       this.gastosView='lote'
+    }else if(tela=="manual"){
+      this.gastosView='manual'
+      this.labelGastoIndividualProvisao = "Inserir Gasto Manual";
+    }else if(tela=="provisao"){
+      this.gastosView='provisao';
+      this.labelGastoIndividualProvisao = "Inserir Provisão";
+
     }
+
 
 
   }
@@ -223,6 +231,8 @@ export class BuildingsReviewComponent implements OnInit {
  
   loadExpenses(): void {
     this.buildingId = Number(this.myForm.get('building_id')?.value);
+    this.buildingIdForCommonExpenses = this.buildingId ;
+    
     const month = this.myForm.get('months')?.value;
     const year = this.myForm.get('years')?.value;
     this.rateio = 0;
@@ -241,6 +251,7 @@ export class BuildingsReviewComponent implements OnInit {
             this.commonExepenses.push(expense);
             
           })
+          console.log(this.commonExepenses)
           this.calculateValorTotal();
         },
         (error) => {
@@ -262,7 +273,6 @@ export class BuildingsReviewComponent implements OnInit {
     let contasAdd: CommonExpense[] = [];
     let verificacao =0;
     this.contasAdicionar.forEach(conta => {
-      if (conta.adicionar) {
         const parcelas = parseInt(conta.parcelas);
         const dataParts = conta.data.split('/');
         const dia = parseInt(dataParts[0]);
@@ -279,16 +289,22 @@ export class BuildingsReviewComponent implements OnInit {
             parcela: i + 1,
             total_parcelas: parcelas,
             predio_id: this.buildingId!,
-            tipoGasto_id:Number(conta.tipoGasto_id)
+            tipo_Gasto_Extra:conta.tipo_Gasto_Extra? conta.tipo_Gasto_Extra:""
           };
+          if(conta.tipoGasto_id){obj.tipoGasto_id = Number(conta.tipoGasto_id)}
           if(conta.nome_original==""){verificacao++;}
-          if(!conta.tipoGasto_id){verificacao++;}
-
+          if(conta.checkboxDetalhe){
+            if(conta.tipo_Gasto_Extra==""){
+              verificacao++;
+            }
+          }else{
+            if(!conta.tipoGasto_id){verificacao++;console.log("conta",conta)}
+          }
           contasAdd.push(obj);
            // Incrementar o mês para a próxima parcela
           dataGasto.setMonth(dataGasto.getMonth()+1)
         }
-      }
+      
     });
     console.log(contasAdd)
     // Verificar se o contasADD em ttodos os valores para serem enviados, caso o 
@@ -302,15 +318,20 @@ export class BuildingsReviewComponent implements OnInit {
     
   }
 
-  checkBoxCliked(conta:any):void{
-    if(conta.adicionar){
-      this.inserido-= conta.valor;
-    }else{
-      this.inserido+= conta.valor;
-    }
+  deleteConta(conta: any): void {
+    // Filtra a lista para remover o item selecionado
+    this.contasAdicionar = this.contasAdicionar.filter(c => c !== conta);
+    // Recalcula o valor total após a remoção
     this.calculateValorTotal();
   }
+  
 
+  checkBoxClikedDetalhe(conta:any):void{
+    if(!conta.checkboxDetalhe){
+      conta.tipo_Gasto_Extra= "";
+    }
+  }
+  
   selectContaAddChange(conta:any):void{
     console.log(this.contasAdicionar)
     this.inserido = 0;
@@ -323,11 +344,7 @@ export class BuildingsReviewComponent implements OnInit {
 
   deleteExpense(expense: CommonExpense): void {
     console.log(expense)
-    /*if(expense.total_parcelas>1){
-      confirm("Deseja deletar todas as parcelas?")
-      return 
-    }
-    */
+    
     if (confirm("Tem certeza que deseja excluir esta despesa comum?") && expense.id ) {
       this.commonExepenseService.deleteCommonExpense(expense.id).subscribe(
         () => {
@@ -344,6 +361,71 @@ export class BuildingsReviewComponent implements OnInit {
           this.toastr.error('Erro ao excluir despesa. Por favor, tente novamente mais tarde.');
         }
       );
+    }
+  }
+  submitGastoManualOrProvisao():void{
+    if( this.gastosView=="provisao"){
+      this.submitProvisao();
+    }else if(this.gastosView=="manual"){
+      this.submitManualGasto();
+    }
+  }
+  submitProvisao(): void {
+    if (this.manualGastoForm.valid) {
+      // Aqui você pode acessar os valores do formulário
+      const detalheId = this.manualGastoForm.get('detalhe')?.value;
+      const nome_original = this.manualGastoForm.get('nome_original')?.value;
+      const tipo = this.manualGastoForm.get('tipo')?.value;
+      const valorTotal = this.manualGastoForm.get('valorTotal')?.value;
+      const parcela = this.manualGastoForm.get('parcela')?.value;
+      const predioID = this.manualGastoForm.get('predioID')?.value;
+
+      // Obter a data do formulário
+      let data = this.manualGastoForm.get('data')?.value;
+      data = new Date(data); // Converter para objeto Date
+  
+      let commonExpenses: CommonExpense[] = [];
+  
+      if (parcela == 1) {
+        let commonExpenseAux: CommonExpense = {
+          data_gasto: `${data.getFullYear()}-${data.getMonth() + 1}-${data.getDate()}`, // Formatando a data
+          nome_original: nome_original,
+          valor: Number(valorTotal),
+          tipo: tipo,
+          parcela: 1,
+          total_parcelas: 1,
+          predio_id: predioID,
+          tipoGasto_id: detalheId,
+          tipo_Gasto_Extra:"" 
+          
+        };
+        commonExpenses.push(commonExpenseAux);
+      } else {
+        for (let i = 0; i < parcela; i++) {
+          let newDate = new Date(data);
+          newDate.setMonth(newDate.getMonth() + i); // Adicionar um mês para cada parcela
+         
+          let commonExpenseAux: CommonExpense = {
+            data_gasto:  `${newDate.getFullYear()}-${newDate.getMonth() + 1}-${newDate.getDate()}`,
+            nome_original: nome_original,
+            valor: Number(valorTotal) / Number(parcela),
+            tipo: tipo,
+            parcela: i + 1,
+            total_parcelas: parcela,
+            predio_id: predioID,
+            tipoGasto_id: detalheId,
+            tipo_Gasto_Extra: ""
+          };
+          commonExpenses.push(commonExpenseAux);
+        }
+      }
+      console.log(commonExpenses)
+      this.sendCommonExpenses(commonExpenses);
+      this.manualGastoForm.reset();
+      this.valorParcela = 0;
+      this.manualGastoForm.get('parcela')?.setValue(1);
+    } else {
+      this.toastr.error('Por favor, preencha todos os campos corretamente.');
     }
   }
 
@@ -375,6 +457,7 @@ export class BuildingsReviewComponent implements OnInit {
           total_parcelas: 1,
           predio_id: predioID,
           tipoGasto_id: detalheId,
+          tipo_Gasto_Extra:""
         };
         commonExpenses.push(commonExpenseAux);
       } else {
@@ -391,6 +474,7 @@ export class BuildingsReviewComponent implements OnInit {
             total_parcelas: parcela,
             predio_id: predioID,
             tipoGasto_id: detalheId,
+            tipo_Gasto_Extra:""
           };
           commonExpenses.push(commonExpenseAux);
         }
@@ -436,5 +520,8 @@ export class BuildingsReviewComponent implements OnInit {
       this.valorParcela = Number(valor)/Number(parcela);
     }
 
+  }
+  changeBuildingIdForCommomExpenses():void{
+    this.buildingId = this.buildingIdForCommonExpenses;
   }
 }

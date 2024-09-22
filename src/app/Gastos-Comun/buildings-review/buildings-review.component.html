@@ -1,10 +1,11 @@
 <app-nav-bar class="mb-4"></app-nav-bar>
-<div class="container" style="margin-top: 20px;">
+<div class="container" style="margin-top: 15px;">
   <div class="row">
     <div class="col-md-5">
       <ng-container *ngIf="gastosView=='inicial'">
-        <button class="btn btn-primary" (click)="toggleAddGastosView('manual')">Adicionar Gasto Manual</button>
-        <button class="btn btn-primary" (click)="toggleAddGastosView('lote')">Adicionar Gastos em Lote</button>
+        <button class="btn btn-primary" (click)="toggleAddGastosView('manual')">Gasto Manual</button>
+        <button class="btn btn-primary" (click)="toggleAddGastosView('provisao')">Provisão</button>
+        <button class="btn btn-primary" (click)="toggleAddGastosView('lote')">Gastos em Lote</button>
       </ng-container>
       <ng-container *ngIf="gastosView!='inicial'">
         <button class="btn btn-primary" (click)="toggleAddGastosView('inicial') ">Voltar</button>
@@ -74,7 +75,12 @@
         <tbody>
           <!-- Aqui você pode iterar sobre os dados das contas e preencher as linhas da tabela -->
           <tr *ngFor="let expense of commonExepenses">
-            <td>{{ getExpenseDetalhes(expense) }}</td>
+            <ng-container *ngIf="!expense.tipoGasto_id">
+              <td>{{ expense.tipo_Gasto_Extra }}</td>
+            </ng-container>
+            <ng-container *ngIf="expense.tipoGasto_id">
+              <td>{{ getExpenseDetalhes(expense) }}</td>
+            </ng-container>
             <td>{{ formatarData(expense.data_gasto)}}</td>
             <td>R$ {{ expense.valor }}</td>
             <td>{{ expense.tipo }}</td>
@@ -89,16 +95,21 @@
   </div>
 </div>
 
-<div *ngIf="gastosView=='lote'" style="margin-top: 30px;">
+<div *ngIf="gastosView=='lote'" style="margin-top: 10px;">
   <div class="container">
     <div class="mb-3">
       <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-4">
+          <select id="building_id" name="building_id" class="form-control custom-select"  [(ngModel)]="buildingIdForCommonExpenses" required (change)="changeBuildingIdForCommomExpenses()" >
+            <option value="0" disabled selected>Selecione o prédio</option>
+            <option *ngFor="let building of buildings" [value]="building.id">{{ building.nome }}</option>
+          </select>
+        </div>
+        <div class="col-md-8" *ngIf="buildingId">
           <div class="file-upload-container">
             <label class="custom-file-upload">
               <input type="file" id="fileInput" class="file-upload-input" (change)="onFileSelected($event)" accept=".csv">
             </label>
-
             <div class="uploaded-files">
               <ul>
                 <li *ngFor="let selectedFile of selectedFiles; let i = index">
@@ -115,36 +126,56 @@
       <table class="table mt-4">
         <thead>
           <tr>
-            <th scope="col">Data</th>
-            <th scope="col">Detalhe</th>
-            <th scope="col">Original</th>
-            <th scope="col">Valor</th>
-            <th scope="col">Tipo</th>
-            <th scope="col">Parcelar?</th>
-            <th scope="col">Adicionar?</th>
+            <th scope="col" style="width: 10%;">Data</th>
+            <th scope="col" style="width: 10%;" colspan="2">Detalhe</th> <!-- colspan 2 adicionado -->
+            <th scope="col" style="width: 50%;">Original</th>
+            <th scope="col" style="width: 10%;">Valor</th>
+            <th scope="col" style="width: 10%;">Tipo</th>
+            <th scope="col" style="width: 5%;">Parcelar</th>
+            <th scope="col" style="width: 5%;">Delete</th>
           </tr>
         </thead>
         <tbody>
           <!-- Aqui você pode iterar sobre os dados das contas e preencher as linhas da tabela -->
           <tr *ngFor="let contaAdd of contasAdicionar">
             <td>{{ contaAdd.data }}</td>
-            <td> 
-              <select id="years" name="years" class="form-control custom-select" [(ngModel)]="contaAdd.tipoGasto_id" required>
-                <option *ngFor="let expenseType of expenseTypes" [value]="expenseType.id">{{ expenseType.detalhes }}</option>
-              </select>
+            <td class="checkbox-cell"> <!-- Adicionei a classe aqui -->
+              <label class="custom-checkbox">
+                <input type="checkbox" [(ngModel)]="contaAdd.checkboxDetalhe" (click)="checkBoxClikedDetalhe(contaAdd)">
+                <span class="checkmark"></span>
+              </label>
             </td>
-            
-            <td><input class="custom-input" type="text" [(ngModel)]="contaAdd.nome_original"></td>
-            <td class="text-danger">R$ {{ contaAdd.valor| number:'1.2-2' }}</td>
+            <ng-container *ngIf="contaAdd.checkboxDetalhe">
+              <td> 
+                <input class="custom-input" type="text" [(ngModel)]="contaAdd.tipo_Gasto_Extra">
+              </td>
+            </ng-container>
+            <ng-container *ngIf="!contaAdd.checkboxDetalhe">
+              <td> 
+                <select id="years" name="years" class="custom-select" [(ngModel)]="contaAdd.tipoGasto_id" required>
+                  <option *ngFor="let expenseType of expenseTypes" [value]="expenseType.id">{{ expenseType.detalhes }}</option>
+                </select>
+              </td>
+            </ng-container>
+
             <td>
-              <select class="custom-select"  [(ngModel)]="contaAdd.tipo" >
+              <input class="custom-input" type="text" [(ngModel)]="contaAdd.nome_original">
+            </td>
+            <td class="text-danger">R$ {{ contaAdd.valor | number:'1.2-2' }}</td>
+            <td>
+              <select class="custom-select" [(ngModel)]="contaAdd.tipo">
                 <option value="Rateio">Rateio</option>
-                <option value="Fundo de Reserva">Fundo de Reserva</option>
+                <option value="Não Ratear">Não Ratear</option>
                 <option value="Provisão">Provisão</option>
+                <option value="Provisão">Provisão Utilizada</option>
+                <option value="Fundo de Reserva">Fundo de Reserva</option>
+                <option value="Fundo de Reserva">Fundo de Reserva Utilizado</option>
+                <option value="Provisão">Fundo de Obra</option>
+                <option value="Provisão">Fundo de Obra Utilizado</option>
               </select>
             </td>
             <td>
-              <select class="custom-select"  [(ngModel)]="contaAdd.parcelas" (change)="selectContaAddChange(contaAdd)">
+              <select class="custom-select" [(ngModel)]="contaAdd.parcelas" (change)="selectContaAddChange(contaAdd)">
                 <option value="1">A vista</option>
                 <option value="2">2 X</option>
                 <option value="3">3 X</option>
@@ -157,37 +188,34 @@
                 <option value="10">10 X</option>
                 <option value="11">11 X</option>
                 <option value="12">12 X</option>
-                
               </select>
             </td>
             <td>
-              <label class="custom-checkbox">
-                <input type="checkbox" [(ngModel)]="contaAdd.adicionar" (click)="checkBoxCliked(contaAdd)">
-                <span class="checkmark"></span>
-              </label>
+              <i class="fas fa-trash red-trash" (click)="deleteConta(contaAdd)"></i>
             </td>
-            
+                       
           </tr>
         </tbody>
       </table>
     </div>
+    
     <div style="text-align: right; margin-right: 50px;">
       <button class="btn btn-primary" (click)="submitGastos()">Inserir</button>
     </div>
   </div>
 </div>
-<div *ngIf="gastosView=='manual'" style="margin-top: 30px;">
+<div *ngIf="gastosView=='manual' || gastosView=='provisao' " style="margin-top: 30px;">
   <div class="container">
     <div class="mb-3">
       <div class="row">
         <div class="col-md-4"></div>
         <div class="col-md-4">
-          <h4>Inserir gasto manual</h4>
-          <form [formGroup]="manualGastoForm" (ngSubmit)="submitManualGasto()">
+          <h4>{{labelGastoIndividualProvisao}}</h4>
+          <form [formGroup]="manualGastoForm" (ngSubmit)="submitGastoManualOrProvisao()">
             <div class="col-md-12 mb-3">
               <div class="form-group">
                 <select id="predioID" name="predioID" class="form-control custom-select" formControlName="predioID" required>
-                  <option value="Selecione" disabled>Selecione</option>
+                  <option value="Selecione" disabled>Selecione o prédio</option>
                   <option *ngFor="let building of buildings" [value]="building.id">{{ building.nome }}</option>
                 </select>
               </div>
@@ -196,7 +224,7 @@
             <div class="col-md-12 mb-3">
                 <div class="form-group">
                   <select id="detalhe" name="detalhe" class="form-control custom-select" formControlName="detalhe" required>
-                    <option value="Selecione" disabled>Selecione</option>
+                    <option value="Selecione" disabled>Selecione o detalhe</option>
                     <option *ngFor="let expenseType of expenseTypes" [value]="expenseType.id">{{ expenseType.detalhes }}</option>
                   </select>
                 </div>
@@ -204,7 +232,7 @@
               <div class="col-md-12 mb-3">
                 <div class="form-group">
                   <select id="tipo" name="tipo" class="form-control custom-select" formControlName="tipo" required>
-                    <option value="Selecione" disabled>Selecione</option>
+                    <option value="Selecione" disabled>Selecione o tipo de gasto</option>
                     <option value="Rateio">Rateio</option>
                     <option value="Fundo de Reserva">Fundo de Reserva</option>
                     <option value="Provisão">Provisão</option>
