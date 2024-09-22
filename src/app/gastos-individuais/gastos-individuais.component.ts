@@ -88,12 +88,7 @@ export class GastosIndividuaisComponent implements OnInit {
         if(apartamentos.length==0){
           this.toastr.error("Prédio sem apartamentos cadastrados!")
         }
-        apartamentos.forEach(apartamento=>{
-          if(!apartamento.nome.toUpperCase().includes("VAGA")){
-            this.apartamentos.push(apartamento)
-          }
-        })
-       
+        this.apartamentos = apartamentos      
         if(createGastos){
           this.createGastoIndividualInsert()
         }

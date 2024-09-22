@@ -95,3 +95,22 @@
     font-family: 'LayarBahtera Doomsday';
     color:#3daf2d;
 }
+/* Estilo do dropdown para combinar com o menu */
+.dropdown-menu {
+    background-color: white;  /* Cor de fundo do dropdown */
+    border-radius: 5px;  /* Arredondar os cantos */
+    font-family: 'LayarBahtera Doomsday';  /* Mesma fonte do menu */
+    font-size: 16px;  /* Tamanho de fonte */
+}
+
+.dropdown-item {
+    color: #006400;  /* Cor do texto nos itens do dropdown */
+    font-weight: bold;  /* Deixar o texto negrito */
+    padding: 5px 20px;  /* Ajustar o espaçamento interno */
+    transition: background-color 0.3s ease;  /* Efeito de transição para o hover */
+}
+
+.dropdown-item:hover {
+    background-color: lightgray;  /* Cor de fundo ao passar o mouse */
+}
+

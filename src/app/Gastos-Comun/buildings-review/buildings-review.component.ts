@@ -18,7 +18,6 @@ export class BuildingsReviewComponent implements OnInit {
   commonExepenses: CommonExpense[] = [];
   buildingId: number | undefined = 1;
   buildingIdForCommonExpenses: number | undefined = 0;
-  labelGastoIndividualProvisao:string="";
   myForm!: FormGroup; // Initialize myForm as a FormGroup
   gastosView: string = "inicial";
   selectedFiles: File[] = [];
@@ -127,11 +126,6 @@ export class BuildingsReviewComponent implements OnInit {
       this.gastosView='lote'
     }else if(tela=="manual"){
       this.gastosView='manual'
-      this.labelGastoIndividualProvisao = "Inserir Gasto Manual";
-    }else if(tela=="provisao"){
-      this.gastosView='provisao';
-      this.labelGastoIndividualProvisao = "Inserir Provisão";
-
     }
 
 
@@ -361,13 +355,6 @@ export class BuildingsReviewComponent implements OnInit {
           this.toastr.error('Erro ao excluir despesa. Por favor, tente novamente mais tarde.');
         }
       );
-    }
-  }
-  submitGastoManualOrProvisao():void{
-    if( this.gastosView=="provisao"){
-      this.submitProvisao();
-    }else if(this.gastosView=="manual"){
-      this.submitManualGasto();
     }
   }
   submitProvisao(): void {

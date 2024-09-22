@@ -1,10 +1,9 @@
 <app-nav-bar class="mb-4"></app-nav-bar>
-<div class="container" style="margin-top: 15px;">
+<div class="container">
   <div class="row">
     <div class="col-md-5">
       <ng-container *ngIf="gastosView=='inicial'">
         <button class="btn btn-primary" (click)="toggleAddGastosView('manual')">Gasto Manual</button>
-        <button class="btn btn-primary" (click)="toggleAddGastosView('provisao')">Provisão</button>
         <button class="btn btn-primary" (click)="toggleAddGastosView('lote')">Gastos em Lote</button>
       </ng-container>
       <ng-container *ngIf="gastosView!='inicial'">
@@ -27,11 +26,8 @@
       </div>
     </div>
   </div>
-</div>
 
-
-<div *ngIf="gastosView == 'inicial'" style="margin-top: 30px;">
-  <div class="container">
+  <div *ngIf="gastosView == 'inicial'" style="margin-top: 30px;">
     <h3>Tela de Gastos Comuns</h3>
     <form [formGroup]="myForm"> <!-- Wrap your form controls within a formGroup directive -->
       <div class="row">
@@ -92,11 +88,10 @@
       </table>
     </div>
 
-  </div>
+
 </div>
 
 <div *ngIf="gastosView=='lote'" style="margin-top: 10px;">
-  <div class="container">
     <div class="mb-3">
       <div class="row">
         <div class="col-md-4">
@@ -202,16 +197,14 @@
     <div style="text-align: right; margin-right: 50px;">
       <button class="btn btn-primary" (click)="submitGastos()">Inserir</button>
     </div>
-  </div>
 </div>
-<div *ngIf="gastosView=='manual' || gastosView=='provisao' " style="margin-top: 30px;">
-  <div class="container">
+<div *ngIf="gastosView=='manual' " style="margin-top: 30px;">
     <div class="mb-3">
       <div class="row">
         <div class="col-md-4"></div>
         <div class="col-md-4">
-          <h4>{{labelGastoIndividualProvisao}}</h4>
-          <form [formGroup]="manualGastoForm" (ngSubmit)="submitGastoManualOrProvisao()">
+          <h4>Inserir Gasto Manual</h4>
+          <form [formGroup]="manualGastoForm" (ngSubmit)="submitManualGasto()">
             <div class="col-md-12 mb-3">
               <div class="form-group">
                 <select id="predioID" name="predioID" class="form-control custom-select" formControlName="predioID" required>
@@ -271,4 +264,6 @@
       </div>
     </div>
   </div>
+
 </div>
+

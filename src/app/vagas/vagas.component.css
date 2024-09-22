@@ -38,6 +38,7 @@
   /* Adicione margem antes do select */
   .container {
     padding: 10px; /* Ajuste o preenchimento conforme necessário */
+    height: 85vh;
   }
 
   .table-light-gray {

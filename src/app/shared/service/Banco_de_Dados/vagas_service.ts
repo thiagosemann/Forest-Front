@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Vaga } from '../../utilitarios/vaga';
+import { environment } from 'enviroments';
 
 @Injectable({
   providedIn: 'root'
 })
 export class VagaService {
-  private apiUrl = 'http://localhost:80/vagas';
+  private apiUrl = environment.backendUrl + '/vagas';
 
   constructor(private http: HttpClient) { }
 

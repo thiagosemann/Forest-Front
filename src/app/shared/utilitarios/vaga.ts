@@ -3,6 +3,8 @@ export interface Vaga {
     nome: string;
     predio_id: number;
     apartamento_id:number;
+    predioName:string;
+    apartamentoName:string;
     fracao:number;
 }
   
