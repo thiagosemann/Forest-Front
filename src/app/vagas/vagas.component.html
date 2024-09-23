@@ -5,7 +5,7 @@
         <div class="row d-flex justify-content-center align-items-center">
           <div class="col-md-8 col-lg-6 col-xl-5">
             <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="p-4 p-md-5 border rounded bg-light">
-              <h4 class="text-center mb-2">Editar Vaga</h4>
+              <h4 class="text-center mb-2">{{titleEditVaga}}</h4>
               
               <!-- Nome da Vaga -->
               <div class="form-group mb-3">
@@ -17,6 +17,7 @@
               <div class="form-group mb-3">
                 <label class="form-label" for="predio_id">Prédio:</label>
                 <select id="predio_id" name="predio_id" class="form-control" formControlName="predio_id" required>
+                  <option value="Selecione" selected disabled>Selecione o prédio</option>
                   <option *ngFor="let building of buildings" [value]="building.id">{{ building.nome }}</option>
                 </select>
               </div>
@@ -25,6 +26,7 @@
               <div class="form-group mb-3">
                 <label class="form-label" for="apartamento_id">Apartamento:</label>
                 <select id="apartamento_id" name="apartamento_id" class="form-control" formControlName="apartamento_id" required>
+                  <option value="Selecione" selected disabled>Selecione o apartamento</option>
                   <option *ngFor="let apartamento of apartamentos" [value]="apartamento.id">{{ apartamento.nome }}</option>
                 </select>
               </div>
@@ -37,8 +39,11 @@
 
               <div class="text-center text-md-start mt-4 pt-2">
                 <div class="row">
-                  <div class="col-md-6 mb-3">
+                  <div class="col-md-6 mb-3" *ngIf="isEditing">
                     <button type="submit" class="btn btn-success btn-lg px-4">Atualizar</button>
+                  </div>
+                  <div class="col-md-6 mb-3" *ngIf="!isEditing">
+                    <button type="submit" class="btn btn-success btn-lg px-4">Criar</button>
                   </div>
                   <div class="col-md-6">
                     <button type="button" class="btn btn-danger btn-lg px-4" (click)="cancelarEdit()">Cancelar</button>
@@ -57,7 +62,7 @@
         <option value="" disabled selected>Selecione o prédio</option>
         <option *ngFor="let building of buildings" [value]="building.id">{{ building.nome }}</option>
       </select>
-      <button class="btn btn-primary" style="margin-bottom: 10px;">Adicionar Vaga</button>
+      <button class="btn btn-primary" style="margin-bottom: 10px;"(click)="addVaga()">Adicionar Vaga</button>
       <div class="table-wrapper">
         <table class="table narrow-table">
           <thead>
