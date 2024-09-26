@@ -49,16 +49,22 @@
         </tr>
       </thead>
       <tbody>
-        <!-- Aqui você pode iterar sobre os dados das contas e preencher as linhas da tabela -->
         <tr *ngFor="let user of usersRateio">
           <td>{{user.apt_name}}</td>
-          <td>{{user.apt_fracao}}</td>
-          <td>{{formatCurrency(user.valorTotal)}}</td>
-          <td>{{formatCurrency(user.apt_fracao*gastoComumValor) }}</td>
-          <td>{{formatCurrency(user.apt_fracao*gastoComumValor + user.valorTotal ) }}</td>
-          
+          <td class="tooltip-container">
+            <span class="tooltip-text">{{user.fracao_total}}</span>
+            <div class="tooltip-message">
+              Frações:<br>
+              Apartamento: {{user.apt_fracao}}
+              <div *ngFor="let vaga of user.vagas; let i = index">
+                Vaga {{i + 1}}: {{vaga.fracao}} <br>
+              </div>
+            </div>
+          </td>
+          <td>{{formatCurrency(user.valorIndividual)}}</td>
+          <td>{{formatCurrency(user.fracao_total * gastoComumValor) }}</td>
+          <td>{{formatCurrency(user.fracao_total * gastoComumValor + user.valorIndividual ) }}</td>
         </tr>
-
       </tbody>
     </table>
   </div>

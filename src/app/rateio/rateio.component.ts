@@ -10,6 +10,9 @@ import { BuildingService } from '../shared/service/Banco_de_Dados/buildings_serv
 import { CommonExpenseService } from '../shared/service/Banco_de_Dados/commonExpense_service';
 import { ApartamentoService } from '../shared/service/Banco_de_Dados/apartamento_service';
 import { GastosIndividuaisService } from '../shared/service/Banco_de_Dados/gastosIndividuais_service';
+import { VagaService } from '../shared/service/Banco_de_Dados/vagas_service';
+import { Vaga } from '../shared/utilitarios/vaga';
+import { Rateio } from '../shared/utilitarios/rateio';
 
 @Component({
   selector: 'app-rateio',
@@ -26,6 +29,7 @@ export class RateioComponent implements OnInit {
   gastosIndividuais:GastoIndividual[]=[];
   usersRateio:any[]=[];
   buildingId:number=0;
+
   months: { monthNumber: number, monthName: string }[] = [
     { monthNumber: 1, monthName: "Janeiro" },
     { monthNumber: 2, monthName: "Fevereiro" },
@@ -49,8 +53,8 @@ export class RateioComponent implements OnInit {
     private commonExepenseService: CommonExpenseService,
     private expenseTypeService: ExpenseTypeService,
     private apartamentoService: ApartamentoService,
-    private gastosIndividuaisService: GastosIndividuaisService
-
+    private gastosIndividuaisService: GastosIndividuaisService,
+    private vagasService: VagaService
 
   ) {}
   ngOnInit(): void {
@@ -71,7 +75,6 @@ export class RateioComponent implements OnInit {
   getAllBuildings(): void {
     this.buildingService.getAllBuildings().subscribe(
       (buildings: Building[]) => {
-        console.log(buildings)
         this.buildings = buildings;
       },
       (error) => {
@@ -79,17 +82,9 @@ export class RateioComponent implements OnInit {
       }
     );
   }
-  getAllApartamentosByBuildingId(buildingId:number): void {
-    this.apartamentoService.getApartamentosByBuildingId(buildingId).subscribe({
-      next: (apartamentos: Apartamento[]) => {
-        console.log(apartamentos);
-        this.apartamentos = apartamentos;
-      },
-      error: (error) => {
-        console.error('Error fetching buildings:', error);
-      }
-    });
-  }
+
+
+
 
   changeSelect(): void {
    this.buildingId = Number(this.myForm.get('building_id')?.value);
@@ -116,42 +111,64 @@ export class RateioComponent implements OnInit {
     }
   }
   loadExpensesIndividuais(): void {
-    this.gastoComumValorTotal=0;
-    this.gastoIndividualValorTotal=0;
+    this.gastoComumValorTotal = 0;
+    this.gastoIndividualValorTotal = 0;
     const month = this.myForm.get('months')?.value;
     const year = this.myForm.get('years')?.value;
     this.gastosIndividuais = [];
-      this.getAllApartamentosByBuildingId(this.buildingId);
-      if (this.buildingId && month && year) {
-        this.gastosIndividuaisService.getIndividualExpensesByAptMonthAndYear(this.buildingId, month, year).subscribe(
-          (gastosIndividuais: GastoIndividual[]) => {
-            console.log(gastosIndividuais)
-            this.gastosIndividuais = gastosIndividuais;
-            this.gastosIndividuais.forEach(gasto=>{
-              if(gasto && gasto.apt_fracao ){
-                gasto.valorTotal = Number(gasto.aguaValor)+ Number(gasto.gasValor) + Number(gasto.lavanderia) + Number(gasto.multa) + Number(gasto.lazer);
-                this.gastoComumValorTotal+=this.gastoComumValor*gasto.apt_fracao;
-                this.gastoIndividualValorTotal+=gasto.valorTotal;
-                let userRateioAux ={
+    this.usersRateio = []; // Limpar o array antes de adicionar novos valores
+  
+    if (this.buildingId && month && year) {
+      this.gastosIndividuaisService.getIndividualExpensesByAptMonthAndYear(this.buildingId, month, year).subscribe(
+        (gastosIndividuais: GastoIndividual[]) => {
+          console.log(gastosIndividuais);
+          this.gastosIndividuais = gastosIndividuais;
+  
+          // Processa cada gasto individualmente
+          this.gastosIndividuais.forEach(gasto => {
+            if (gasto && gasto.apt_fracao) {
+              gasto.valorTotal = Number(gasto.aguaValor) + Number(gasto.gasValor) + Number(gasto.lavanderia) + Number(gasto.multa) + Number(gasto.lazer);
+              this.gastoComumValorTotal += this.gastoComumValor * gasto.apt_fracao;
+              this.gastoIndividualValorTotal += gasto.valorTotal;
+              if(gasto &&  gasto.apt_name && gasto.apt_fracao && gasto.valorTotal && gasto.valorTotal && gasto.apt_id){
+                let userRateioAux:Rateio = {
                   apt_name: gasto.apt_name,
                   apt_fracao: gasto.apt_fracao,
-                  valorTotal: gasto.valorTotal,
-                  apt_id:gasto.apt_id             
-                }
-                this.usersRateio.push(userRateioAux)
-              }
+                  valorIndividual: gasto.valorTotal,
+                  apt_id: gasto.apt_id,
+                  fracao_total:Number(gasto.apt_fracao),
+                  vagas: [] 
+                };
+                // Busca as vagas do apartamento e só então adiciona ao array usersRateio
+                this.vagasService.getVagasByApartamentId(userRateioAux.apt_id).subscribe({
+                  next: (vagas) => {
+                    userRateioAux.vagas = vagas; // Atribui as vagas ao objeto auxiliar
+                    vagas.forEach(vaga=>{
+                      userRateioAux.fracao_total += Number(vaga.fracao)
+                    })
+                    this.usersRateio.push(userRateioAux); // Agora adiciona ao array após obter as vagas
 
-            })           
-            console.log(gastosIndividuais)
-          },
-          (error) => {
-            this.toastr.error(error.error.message)
-            console.error('Error fetching expenses:', error);
-          }
-        );
-      } 
+                    console.log(vagas)
+                  },
+                  error: (error) => {
+                    console.error(`Error fetching vagas for apt ${gasto.apt_id}:`, error);
+                  }
+                });
+
+              }
+   
     
+            }
+          });
+        },
+        (error) => {
+          this.toastr.error(error.error.message);
+          console.error('Error fetching individual expenses:', error);
+        }
+      );
+    }
   }
+  
   formatCurrency(value: number| undefined): string {
     if(value){
       return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);

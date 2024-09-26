@@ -77,3 +77,54 @@
   .table tr:hover {
     background-color: #ddd;
   }
+
+/* Container para o tooltip */
+.tooltip-container {
+  position: relative;
+  display: inline-block;
+  width: 100%; /* Garante que a célula ocupe a largura completa */
+  text-align: center; /* Mantém o valor centralizado */
+}
+
+/* Estilo do texto da fração */
+.tooltip-text {
+  font-size: 16px;
+  color: #000;
+}
+
+/* Estilo do balão que aparecerá */
+.tooltip-message {
+  visibility: hidden;
+  width: 180px;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px;
+  position: absolute;
+  z-index: 1;
+  top: 50%; /* Centraliza verticalmente em relação à célula */
+  left: 100%; /* Posiciona o tooltip à direita da célula */
+  transform: translateY(-50%); /* Centraliza verticalmente o tooltip */
+  opacity: 0;
+  transition: opacity 0.3s;
+  white-space: nowrap; /* Evita quebra de linha no tooltip */
+}
+
+/* Criação de uma seta em cima do balão */
+.tooltip-message::after {
+  content: "";
+  position: absolute;
+  left: -5px; /* Posiciona a seta à esquerda do balão */
+  top: 50%;
+  margin-top: -5px; /* Ajusta a posição vertical da seta */
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent #333 transparent transparent; /* Ajusta a cor da seta */
+}
+
+/* Exibe o tooltip ao passar o mouse */
+.tooltip-container:hover .tooltip-message {
+  visibility: visible;
+  opacity: 1;
+}
