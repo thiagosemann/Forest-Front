@@ -47,8 +47,6 @@ export class BuildingsReviewComponent implements OnInit {
   valorParcela:number=0;
   years: string[] = ["2022", "2023","2024", "2025", "2026", "2027", "2028", "2029","2030" ];
 
-  
-
   constructor(
     private toastr: ToastrService,
     private buildingService: BuildingService,

@@ -1,0 +1,80 @@
+<app-nav-bar class="mb-4"></app-nav-bar>
+<div class ="container">
+    <h3>{{ tipoDeFundo }}</h3>
+    <form [formGroup]="myForm"> <!-- Wrap your form controls within a formGroup directive -->
+      <div class="row">
+        <div class="col-md-4">
+          <select id="building_id" name="building_id" class="form-control custom-select" formControlName="building_id" required (change)="loadFundos()">
+            <option value="0" disabled selected>Selecione o prédio</option>
+            <option *ngFor="let building of buildings" [value]="building.id">{{ building.nome }}</option>
+          </select>
+        </div>
+        <div *ngIf="loading" class="spinner-border text-success col-md-5" role="status">
+            <span class="visually-hidden">Carregando...</span>
+        </div>
+        <div  *ngIf="!loading" class="col-md-5">
+            <ng-container>
+                <button class="btn btn-primary" style="margin-left: 5px;" >
+                  <i class="fas fa-add"></i> Cadastrar
+                </button>
+            </ng-container>
+          </div>
+      </div>
+      <!-- Add other form controls within the formGroup -->
+    </form>
+    <div class="row" style="margin-top: 15px;">
+        <div class="col-md-6">
+            <span class="tableTitle">Provisões cadastradas</span>
+            <table class="table">
+                <thead>
+                  <tr>
+                    <th scope="col" style="width: 30%;">Detalhe</th>
+                    <th scope="col" style="width: 10%;">Data</th>
+                    <th scope="col" style="width: 10%;">Valor</th>
+                    <th scope="col" style="width: 10%;">Tipo</th>
+                    <th scope="col" style="width: 10%;">Ação</th>      
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Aqui você pode iterar sobre os dados das contas e preencher as linhas da tabela -->
+                  <tr>
+                    <td>R$ Teste</td>
+                    <td>R$ Teste</td>
+                    <td>R$ Teste</td>
+                    <td>R$ Teste</td>
+                    <td><button class="btn btn-danger btn-xs" ><i class="fas fa-trash"></i></button></td>
+                  </tr>
+                </tbody>
+              </table>
+        </div>
+        <div class="col-md-6">
+            <span class="tableTitle">Provisões utilizadas</span>
+            <table class="table ">
+                <thead>
+                  <tr>
+                    <th scope="col" style="width: 30%;">Detalhe</th>
+                    <th scope="col" style="width: 10%;">Data</th>
+                    <th scope="col" style="width: 10%;">Valor</th>
+                    <th scope="col" style="width: 10%;">Tipo</th>
+
+                    <th scope="col" style="width: 10%;">Ação</th>      
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Aqui você pode iterar sobre os dados das contas e preencher as linhas da tabela -->
+                  <tr>
+                    <td>R$ Teste</td>
+                    <td>R$ Teste</td>
+                    <td>R$ Teste</td>
+                    <td>R$ Teste</td>
+
+                    <td><button class="btn btn-danger btn-xs" ><i class="fas fa-trash"></i></button></td>
+                  </tr>
+                </tbody>
+              </table>
+        </div>
+    </div>
+    <div class="table-wrapper">
+
+      </div>
+</div>

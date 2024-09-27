@@ -1,0 +1,79 @@
+.container{
+    height: 85vh;
+    margin-top: 15px;
+  }
+  .custom-select {
+    border-radius: 5px;
+    color: #828886;
+    font-weight: bold;
+    font-family: LayarBahtera Doomsday;
+    text-align: left;
+    width: 100%;
+    /* Adicione outros estilos personalizados conforme necessário */
+    
+  }
+  
+  .custom-select::placeholder {
+    opacity: 0.9; /* Altere o valor conforme necessário para ajustar a opacidade */
+    color: #a2a8a6;
+  }
+  .custom-select:focus {
+    outline: none;
+    border-color: #198754;
+    box-shadow: 0 0 0 0.2rem rgba(0, 255, 179, 0.212);
+  }
+  
+/* Estilos para a tabela e cabeçalho sticky */
+.table-wrapper {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.table-wrapper::-webkit-scrollbar {
+  width: 6px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+  background-color: #B7B7B7;
+  border-radius: 4px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb:hover {
+  background-color: #555;
+}
+
+.table {
+  border-collapse: collapse;
+  width: 100%;
+
+}
+
+.table th,
+.table td {
+  border: 1px solid #dddddd;
+  text-align: center;
+  padding: 1px;
+}
+
+.table th {
+  background-color: #198754;
+  color: #fff;
+  position: sticky;
+  top: 0;
+}
+
+.table tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+.table tr:hover {
+  background-color: #ddd;
+}
+
+.tableTitle{
+  color: #828886;
+  font-weight: bold;
+  font-family: LayarBahtera Doomsday;
+  font-size: 1.3em;
+  margin-left: 5px;
+}

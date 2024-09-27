@@ -27,6 +27,8 @@ import { BuildingsReviewComponent } from './Gastos-Comun/buildings-review/buildi
 import { GastosIndividuaisComponent } from './gastos-individuais/gastos-individuais.component';
 import { RateioComponent } from './rateio/rateio.component';
 import { VagasComponent } from './vagas/vagas.component';
+import { FundosComponent } from './fundos/fundos.component';
+import { ProvisoesComponent } from './provisoes/provisoes.component';
 
 @NgModule({
   declarations: [
@@ -44,7 +46,9 @@ import { VagasComponent } from './vagas/vagas.component';
     BuildingsReviewComponent,
     GastosIndividuaisComponent,
     RateioComponent,
-    VagasComponent
+    VagasComponent,
+    FundosComponent,
+    ProvisoesComponent
   ],
   imports: [
     BrowserModule,

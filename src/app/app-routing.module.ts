@@ -15,6 +15,8 @@ import { BuildingsReviewComponent } from './Gastos-Comun/buildings-review/buildi
 import { GastosIndividuaisComponent } from './gastos-individuais/gastos-individuais.component';
 import { RateioComponent } from './rateio/rateio.component';
 import { VagasComponent } from './vagas/vagas.component';
+import { FundosComponent } from './fundos/fundos.component';
+import { ProvisoesComponent } from './provisoes/provisoes.component';
 
 
 const routes: Routes = [
@@ -30,6 +32,9 @@ const routes: Routes = [
   { path: 'gastosComuns', component: BuildingsReviewComponent, canActivate: [AuthGuardService] },
   { path: 'gastosIndividuais', component: GastosIndividuaisComponent, canActivate: [AuthGuardService] },
   { path: 'rateio', component: RateioComponent, canActivate: [AuthGuardService] },
+  { path: 'provisao', component: ProvisoesComponent, canActivate: [AuthGuardService] },
+  { path: 'fundos/reserva', component: FundosComponent, canActivate: [AuthGuardService] },
+  { path: 'fundos/obras', component: FundosComponent, canActivate: [AuthGuardService] },
 
 
   
