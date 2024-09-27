@@ -3,6 +3,12 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Building } from '../shared/utilitarios/building';
 import { BuildingService } from '../shared/service/Banco_de_Dados/buildings_service';
+import { Provisao } from '../shared/utilitarios/provisao';
+import { CommonExpenseService } from '../shared/service/Banco_de_Dados/commonExpense_service';
+import { CommonExpense } from '../shared/utilitarios/commonExpense';
+import { ExpenseType } from '../shared/utilitarios/expenseType';
+import { ExpenseTypeService } from '../shared/service/Banco_de_Dados/tipoGasto_service';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-provisoes',
@@ -10,37 +16,25 @@ import { BuildingService } from '../shared/service/Banco_de_Dados/buildings_serv
   styleUrls: ['./provisoes.component.css']
 })
 export class ProvisoesComponent implements OnInit {
-
-  tipoDeFundo: string = "123";
   rotaAtual: string = '';
   myForm!: FormGroup; // Initialize myForm as a FormGroup
   buildings: Building[] = [];
   loading: boolean = false;
+  provisoes: Provisao[]=[];
+  provisoesUtilizadas: CommonExpense[] = [];
+  expenseTypes:ExpenseType[]=[];
 
-  constructor(private route: ActivatedRoute,
-              private router: Router,
-              private formBuilder: FormBuilder,
-              private buildingService: BuildingService
-
+  constructor(private formBuilder: FormBuilder,
+              private buildingService: BuildingService,
+              private commonExepenseService: CommonExpenseService,
+              private expenseTypeService: ExpenseTypeService,
+              private toastr: ToastrService
             ) {}
 
   ngOnInit(): void {
     this.getAllBuildings();
-
-    // Capturando a parte da rota depois de /fundos
-    this.route.url.subscribe(urlSegments => {
-      const path = urlSegments.map(segment => segment.path).join('/');
-      // Remove o prefixo 'fundos/' se existir
-      const pathAfterFundos = path.replace(/^fundos\/?/, '');
-      this.rotaAtual = pathAfterFundos;
-      if(pathAfterFundos==="provisao"){
-        this.tipoDeFundo = "Gerencia de Provisões"
-      }else if(pathAfterFundos==="reserva"){
-        this.tipoDeFundo = "Gerencia de Fundo de Reserva"
-      }else if(pathAfterFundos==="obras"){
-        this.tipoDeFundo = "Gerencia de Fundo de Obra"
-      }
-    });
+    this.getAllProvisoes()
+    this.getAllExpenses();
     const currentDate = new Date();
     const currentMonth = currentDate.getMonth() + 1; // Os meses são indexados de 0 a 11, então somamos 1 para obter o mês atual
     const currentYear = currentDate.getFullYear().toString(); // Obter o ano atual como uma string
@@ -52,6 +46,24 @@ export class ProvisoesComponent implements OnInit {
     });
   }
 
+  getAllProvisoes(): void {
+    this.provisoes = [
+      { id: 1, detalhe: 'Provisão 1', predio_id: 1, predioName: 'Prédio A', valor: 1000, frequencia: "Mensal" },
+      { id: 2, detalhe: 'Provisão 2', predio_id: 1, predioName: 'Prédio A', valor: 1500, frequencia: "Bimenstral" },
+      { id: 3, detalhe: 'Provisão 3', predio_id: 2, predioName: 'Prédio B', valor: 2000, frequencia: "Trimenstral" },
+    ];
+  }
+  getAllProvisoesUtilizadas(): void {
+    let buildingId = this.myForm.get('building_id')?.value;
+    this.commonExepenseService.getProvisoesByBuilding(buildingId).subscribe(
+      (expenses: CommonExpense[]) => {
+        this.provisoesUtilizadas = expenses
+      },
+      (error) => {
+        console.error('Error fetching expenses:', error);
+      }
+    );
+  }
 
   getAllBuildings(): void {
     this.buildingService.getAllBuildings().subscribe(
@@ -64,15 +76,63 @@ export class ProvisoesComponent implements OnInit {
     );
   }
 
+  getAllExpenses(): void {
+    this.expenseTypeService.getAllExpenseTypes().subscribe(
+      (expenseTypes: ExpenseType[]) => {
+        this.expenseTypes = expenseTypes;
+      },
+      (error) => {
+        console.error('Error fetching buildings:', error);
+      }
+    );
+  }
   loadFundos():void{
-    if(this.loading){
-      return
-    }
-    this.loading = true;
+    
+      this.getAllProvisoesUtilizadas()
+    
+   
+
   }
 
   loadingToFalse():void{
     this.loading = false;
+  }
+
+  getProvisoesDetalhes(provisao:CommonExpense):string{
+    let expenseAux = this.expenseTypes.find(expense=>expense.id === provisao.tipoGasto_id)
+    return expenseAux?.detalhes || ""
+  }
+
+
+  formatarData(data: string): string {
+    const dataObj = new Date(data);
+    const dia = String(dataObj.getDate()).padStart(2, '0');
+    const mes = String(dataObj.getMonth() + 1).padStart(2, '0');
+    const ano = dataObj.getFullYear();
+    return `${dia}/${mes}/${ano}`;
+  }
+
+
+  deleteExpense(expense: CommonExpense): void {
+    console.log(expense)
+    
+    if (confirm("Tem certeza que deseja excluir esta despesa comum?") && expense.id ) {
+      this.commonExepenseService.deleteCommonExpense(expense.id).subscribe(
+        () => {
+          // Remover a despesa excluída do array local
+          const index = this.provisoes.findIndex(e => e.id === expense.id);
+          console.log(index)
+          if (index !== -1) {
+            this.provisoes.splice(index, 1);
+            this.toastr.success('Despesa excluída com sucesso.');
+          }
+        },
+        (error) => {
+          console.error('Erro ao excluir despesa:', error);
+          this.toastr.error('Erro ao excluir despesa. Por favor, tente novamente mais tarde.');
+        }
+      );
+    }
   }
 
 

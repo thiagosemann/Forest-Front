@@ -1,6 +1,6 @@
 <app-nav-bar class="mb-4"></app-nav-bar>
 <div class ="container">
-    <h3>{{ tipoDeFundo }}</h3>
+    <h3>Gerencia de Provisões</h3>
     <form [formGroup]="myForm"> <!-- Wrap your form controls within a formGroup directive -->
       <div class="row">
         <div class="col-md-4">
@@ -26,52 +26,56 @@
         <div class="col-md-6">
             <span class="tableTitle">Provisões cadastradas</span>
             <table class="table">
-                <thead>
-                  <tr>
-                    <th scope="col" style="width: 30%;">Detalhe</th>
-                    <th scope="col" style="width: 10%;">Data</th>
-                    <th scope="col" style="width: 10%;">Valor</th>
-                    <th scope="col" style="width: 10%;">Tipo</th>
-                    <th scope="col" style="width: 10%;">Ação</th>      
-                  </tr>
-                </thead>
-                <tbody>
-                  <!-- Aqui você pode iterar sobre os dados das contas e preencher as linhas da tabela -->
-                  <tr>
-                    <td>R$ Teste</td>
-                    <td>R$ Teste</td>
-                    <td>R$ Teste</td>
-                    <td>R$ Teste</td>
-                    <td><button class="btn btn-danger btn-xs" ><i class="fas fa-trash"></i></button></td>
-                  </tr>
-                </tbody>
-              </table>
+              <thead>
+                <tr>
+                  <th scope="col" style="width: 30%;">Detalhe</th>
+                  <th scope="col" style="width: 20%;">Valor</th>
+                  <th scope="col" style="width: 10%;">Frequência</th>
+                  <th scope="col" style="width: 10%;">Ação</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let provisao of provisoes">
+                  <td>{{ provisao.detalhe }}</td>
+                  <td>R$ {{ provisao.valor | number:'1.2-2' }}</td>
+                  <td>{{ provisao.frequencia }}</td>
+                  <td>
+                    <button class="btn btn-danger btn-xs">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
         </div>
         <div class="col-md-6">
             <span class="tableTitle">Provisões utilizadas</span>
-            <table class="table ">
-                <thead>
-                  <tr>
-                    <th scope="col" style="width: 30%;">Detalhe</th>
-                    <th scope="col" style="width: 10%;">Data</th>
-                    <th scope="col" style="width: 10%;">Valor</th>
-                    <th scope="col" style="width: 10%;">Tipo</th>
-
-                    <th scope="col" style="width: 10%;">Ação</th>      
-                  </tr>
-                </thead>
-                <tbody>
-                  <!-- Aqui você pode iterar sobre os dados das contas e preencher as linhas da tabela -->
-                  <tr>
-                    <td>R$ Teste</td>
-                    <td>R$ Teste</td>
-                    <td>R$ Teste</td>
-                    <td>R$ Teste</td>
-
-                    <td><button class="btn btn-danger btn-xs" ><i class="fas fa-trash"></i></button></td>
-                  </tr>
-                </tbody>
-              </table>
+            <table class="table mt-4">
+              <thead>
+                <tr>
+                  <th scope="col" style="width: 30%;">Detalhe</th>
+                  <th scope="col" style="width: 20%;">Data</th>
+                  <th scope="col" style="width: 20%;">Valor</th>
+                  <th scope="col" style="width: 20%;">Tipo</th>
+                  <th scope="col" style="width: 10%;">Ação</th>      
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Aqui você pode iterar sobre os dados das contas e preencher as linhas da tabela -->
+                <tr *ngFor="let provisao of provisoesUtilizadas">
+                  <ng-container *ngIf="!provisao.tipoGasto_id">
+                    <td>{{ provisao.tipo_Gasto_Extra }}</td>
+                  </ng-container>
+                  <ng-container *ngIf="provisao.tipoGasto_id">
+                    <td>{{ getProvisoesDetalhes(provisao) }}</td>
+                  </ng-container>
+                  <td>{{ formatarData(provisao.data_gasto)}}</td>
+                  <td>R$ {{ provisao.valor }}</td>
+                  <td>{{ provisao.tipo }}</td>
+                  <td><button class="btn btn-danger btn-xs" (click)="deleteExpense(provisao)"><i class="fas fa-trash"></i></button></td>
+                </tr>
+              </tbody>
+            </table>
         </div>
     </div>
     <div class="table-wrapper">

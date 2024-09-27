@@ -48,4 +48,8 @@ export class CommonExpenseService {
     const url = `${this.apiUrl}/building/${predio_id}/month/${month}/year/${year}`;
     return this.http.get<CommonExpense[]>(url, { headers: this.getHeaders() });
   }
+  getProvisoesByBuilding(predio_id: number): Observable<CommonExpense[]> {
+    const url = `${this.apiUrl}/provisoes/${predio_id}`;
+    return this.http.get<CommonExpense[]>(url, { headers: this.getHeaders() });
+  }
 }

@@ -57,7 +57,7 @@
               Frações:<br>
               Apartamento: {{user.apt_fracao}}
               <div *ngFor="let vaga of user.vagas; let i = index">
-                Vaga {{i + 1}}: {{vaga.fracao}} <br>
+                {{vaga.nome}}: {{vaga.fracao}} <br>
               </div>
             </div>
           </td>
