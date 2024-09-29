@@ -49,7 +49,7 @@ export class ProvisoesComponent implements OnInit {
       // Adicione outros controles de formulário conforme necessário
     });
     this.manualProvisaoForm = this.formBuilder.group({
-      predio_id: [null, Validators.required],
+      predio_id: ['0', Validators.required],
       detalhe: ['', Validators.required],
       valor: [null, Validators.required],
       frequencia: ['', Validators.required],
@@ -149,26 +149,48 @@ export class ProvisoesComponent implements OnInit {
   showManualInsertForm(): void {
     this.isManualInsertVisible = true;
   }
-    // Submeter a nova provisão
-    submitManualProvisao(): void {
-      if (this.manualProvisaoForm.invalid) {
-        this.toastr.error('Preencha todos os campos corretamente.');
-        return;
+  // Submeter a nova provisão
+  submitManualProvisao(): void {
+    if (this.manualProvisaoForm.invalid) {
+      this.toastr.error('Preencha todos os campos corretamente.');
+      return;
+    }
+
+    const novaProvisao: Provisao = this.manualProvisaoForm.value;
+
+    this.provisaoService.createProvisao(novaProvisao).subscribe(
+      () => {
+        this.toastr.success('Provisão inserida com sucesso.');
+        this.manualProvisaoForm.reset(); // Limpar o formulário
+        this.isManualInsertVisible = false; // Ocultar o formulário após o envio
+        this.getAllProvisoes(); // Atualizar a lista de provisões
+      },
+      (error) => {
+        console.error('Erro ao inserir provisão:', error);
+        this.toastr.error('Erro ao inserir provisão. Tente novamente.');
       }
-  
-      const novaProvisao: Provisao = this.manualProvisaoForm.value;
-  
-      this.provisaoService.createProvisao(novaProvisao).subscribe(
+    );
+  }
+  voltar(): void {
+    this.isManualInsertVisible = false;
+  }
+  deleteProvisao(provisao: Provisao): void {
+    if (confirm('Tem certeza que deseja excluir esta provisão?') && provisao.id) {
+      this.provisaoService.deleteProvisao(provisao.id).subscribe(
         () => {
-          this.toastr.success('Provisão inserida com sucesso.');
-          this.manualProvisaoForm.reset(); // Limpar o formulário
-          this.isManualInsertVisible = false; // Ocultar o formulário após o envio
-          this.getAllProvisoes(); // Atualizar a lista de provisões
+          // Remover a provisão excluída do array local
+          const index = this.provisoes.findIndex(p => p.id === provisao.id);
+          if (index !== -1) {
+            this.provisoes.splice(index, 1);
+            this.toastr.success('Provisão excluída com sucesso.');
+          }
         },
         (error) => {
-          console.error('Erro ao inserir provisão:', error);
-          this.toastr.error('Erro ao inserir provisão. Tente novamente.');
+          console.error('Erro ao excluir provisão:', error);
+          this.toastr.error('Erro ao excluir provisão. Tente novamente.');
         }
       );
     }
+  }
+    
 }
