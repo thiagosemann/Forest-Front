@@ -33,8 +33,7 @@ const routes: Routes = [
   { path: 'gastosIndividuais', component: GastosIndividuaisComponent, canActivate: [AuthGuardService] },
   { path: 'rateio', component: RateioComponent, canActivate: [AuthGuardService] },
   { path: 'provisao', component: ProvisoesComponent, canActivate: [AuthGuardService] },
-  { path: 'fundos/reserva', component: FundosComponent, canActivate: [AuthGuardService] },
-  { path: 'fundos/obras', component: FundosComponent, canActivate: [AuthGuardService] },
+  { path: 'fundos', component: FundosComponent, canActivate: [AuthGuardService] },
 
 
   

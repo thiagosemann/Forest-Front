@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
 import { Building } from '../shared/utilitarios/building';
 import { BuildingService } from '../shared/service/Banco_de_Dados/buildings_service';
 import { Provisao } from '../shared/utilitarios/provisao';

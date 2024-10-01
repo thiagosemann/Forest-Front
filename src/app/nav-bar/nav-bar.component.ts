@@ -55,12 +55,8 @@ export class NavBarComponent implements OnInit {
   rateio(): void {
     this.router.navigate(['/rateio']);
   }
-  fundos(tipo:number): void {
-   if(tipo===1){
-      this.router.navigate(['/fundos/reserva']);
-    } else  if(tipo===2){
-      this.router.navigate(['/fundos/obras']);
-    }
+  fundos(): void {
+    this.router.navigate(['/fundos']);
   }
   provisao(): void {
     this.router.navigate(['/provisao']);

@@ -1,4 +1,55 @@
 <app-nav-bar class="mb-4"></app-nav-bar>
-<div class ="container">
-   {{tipoDeFundo}}
+<div class="container">
+   <h3>Gerencia de Fundos</h3>
+   <form [formGroup]="myForm" (ngSubmit)="cadastrarFundo()"> <!-- Add ngSubmit here -->
+      <div class="row">
+        <div class="col-md-4">
+          <select id="building_id" name="building_id" class="form-control custom-select" formControlName="building_id" required (change)="loadFundos()">
+            <option value="0" disabled selected>Selecione o prédio</option>
+            <option *ngFor="let building of buildings" [value]="building.id">{{ building.nome }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="row mt-4">
+         <div class="col-md-4">
+            <input formControlName="tipo_fundo" class="custom-input" placeholder="Tipo de Fundo" required> <!-- Add formControlName -->
+         </div>
+         <div class="col-md-1">           
+            <input type="number" formControlName="porcentagem" min="0" increment="0.1" class="custom-input" placeholder="Porcentagem (%)" required> <!-- Add formControlName -->
+         </div>
+         
+         <div class="col-md-4" style="margin-left: 15px;">
+            <button class="btn btn-primary" style="margin-left: -25px;">
+               <i class="fas fa-add"></i> Cadastrar
+             </button>
+         </div>
+       </div>
+    </form>
+
+    <br>
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col" style="width: 30%;">Tipo de Fundo</th>
+          <th scope="col" style="width: 20%;">Porcentagem</th>
+          <th scope="col" style="width: 10%;">Saldo</th>
+          <th scope="col" style="width: 10%;">Ação</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let fundo of fundos">
+            <td>{{ fundo.tipo_fundo }}</td>
+            <td>{{ fundo.porcentagem * 100 }}%</td>
+            <td>R$ 150</td>
+            <td>
+                <button class="btn btn-primary btn-xs">
+                    <i class="fas fa-info"></i>
+                </button>
+                <button class="btn btn-danger btn-xs" style="margin-left: 5px;" (click)="deletarFundo(fundo)">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        </tr>
+    </tbody>
+    </table>
 </div>
