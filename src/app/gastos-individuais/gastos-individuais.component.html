@@ -55,7 +55,22 @@
             </button>
            </ng-container>
       </div>
-
+      <div class="col-md-12 mt-4" *ngIf="gastosIndividuaisInsert.length > 0">
+        <div class="row align-items-center justify-content-between">
+          <div class="col-md-2 d-flex align-items-center">
+            <span class="label-title">Taxa Água:</span>
+            <input class="form-control custom-input ms-2" formControlName="taxaAgua" (change)="calculateAguaValue()">
+          </div>
+          <div class="col-md-4">
+            Valor de Água inserido em Gastos Comuns: <span class="value-label">{{valorAguaGastoComum | currency:'BRL':'symbol-narrow':'1.2-2'}}</span>
+          </div>
+          <div class="col-md-2 d-flex align-items-center">
+            <span class="label-title">Taxa Gás:</span>
+            <input class="form-control custom-input ms-2" formControlName="taxaGas" (change)="calculateGasValue()">
+          </div>
+        </div>
+      </div>
+      
     </div>
     <!-- Add other form controls within the formGroup -->
   </form>

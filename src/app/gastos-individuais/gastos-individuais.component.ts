@@ -10,6 +10,9 @@ import { GastoIndividual } from '../shared/utilitarios/gastoIndividual';
 import { BuildingService } from '../shared/service/Banco_de_Dados/buildings_service';
 import { ApartamentoService } from '../shared/service/Banco_de_Dados/apartamento_service';
 import { GastosIndividuaisService } from '../shared/service/Banco_de_Dados/gastosIndividuais_service';
+import { CommonExpenseService } from '../shared/service/Banco_de_Dados/commonExpense_service';
+import { ExpenseType } from '../shared/utilitarios/expenseType';
+import { CommonExpense } from '../shared/utilitarios/commonExpense';
 
 @Component({
   selector: 'app-gastos-individuais',
@@ -22,15 +25,17 @@ export class GastosIndividuaisComponent implements OnInit {
   selectedBuildingId: number = 0;
   selectedMonth: number = 0;
   selectedYear: number = 0;
-  
+  expenseTypes:ExpenseType[]=[];
+  valorAguaGastoComum:number=0;
   users: User[] = [];
   apartamentos: Apartamento[] = [];
   dataModel: any[] = [];
   gastosIndividuais:GastoIndividual[]=[];
   gastosIndividuaisInsert:GastoIndividual[]=[];
   loading: boolean = false;
-
+  m3TotalAgua:number=0;
   saveData:boolean =false;
+
   months: { monthNumber: number; monthName: string }[] = [
     { monthNumber: 1, monthName: 'Janeiro' },
     { monthNumber: 2, monthName: 'Fevereiro' },
@@ -56,7 +61,9 @@ export class GastosIndividuaisComponent implements OnInit {
     private formBuilder: FormBuilder,
     private apartamentoService: ApartamentoService,
     private excelService: ExcelService,
-    private gastosIndividuaisService: GastosIndividuaisService
+    private gastosIndividuaisService: GastosIndividuaisService,
+    private commonExepenseService: CommonExpenseService,
+
   ) {}
 
   ngOnInit(): void {
@@ -64,7 +71,10 @@ export class GastosIndividuaisComponent implements OnInit {
     this.myForm = this.formBuilder.group({
       building_id: [0, Validators.required],
       months: [0, Validators.required],
-      years: [0, Validators.required]
+      years: [0, Validators.required],
+      taxaAgua:[93.28, Validators.required],
+      taxaGas:[10.0, Validators.required]
+
     });
 
   }
@@ -72,7 +82,6 @@ export class GastosIndividuaisComponent implements OnInit {
   getAllBuildings(): void {
     this.buildingService.getAllBuildings().subscribe({
       next: (buildings: Building[]) => {
-        console.log(buildings);
         this.buildings = buildings;
       },
       error: (error) => {
@@ -80,11 +89,33 @@ export class GastosIndividuaisComponent implements OnInit {
       }
     });
   }
+
+
+
+  getAguaGastoComun(): void {
+    this.commonExepenseService
+      .getExpensesByBuildingAndMonth(this.selectedBuildingId, this.selectedMonth, this.selectedYear)
+      .subscribe(
+        (expenses: CommonExpense[] = []) => {
+          const aguaExpense = expenses.find(expense => expense.tipo === "Agua");
+          if (aguaExpense) {
+            this.valorAguaGastoComum = aguaExpense.valor;
+          } 
+        },
+        (error) => {
+          this.toastr.error("Erro ao buscar os gastos comuns.");
+          console.error('Error fetching expenses:', error);
+        }
+      );
+  }
+  
+  
+  
+
   getAllApartamentosByBuildingId(buildingId:number,createGastos:boolean): void {
     this.apartamentos=[];
     this.apartamentoService.getApartamentosByBuildingId(buildingId).subscribe({
       next: (apartamentos: Apartamento[]) => {
-        console.log(apartamentos);
         if(apartamentos.length==0){
           this.toastr.error("Prédio sem apartamentos cadastrados!")
         }
@@ -103,49 +134,46 @@ export class GastosIndividuaisComponent implements OnInit {
     if(this.loading){
       return
     }
-    this.loading = true;
     this.selectedBuildingId = this.myForm.get('building_id')?.value;
     this.selectedMonth = this.myForm.get('months')?.value;
     this.selectedYear = this.myForm.get('years')?.value;
     this.gastosIndividuais = [];
     this.gastosIndividuaisInsert = [];
-
-      if (this.selectedBuildingId && this.selectedMonth && this.selectedYear) {
-        this.gastosIndividuaisService.getIndividualExpensesByAptMonthAndYear(this.selectedBuildingId, this.selectedMonth, this.selectedYear).subscribe(
-          (gastosIndividuais: GastoIndividual[]) => {
-            console.log(gastosIndividuais)
-            this.gastosIndividuais = gastosIndividuais;
-            this.gastosIndividuais.forEach(gasto=>{
-              gasto.valorTotal = Number(gasto.aguaValor)+ Number(gasto.gasValor) + Number(gasto.lavanderia) + Number(gasto.multa) + Number(gasto.lazer);
-            })
-            if(this.gastosIndividuais.length ==0){
-              this.getAllApartamentosByBuildingId(this.selectedBuildingId,true);
-            }
-            this.loadingToFalse();
-
-          },
-          (error) => {
-            this.toastr.info("Nenhum gasto inserido para esse mês.")
+    if(this.selectedBuildingId==0 || this.selectedMonth==0 || this.selectedYear==0){
+      return
+    }
+    this.getAguaGastoComun()
+    this.loading = true;
+    if (this.selectedBuildingId && this.selectedMonth && this.selectedYear) {
+      this.gastosIndividuaisService.getIndividualExpensesByAptMonthAndYear(this.selectedBuildingId, this.selectedMonth, this.selectedYear).subscribe(
+        (gastosIndividuais: GastoIndividual[]) => {
+          this.gastosIndividuais = gastosIndividuais;
+          this.gastosIndividuais.forEach(gasto=>{
+            gasto.valorTotal = Number(gasto.aguaValor)+ Number(gasto.gasValor) + Number(gasto.lavanderia) + Number(gasto.multa) + Number(gasto.lazer);
+          })
+          if(this.gastosIndividuais.length ==0){
             this.getAllApartamentosByBuildingId(this.selectedBuildingId,true);
-            console.error('Error fetching expenses:', error);
-            this.loadingToFalse();
           }
-        );
-      } else {
-        this.users = [];
-        this.loadingToFalse();
-      }
+          this.loadingToFalse();
+
+        },
+        (error) => {
+          this.toastr.info("Nenhum gasto inserido para esse mês.")
+          this.getAllApartamentosByBuildingId(this.selectedBuildingId,true);
+          console.error('Error fetching expenses:', error);
+          this.loadingToFalse();
+        }
+      );
+    } else {
+      this.users = [];
+      this.loadingToFalse();
+    }
 
   }
   loadingToFalse():void{
-    console.log(this.selectedBuildingId)
-    console.log(this.selectedMonth)
-    console.log(this.selectedYear)
-    console.log(this.months)
     this.myForm.get('building_id')?.setValue(this.selectedBuildingId);
     this.myForm.get('years')?.setValue(this.selectedYear);
     this.myForm.get('months')?.setValue(this.selectedMonth);
-    console.log(this.myForm.get('months')?.value)
     this.loading = false;
   }
 
@@ -169,7 +197,6 @@ export class GastosIndividuaisComponent implements OnInit {
       }
       this.gastosIndividuaisInsert.push(apartamentoAux)
     })
-    console.log(this.gastosIndividuaisInsert)
   }
 
   downloadModel(): void {
@@ -208,7 +235,11 @@ export class GastosIndividuaisComponent implements OnInit {
     XLSX.writeFile(wb, `Gastos_Individuais_${this.selectedMonth}_${this.selectedYear}.xlsx`);
   }
 
-handleFileInput(event: any): void {
+  handleFileInput(event: any): void {
+    if(this.valorAguaGastoComum==0){
+      this.toastr.error("Insira o valor da água no Gasto Comum!");
+      return
+    }
     // Começar a girar o spinner
     this.uploading = true;
     this.saveData = true;
@@ -233,28 +264,27 @@ handleFileInput(event: any): void {
         let lazer = row[3];
         let lavanderia = row[4];
         let multa = row[5];
-        console.log(multa)
         let today = this.getTodayDate() ;
         if (apartamento) {
+          this.m3TotalAgua+=Number(aguaM3);
           let apartamentoAux : GastoIndividual = {
             apt_id: apartamento.id,
             apt_name: apartamento.nome,
             apt_fracao: apartamento.fracao,
             aguaM3: aguaM3  || 0,
-            aguaValor: aguaM3*10,              
+            aguaValor: 0,              
             gasM3: gasM3  || 0,
-            gasValor: gasM3*10,
+            gasValor: 0,
             lazer: lazer  || 0,
             lavanderia: lavanderia  || 0,
             multa: multa || 0,
-            valorTotal: aguaM3*10 + gasM3*10 + lazer + lavanderia + multa,
             data_gasto: today
           }
           this.gastosIndividuaisInsert.push(apartamentoAux)
         }
       })
-  
-      console.log('Conteúdo do arquivo:', this.gastosIndividuaisInsert);
+      this.calculateAguaValue();
+      this.calculateGasValue();
   
       // Parar de girar o spinner após o carregamento
       this.uploading = false;
@@ -269,12 +299,63 @@ handleFileInput(event: any): void {
     // Ler o conteúdo do arquivo como um array buffer
     reader.readAsArrayBuffer(file);
   }
+  calculateGasValue():void{
+    let taxaGas =  Number(this.myForm.get('taxaGas')?.value);
+
+    this.gastosIndividuaisInsert.forEach(expense=>{
+      expense.gasValor= expense.gasM3 * taxaGas;
+    })
+  }
+  calculateAguaValue(): void {
+    let taxaAgua =  Number(this.myForm.get('taxaAgua')?.value);
+    let valorTotalAgua = taxaAgua * this.apartamentos.length;
+    let diferencaAgua = this.valorAguaGastoComum - valorTotalAgua;
+  
+    console.log("valorTotalAgua", valorTotalAgua);
+    console.log("this.valorAguaGastoComum", this.valorAguaGastoComum);
+    console.log("diferencaAgua", diferencaAgua);
+  
+    this.gastosIndividuaisInsert.forEach(expense=>{
+      expense.aguaValor= taxaAgua;
+      expense.valorTotal = Number(expense.aguaValor) + 
+                          Number(expense.gasValor) + 
+                          Number(expense.lazer) + 
+                          Number(expense.lavanderia) + 
+                          Number(expense.multa);
+    })
+
+    // Filtrar os gastos com água que ultrapassam 5m³
+    const aguaExpenses = this.gastosIndividuaisInsert.filter(gasto => gasto.aguaM3 >= 5);
+
+    // Calcular o total de metros cúbicos de água ultrapassados (acima de 5)
+    const aguaM3Ultrapassado = aguaExpenses.reduce((total, expense) => total + (expense.aguaM3 - 5), 0);
+
+    // Se há ultrapassagem de consumo de água, redistribuir a diferença
+    if (aguaM3Ultrapassado > 0) {
+      aguaExpenses.forEach(expense => {
+        const proporcao = (expense.aguaM3 - 5) / aguaM3Ultrapassado;
+        expense.aguaValor += proporcao * diferencaAgua; // Adicionar a parte proporcional da diferença
+      });
+    }
+
+    // Recalcular o valor total de cada apartamento
+    this.gastosIndividuaisInsert.forEach(expense => {
+      expense.valorTotal = Number(expense.aguaValor) + 
+                          Number(expense.gasValor) + 
+                          Number(expense.lazer) + 
+                          Number(expense.lavanderia) + 
+                          Number(expense.multa);
+    });
+
+    console.log("aguaExpenses", aguaExpenses); // Mostra todos os gastos maiores ou iguais a 5
+  }
+  
+
   saveGastosIndividuais():void{
     //this.saveData = false;
-    console.log(this.gastosIndividuaisInsert)
     this.gastosIndividuaisService.createGastoIndividual(this.gastosIndividuaisInsert).subscribe(
       (gastosIndividuais: GastoIndividual[]) => {
-        console.log('Despesas comuns criadas com sucesso:', gastosIndividuais);
+        this.toastr.success("Gastos inseridos com sucesso");
       },
       (error) => {
         console.error('Erro ao criar despesas comuns:', error);

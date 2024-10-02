@@ -42,9 +42,11 @@
         <tr>
           <th scope="col" style="width: 30%;">Apartamento</th>
           <th scope="col" style="width: 10%;">Fração</th>
-          <th scope="col" style="width: 20%;">Valor Individual</th>
-          <th scope="col" style="width: 20%;">Valor Comum</th>
-          <th scope="col" style="width: 20%;">Valor Total</th>
+          <th scope="col" style="width: 10%;">Valor Individual</th>
+          <th scope="col" style="width: 10%;">Valor Comum</th>
+          <th scope="col" style="width: 10%;">Provisões</th>
+          <th scope="col" style="width: 10%;">Fundos</th>
+          <th scope="col" style="width: 10%;">Valor Total</th>
 
         </tr>
       </thead>
@@ -63,7 +65,9 @@
           </td>
           <td>{{formatCurrency(user.valorIndividual)}}</td>
           <td>{{formatCurrency(user.fracao_total * gastoComumValor) }}</td>
-          <td>{{formatCurrency(user.fracao_total * gastoComumValor + user.valorIndividual ) }}</td>
+          <td>{{formatCurrency(user.fracao_total * provisoesRateadas) }}</td>
+          <td>{{formatCurrency(user.fracao_total * fundosRateados) }}</td>
+          <td>{{formatCurrency(user.fracao_total * gastoComumValor + user.fracao_total * provisoesRateadas + user.valorIndividual + user.fracao_total * fundosRateados) }}</td>
         </tr>
       </tbody>
     </table>

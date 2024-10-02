@@ -13,6 +13,10 @@ import { GastosIndividuaisService } from '../shared/service/Banco_de_Dados/gasto
 import { VagaService } from '../shared/service/Banco_de_Dados/vagas_service';
 import { Vaga } from '../shared/utilitarios/vaga';
 import { Rateio } from '../shared/utilitarios/rateio';
+import { ProvisaoService } from '../shared/service/Banco_de_Dados/provisao_service';
+import { Provisao } from '../shared/utilitarios/provisao';
+import { FundoService } from '../shared/service/Banco_de_Dados/fundo_service';
+import { Fundo } from '../shared/utilitarios/fundo';
 
 @Component({
   selector: 'app-rateio',
@@ -29,6 +33,9 @@ export class RateioComponent implements OnInit {
   gastosIndividuais:GastoIndividual[]=[];
   usersRateio:any[]=[];
   buildingId:number=0;
+  provisoesRateadas:number=0;
+  fundosRateados:number=0;
+  
 
   months: { monthNumber: number, monthName: string }[] = [
     { monthNumber: 1, monthName: "Janeiro" },
@@ -54,7 +61,10 @@ export class RateioComponent implements OnInit {
     private expenseTypeService: ExpenseTypeService,
     private apartamentoService: ApartamentoService,
     private gastosIndividuaisService: GastosIndividuaisService,
-    private vagasService: VagaService
+    private vagasService: VagaService,
+    private provisaoService: ProvisaoService,
+    private fundoService: FundoService 
+
 
   ) {}
   ngOnInit(): void {
@@ -83,13 +93,54 @@ export class RateioComponent implements OnInit {
     );
   }
 
+  getFundosByBuildingID():void{
+    this.fundoService.getFundosByBuildingId(this.buildingId).subscribe(
+      (fundos:Fundo[])=>{
+        console.log(fundos)
+        fundos.forEach(fundo=>{
+          this.fundosRateados+=fundo.porcentagem*this.gastoComumValorTotal;
+        })
+      },
+      (error)=>{
+        console.error('Error fetching provisoes:', error);
+      }
+    )
+  }
 
+  getProvisoesByBuildingID():void{
+    this.provisaoService.getProvisoesByBuildingId(this.buildingId).subscribe(
+      (provisoes:Provisao[])=>{
+        console.log(provisoes)
+        provisoes.forEach(provisao=>{
+          let auxProvisao =0;
+          if(provisao.frequencia=="Mensal"){
+            auxProvisao = Number(provisao.valor);
+          }else if(provisao.frequencia=="Bimensal"){
+            auxProvisao = Number(provisao.valor)/2;
+          }else if(provisao.frequencia=="Trimestral"){
+            auxProvisao = Number(provisao.valor)/3;
+          }else if(provisao.frequencia=="Semestral"){
+            auxProvisao = Number(provisao.valor)/6;
+          }else if(provisao.frequencia=="Anual"){
+            auxProvisao = Number(provisao.valor)/12;
+          }
+          this.provisoesRateadas+=auxProvisao;
+        })
+        console.log(this.provisoesRateadas)
+      },
+      (error)=>{
+        console.error('Error fetching provisoes:', error);
+      }
+    )
+  }
 
 
   changeSelect(): void {
    this.buildingId = Number(this.myForm.get('building_id')?.value);
     this.loadExpenses();
     this.loadExpensesIndividuais();
+    this.getProvisoesByBuildingID();
+
   }
 
   loadExpenses(): void {
@@ -147,7 +198,6 @@ export class RateioComponent implements OnInit {
                       userRateioAux.fracao_total += Number(vaga.fracao)
                     })
                     this.usersRateio.push(userRateioAux); // Agora adiciona ao array após obter as vagas
-
                     console.log(vagas)
                   },
                   error: (error) => {
@@ -160,6 +210,7 @@ export class RateioComponent implements OnInit {
     
             }
           });
+          this.getFundosByBuildingID();
         },
         (error) => {
           this.toastr.error(error.error.message);
