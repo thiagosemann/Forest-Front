@@ -304,6 +304,11 @@ export class GastosIndividuaisComponent implements OnInit {
 
     this.gastosIndividuaisInsert.forEach(expense=>{
       expense.gasValor= expense.gasM3 * taxaGas;
+      expense.valorTotal = Number(expense.aguaValor) + 
+      Number(expense.gasValor) + 
+      Number(expense.lazer) + 
+      Number(expense.lavanderia) + 
+      Number(expense.multa);
     })
   }
   calculateAguaValue(): void {
