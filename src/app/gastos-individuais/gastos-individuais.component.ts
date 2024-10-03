@@ -328,21 +328,21 @@ export class GastosIndividuaisComponent implements OnInit {
                           Number(expense.lavanderia) + 
                           Number(expense.multa);
     })
+    if(taxaAgua*this.gastosIndividuaisInsert.length> this.valorAguaGastoComum ){
+        // Filtrar os gastos com água que ultrapassam 5m³
+        const aguaExpenses = this.gastosIndividuaisInsert.filter(gasto => gasto.aguaM3 >= 5);
 
-    // Filtrar os gastos com água que ultrapassam 5m³
-    const aguaExpenses = this.gastosIndividuaisInsert.filter(gasto => gasto.aguaM3 >= 5);
+        // Calcular o total de metros cúbicos de água ultrapassados (acima de 5)
+        const aguaM3Ultrapassado = aguaExpenses.reduce((total, expense) => total + (expense.aguaM3 - 5), 0);
 
-    // Calcular o total de metros cúbicos de água ultrapassados (acima de 5)
-    const aguaM3Ultrapassado = aguaExpenses.reduce((total, expense) => total + (expense.aguaM3 - 5), 0);
-
-    // Se há ultrapassagem de consumo de água, redistribuir a diferença
-    if (aguaM3Ultrapassado > 0) {
-      aguaExpenses.forEach(expense => {
-        const proporcao = (expense.aguaM3 - 5) / aguaM3Ultrapassado;
-        expense.aguaValor += proporcao * diferencaAgua; // Adicionar a parte proporcional da diferença
-      });
+        // Se há ultrapassagem de consumo de água, redistribuir a diferença
+        if (aguaM3Ultrapassado > 0) {
+          aguaExpenses.forEach(expense => {
+            const proporcao = (expense.aguaM3 - 5) / aguaM3Ultrapassado;
+            expense.aguaValor += proporcao * diferencaAgua; // Adicionar a parte proporcional da diferença
+          });
+        }
     }
-
     // Recalcular o valor total de cada apartamento
     this.gastosIndividuaisInsert.forEach(expense => {
       expense.valorTotal = Number(expense.aguaValor) + 
@@ -352,7 +352,6 @@ export class GastosIndividuaisComponent implements OnInit {
                           Number(expense.multa);
     });
 
-    console.log("aguaExpenses", aguaExpenses); // Mostra todos os gastos maiores ou iguais a 5
   }
   
 
