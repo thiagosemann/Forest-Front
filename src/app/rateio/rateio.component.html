@@ -1,7 +1,7 @@
 <app-nav-bar class="mb-4"></app-nav-bar>
 <div class="container">
   <h3>Rateio</h3>
-  <form [formGroup]="myForm"> <!-- Wrap your form controls within a formGroup directive -->
+  <form [formGroup]="myForm">
     <div class="row">
       <div class="col-md-3">
         <select id="building_id" name="building_id" class="form-control custom-select" formControlName="building_id" required (change)="changeSelect()">
@@ -15,28 +15,28 @@
           <option *ngFor="let month of months" [value]="month.monthNumber">{{ month.monthName }}</option>
         </select>
       </div>
-      
+
       <div class="col-md-1">
         <select id="years" name="years" class="form-control custom-select" formControlName="years" required (change)="changeSelect()">
           <option value="" disabled selected>Selecione o ano</option>
           <option *ngFor="let year of years" [value]="year">{{ year }}</option>
         </select>
       </div>
-      <ng-container >
-        <div class="col-md-7">
-          <div class="row">
-            <div class="col-md-4"><span class="spanText1">Individual :</span><span class="spanText2"> {{formatCurrency(gastoIndividualValorTotal)}}</span></div>
-            <div class="col-md-4"><span class="spanText1">Comum:</span><span class="spanText2"> {{formatCurrency(gastoComumValorTotal)}}</span></div>
-            <div class="col-md-4"><span class="spanText1">Total :</span><span class="spanText2"> {{formatCurrency(gastoIndividualValorTotal+gastoComumValorTotal)}}</span></div>
-          </div>
-        </div>
-      </ng-container>
     </div>
-    <!-- Add other form controls within the formGroup -->
   </form>
-  
+
+  <!-- Loading Spinner -->
+  <div *ngIf="loading" class="loading-spinner">
+    <p>Carregando dados...</p>
+  </div>
+
+  <!-- Mensagem de erro personalizada -->
+  <div *ngIf="!loading && !usersRateio.length && mensagemErro" class="error-message">
+    <p>{{ mensagemErro }}</p>
+  </div>
+
   <!-- Tabela de contas -->
-  <div class="table-wrapper">
+  <div *ngIf="!loading && usersRateio.length" class="table-wrapper">
     <table class="table">
       <thead>
         <tr>
@@ -47,14 +47,13 @@
           <th scope="col" style="width: 10%;">Provisões</th>
           <th scope="col" style="width: 10%;">Fundos</th>
           <th scope="col" style="width: 10%;">Valor Total</th>
-
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let user of usersRateio">
           <td>{{user.apt_name}}</td>
           <td class="tooltip-container">
-            <span class="tooltip-text">{{user.fracao_total}}</span>
+            <span class="tooltip-text">{{user.fracao_total.toFixed(7)}}</span>
             <div class="tooltip-message">
               Frações:<br>
               Apartamento: {{user.apt_fracao}}
@@ -64,10 +63,10 @@
             </div>
           </td>
           <td>{{formatCurrency(user.valorIndividual)}}</td>
-          <td>{{formatCurrency(user.fracao_total * gastoComumValor) }}</td>
-          <td>{{formatCurrency(user.fracao_total * provisoesRateadas) }}</td>
-          <td>{{formatCurrency(user.fracao_total * fundosRateados) }}</td>
-          <td>{{formatCurrency(user.fracao_total * gastoComumValor + user.fracao_total * provisoesRateadas + user.valorIndividual + user.fracao_total * fundosRateados) }}</td>
+          <td>{{formatCurrency(user.valorComum) }}</td>
+          <td>{{formatCurrency(user.valorProvisoes) }}</td>
+          <td>{{formatCurrency(user.valorFundos) }}</td>
+          <td>{{returnValorTotal(user)}}</td>
         </tr>
       </tbody>
     </table>

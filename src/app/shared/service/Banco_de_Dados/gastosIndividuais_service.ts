@@ -49,9 +49,13 @@ export class GastosIndividuaisService {
     const url = `${this.apiUrl}/predios/${predio_id}/month/${month}/year/${year}`;
     return this.http.get<GastoIndividual[]>(url, { headers: this.getHeaders() });
   }
-  deleteIndividualExpensesByAptMonthAndYear(predio_id: number, month: number, year: number): Observable<void> {
-    const url = `${this.apiUrl}/predios/${predio_id}/month/${month}/year/${year}`;
-    return this.http.delete<void>(url, { headers: this.getHeaders() });
+
+  // Método para exclusão em lote de gastos individuais
+  deleteIndividualExpensesInBatch(ids: number[]): Observable<void> {
+    const url = `${this.apiUrl}/batch`;
+    return this.http.request<void>('delete', url, { 
+      body: ids, 
+      headers: this.getHeaders() 
+    });
   }
-  
 }

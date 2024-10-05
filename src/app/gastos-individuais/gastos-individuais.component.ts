@@ -381,30 +381,31 @@ export class GastosIndividuaisComponent implements OnInit {
   }
 
   deleteAll(): void {
-    if (!this.selectedBuildingId || !this.selectedMonth || !this.selectedYear) {
-      this.toastr.error('Por favor, selecione um prédio, mês e ano antes de deletar.');
+    let idsToDelete:number[]=[];
+    this.gastosIndividuais.forEach(gasto=>{
+      if(gasto.id){
+        idsToDelete.push(gasto.id)
+      }
+    })
+
+    if (idsToDelete.length === 0) {
+      this.toastr.warning("Nenhum gasto selecionado para excluir.");
       return;
     }
   
-    // Adiciona a confirmação antes de deletar
-    const confirmation = window.confirm('Tem certeza de que deseja excluir todos os gastos individuais para o mês selecionado?');
-  
-    if (confirmation) {
-      this.gastosIndividuaisService.deleteIndividualExpensesByAptMonthAndYear(this.selectedBuildingId, this.selectedMonth, this.selectedYear).subscribe({
-        next: () => {
-          this.toastr.success('Todos os gastos individuais foram deletados com sucesso.');
-          this.loadExpenses(); // Recarrega a lista de gastos após a exclusão
-        },
-        error: (error) => {
-          console.error('Erro ao deletar os gastos individuais:', error);
-          this.toastr.error('Erro ao deletar os gastos individuais.');
-        }
-      });
-    }
+    this.gastosIndividuaisService.deleteIndividualExpensesInBatch(idsToDelete).subscribe({
+      next: () => {
+        this.toastr.success("Gastos excluídos com sucesso.");
+        // Atualiza a lista após a exclusão
+        this.loadExpenses();
+      },
+      error: (error) => {
+        console.error("Erro ao excluir gastos:", error);
+        this.toastr.error("Erro ao excluir os gastos.");
+      }
+    });
   }
   
-  
-
   // Método para formatar valores em Real (R$)
   formatCurrency(value: number| undefined): string {
     if(value){

@@ -128,3 +128,17 @@
   visibility: visible;
   opacity: 1;
 }
+
+.loading-spinner {
+  text-align: center;
+  font-size: 18px;
+  color: #198754;
+  margin-top: 20px;
+}
+
+.error-message {
+  text-align: center;
+  font-size: 18px;
+  color: #dc3545;
+  margin-top: 20px;
+}
