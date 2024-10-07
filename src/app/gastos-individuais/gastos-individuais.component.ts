@@ -13,6 +13,7 @@ import { GastosIndividuaisService } from '../shared/service/Banco_de_Dados/gasto
 import { CommonExpenseService } from '../shared/service/Banco_de_Dados/commonExpense_service';
 import { ExpenseType } from '../shared/utilitarios/expenseType';
 import { CommonExpense } from '../shared/utilitarios/commonExpense';
+import { SelectionService } from '../shared/service/selectionService';
 
 @Component({
   selector: 'app-gastos-individuais',
@@ -22,9 +23,9 @@ import { CommonExpense } from '../shared/utilitarios/commonExpense';
 export class GastosIndividuaisComponent implements OnInit {
   buildings: Building[] = [];
   myForm!: FormGroup;
-  selectedBuildingId: number = 0;
-  selectedMonth: number = 0;
-  selectedYear: number = 0;
+  selectedBuildingId:number=0;
+  selectedMonth:number=0;
+  selectedYear:number=0;
   expenseTypes:ExpenseType[]=[];
   valorAguaGastoComum:number=0;
   users: User[] = [];
@@ -35,24 +36,7 @@ export class GastosIndividuaisComponent implements OnInit {
   loading: boolean = false;
   m3TotalAgua:number=0;
   saveData:boolean =false;
-
-  months: { monthNumber: number; monthName: string }[] = [
-    { monthNumber: 1, monthName: 'Janeiro' },
-    { monthNumber: 2, monthName: 'Fevereiro' },
-    { monthNumber: 3, monthName: 'Março' },
-    { monthNumber: 4, monthName: 'Abril' },
-    { monthNumber: 5, monthName: 'Maio' },
-    { monthNumber: 6, monthName: 'Junho' },
-    { monthNumber: 7, monthName: 'Julho' },
-    { monthNumber: 8, monthName: 'Agosto' },
-    { monthNumber: 9, monthName: 'Setembro' },
-    { monthNumber: 10, monthName: 'Outubro' },
-    { monthNumber: 11, monthName: 'Novembro' },
-    { monthNumber: 12, monthName: 'Dezembro' }
-  ];
   filteredMonths: { monthNumber: number; monthName: string }[] = [];
-
-  years: string[] = ['2022', '2023', '2024', '2025', '2026', '2027', '2028', '2029', '2030'];
   uploading: boolean = false;
 
   constructor(
@@ -63,20 +47,24 @@ export class GastosIndividuaisComponent implements OnInit {
     private excelService: ExcelService,
     private gastosIndividuaisService: GastosIndividuaisService,
     private commonExepenseService: CommonExpenseService,
+    private selectionService: SelectionService
 
   ) {}
 
   ngOnInit(): void {
     this.getAllBuildings();
     this.myForm = this.formBuilder.group({
-      building_id: [0, Validators.required],
-      months: [0, Validators.required],
-      years: [0, Validators.required],
       taxaAgua:[93.28, Validators.required],
       taxaGas:[10.0, Validators.required]
 
     });
 
+    this.selectionService.selecao$.subscribe(selecao => {
+      this.selectedBuildingId = selecao.predioID;
+      this.selectedMonth = selecao.month;
+      this.selectedYear = selecao.year;
+      this.loadExpenses();
+    });
   }
 
   getAllBuildings(): void {
@@ -93,7 +81,8 @@ export class GastosIndividuaisComponent implements OnInit {
 
 
   getAguaGastoComun(): void {
-    this.commonExepenseService
+    if(this.selectedBuildingId && this.selectedMonth && this.selectedYear){
+      this.commonExepenseService
       .getExpensesByBuildingAndMonth(this.selectedBuildingId, this.selectedMonth, this.selectedYear)
       .subscribe(
         (expenses: CommonExpense[] = []) => {
@@ -103,10 +92,12 @@ export class GastosIndividuaisComponent implements OnInit {
           } 
         },
         (error) => {
-          this.toastr.error("Erro ao buscar os gastos comuns.");
+          this.toastr.error("Nenhum gasto comum inserido para esse mês.");
           console.error('Error fetching expenses:', error);
         }
       );
+    }
+
   }
   
   
@@ -134,14 +125,13 @@ export class GastosIndividuaisComponent implements OnInit {
     if(this.loading){
       return
     }
-    this.selectedBuildingId = this.myForm.get('building_id')?.value;
-    this.selectedMonth = this.myForm.get('months')?.value;
-    this.selectedYear = this.myForm.get('years')?.value;
     this.gastosIndividuais = [];
     this.gastosIndividuaisInsert = [];
     if(this.selectedBuildingId==0 || this.selectedMonth==0 || this.selectedYear==0){
       return
     }
+
+    
     this.getAguaGastoComun()
     this.loading = true;
     if (this.selectedBuildingId && this.selectedMonth && this.selectedYear) {
@@ -171,16 +161,13 @@ export class GastosIndividuaisComponent implements OnInit {
 
   }
   loadingToFalse():void{
-    this.myForm.get('building_id')?.setValue(this.selectedBuildingId);
-    this.myForm.get('years')?.setValue(this.selectedYear);
-    this.myForm.get('months')?.setValue(this.selectedMonth);
     this.loading = false;
   }
 
 
   createGastoIndividualInsert():void{
     this.gastosIndividuaisInsert = [];
-    const today = this.getTodayDate();
+    const date = this.setDate();
     this.apartamentos.forEach(apartamento=>{
       let apartamentoAux : GastoIndividual = {
         apt_id: apartamento.id,
@@ -193,7 +180,7 @@ export class GastosIndividuaisComponent implements OnInit {
         lazer: 0,
         lavanderia: 0,
         multa: 0,
-        data_gasto:today
+        data_gasto:date
       }
       this.gastosIndividuaisInsert.push(apartamentoAux)
     })
@@ -264,7 +251,7 @@ export class GastosIndividuaisComponent implements OnInit {
         let lazer = row[3];
         let lavanderia = row[4];
         let multa = row[5];
-        let today = this.getTodayDate() ;
+        let date = this.setDate() ;
         if (apartamento) {
           this.m3TotalAgua+=Number(aguaM3);
           let apartamentoAux : GastoIndividual = {
@@ -278,7 +265,7 @@ export class GastosIndividuaisComponent implements OnInit {
             lazer: lazer  || 0,
             lavanderia: lavanderia  || 0,
             multa: multa || 0,
-            data_gasto: today
+            data_gasto: date
           }
           this.gastosIndividuaisInsert.push(apartamentoAux)
         }
@@ -414,13 +401,13 @@ export class GastosIndividuaisComponent implements OnInit {
     return "R$ 0,00"
   }
   
-  getTodayDate(): string {
+  setDate(): string {
     const date = new Date();
     let day = date.getDate().toString().padStart(2,'0');
-    let month = (date.getMonth()+1).toString().padStart(2,'0');
     let year = date.getFullYear().toString();
 
-    return year + '-' + month + '-' + day;
+    return year + '-' + this.selectedMonth + '-' + day;
+
   }
 
   

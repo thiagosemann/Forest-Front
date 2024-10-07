@@ -114,3 +114,26 @@
     background-color: lightgray;  /* Cor de fundo ao passar o mouse */
 }
 
+.custom-select {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 8px 12px;
+  font-size: 15px;
+  font-weight: bolder;
+  color: #555;
+  background-color: #fff;
+  transition: border-color 0.3s ease;
+  width: 100%;
+}
+
+.custom-select:focus {
+  outline: none;
+  border-color: #198754;
+  box-shadow: 0 0 0 0.2rem rgba(3, 48, 23, 0.233);
+}
+
+/* Adicionando flexbox para os selects */
+.selects-container {
+    display: flex;
+    gap: 10px;
+}

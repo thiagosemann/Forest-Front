@@ -1,27 +1,7 @@
-<app-nav-bar class="mb-4"></app-nav-bar>
 <div class="container" >
   <h3>Tela de Gastos Individuais</h3>
   <form [formGroup]="myForm"> <!-- Wrap your form controls within a formGroup directive -->
     <div class="row">
-      <div class="col-md-3">
-        <select id="building_id" name="building_id" class="form-control custom-select" formControlName="building_id" required (change)="loadExpenses()">
-          <option value="0" disabled selected>Selecione o prédio</option>
-          <option *ngFor="let building of buildings" [value]="building.id">{{ building.nome }}</option>
-        </select>
-      </div>
-      <div class="col-md-2">
-        <select id="months" name="months" class="form-control custom-select" formControlName="months" required (change)="loadExpenses()" >
-          <option value="0" disabled selected>Selecione o mês</option>
-          <option *ngFor="let month of months" [value]="month.monthNumber">{{ month.monthName }}</option>
-        </select>
-      </div>
-      
-      <div class="col-md-2">
-        <select id="years" name="years" class="form-control custom-select" formControlName="years" required (change)="loadExpenses()" >
-          <option value="0" disabled selected>Selecione o ano</option>
-          <option *ngFor="let year of years" [value]="year">{{ year }}</option>
-        </select>
-      </div>
       <div *ngIf="loading" class="spinner-border text-success col-md-5" role="status">
         <span class="visually-hidden">Carregando...</span>
       </div>

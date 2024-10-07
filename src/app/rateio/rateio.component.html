@@ -1,29 +1,6 @@
-<app-nav-bar class="mb-4"></app-nav-bar>
 <div class="container">
   <h3>Rateio</h3>
-  <form [formGroup]="myForm">
-    <div class="row">
-      <div class="col-md-3">
-        <select id="building_id" name="building_id" class="form-control custom-select" formControlName="building_id" required (change)="changeSelect()">
-          <option value="0" disabled selected>Selecione o prédio</option>
-          <option *ngFor="let building of buildings" [value]="building.id">{{ building.nome }}</option>
-        </select>
-      </div>
-      <div class="col-md-1">
-        <select id="months" name="months" class="form-control custom-select" formControlName="months" required (change)="changeSelect()">
-          <option value="" disabled selected>Selecione o mês</option>
-          <option *ngFor="let month of months" [value]="month.monthNumber">{{ month.monthName }}</option>
-        </select>
-      </div>
 
-      <div class="col-md-1">
-        <select id="years" name="years" class="form-control custom-select" formControlName="years" required (change)="changeSelect()">
-          <option value="" disabled selected>Selecione o ano</option>
-          <option *ngFor="let year of years" [value]="year">{{ year }}</option>
-        </select>
-      </div>
-    </div>
-  </form>
 
   <!-- Loading Spinner -->
   <div *ngIf="loading" class="loading-spinner">

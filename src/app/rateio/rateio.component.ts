@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms'; // Import Validators
 import { Building } from '../shared/utilitarios/building';
 import { ToastrService } from 'ngx-toastr';
 import { Apartamento } from '../shared/utilitarios/apartamento';
@@ -7,6 +6,7 @@ import { GastoIndividual } from '../shared/utilitarios/gastoIndividual';
 import { BuildingService } from '../shared/service/Banco_de_Dados/buildings_service';
 import { Rateio } from '../shared/utilitarios/rateio';
 import { RateioService } from '../shared/service/Banco_de_Dados/rateio_service';
+import { SelectionService } from '../shared/service/selectionService';
 
 @Component({
   selector: 'app-rateio',
@@ -14,7 +14,6 @@ import { RateioService } from '../shared/service/Banco_de_Dados/rateio_service';
   styleUrls: ['./rateio.component.css']
 })
 export class RateioComponent implements OnInit {
-  myForm!: FormGroup; // Initialize myForm as a FormGroup
   buildings: Building[] = [];
   gastoComumValor : number=0;
   gastoComumValorTotal: number=0;
@@ -22,47 +21,27 @@ export class RateioComponent implements OnInit {
   apartamentos: Apartamento[] = [];
   gastosIndividuais:GastoIndividual[]=[];
   usersRateio:any[]=[];
-  buildingId:number=0;
   provisoesRateadas:number=0;
   fundosRateados:number=0;
   loading: boolean = false;
   mensagemErro: string = '';
-
-  months: { monthNumber: number, monthName: string }[] = [
-    { monthNumber: 1, monthName: "Janeiro" },
-    { monthNumber: 2, monthName: "Fevereiro" },
-    { monthNumber: 3, monthName: "Março" },
-    { monthNumber: 4, monthName: "Abril" },
-    { monthNumber: 5, monthName: "Maio" },
-    { monthNumber: 6, monthName: "Junho" },
-    { monthNumber: 7, monthName: "Julho" },
-    { monthNumber: 8, monthName: "Agosto" },
-    { monthNumber: 9, monthName: "Setembro" },
-    { monthNumber: 10, monthName: "Outubro" },
-    { monthNumber: 11, monthName: "Novembro" },
-    { monthNumber: 12, monthName: "Dezembro" }
-  ];
-  years: string[] = ["2022", "2023","2024", "2025", "2026", "2027", "2028", "2029","2030" ];
-
+  selectedBuildingId:number=0;
+  selectedMonth:number=0;
+  selectedYear:number=0;
   constructor(
     private toastr: ToastrService,
     private buildingService: BuildingService,
-    private formBuilder: FormBuilder,
-    private rateioService: RateioService 
-
+    private rateioService: RateioService, 
+    private selectionService: SelectionService
   ) {}
   ngOnInit(): void {
     this.getAllBuildings();
 
-    const currentDate = new Date();
-    const currentMonth = currentDate.getMonth() + 1; // Os meses são indexados de 0 a 11, então somamos 1 para obter o mês atual
-    const currentYear = currentDate.getFullYear().toString(); // Obter o ano atual como uma string
-
-    this.myForm = this.formBuilder.group({
-      building_id: [0, Validators.required], // Defina o prédio com id=1 como selecionado por padrão
-      months: [currentMonth, Validators.required], // Defina o mês atual como selecionado por padrão
-      years: [currentYear, Validators.required] // Defina o ano atual como selecionado por padrão
-      // Adicione outros controles de formulário conforme necessário
+    this.selectionService.selecao$.subscribe(selecao => {
+      this.selectedBuildingId = selecao.predioID;
+      this.selectedMonth = selecao.month;
+      this.selectedYear = selecao.year;
+      this.changeSelect();
     });
   }
   
@@ -81,15 +60,15 @@ export class RateioComponent implements OnInit {
 
 
   changeSelect(): void {
-    this.buildingId = Number(this.myForm.get('building_id')?.value);
-    const month = this.myForm.get('months')?.value;
-    const year = this.myForm.get('years')?.value;
+    if(this.selectedBuildingId==0 || this.selectedMonth==0 || this.selectedYear==0){
+      return
+    }
     
-    if (month != 0 && year != 0 && this.buildingId != 0) {
+    if (this.selectedMonth != 0 && this.selectedYear != 0 && this.selectedBuildingId != 0) {
       this.loading = true; // Iniciar o loading
       this.mensagemErro = ''; // Limpar mensagem de erro
   
-      this.rateioService.getRateioByBuildingAndMonth(this.buildingId, Number(month), Number(year)).subscribe(
+      this.rateioService.getRateioByBuildingAndMonth(this.selectedBuildingId, this.selectedMonth, this.selectedYear).subscribe(
         (resp: any) => {
           this.loading = false; // Encerrar o loading
           if (resp.rateio) {

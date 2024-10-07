@@ -4,6 +4,7 @@ import { ToastrService } from 'ngx-toastr';
 import { BuildingService } from 'src/app/shared/service/Banco_de_Dados/buildings_service';
 import { CommonExpenseService } from 'src/app/shared/service/Banco_de_Dados/commonExpense_service';
 import { ExpenseTypeService } from 'src/app/shared/service/Banco_de_Dados/tipoGasto_service';
+import { SelectionService } from 'src/app/shared/service/selectionService';
 import { Building } from 'src/app/shared/utilitarios/building';
 import { CommonExpense } from 'src/app/shared/utilitarios/commonExpense';
 import { ExpenseType } from 'src/app/shared/utilitarios/expenseType';
@@ -18,7 +19,6 @@ export class BuildingsReviewComponent implements OnInit {
   commonExepenses: CommonExpense[] = [];
   buildingId: number | undefined = 1;
   buildingIdForCommonExpenses: number | undefined = 0;
-  myForm!: FormGroup; // Initialize myForm as a FormGroup
   gastosView: string = "inicial";
   selectedFiles: File[] = [];
   contasAdicionar : any[]=[];
@@ -30,43 +30,23 @@ export class BuildingsReviewComponent implements OnInit {
   manualGastoForm!: FormGroup;
   expenseTypes:ExpenseType[]=[];
   valorTotal:number=0;
-  months: { monthNumber: number, monthName: string }[] = [
-    { monthNumber: 1, monthName: "Janeiro" },
-    { monthNumber: 2, monthName: "Fevereiro" },
-    { monthNumber: 3, monthName: "Março" },
-    { monthNumber: 4, monthName: "Abril" },
-    { monthNumber: 5, monthName: "Maio" },
-    { monthNumber: 6, monthName: "Junho" },
-    { monthNumber: 7, monthName: "Julho" },
-    { monthNumber: 8, monthName: "Agosto" },
-    { monthNumber: 9, monthName: "Setembro" },
-    { monthNumber: 10, monthName: "Outubro" },
-    { monthNumber: 11, monthName: "Novembro" },
-    { monthNumber: 12, monthName: "Dezembro" }
-  ];
   valorParcela:number=0;
-  years: string[] = ["2022", "2023","2024", "2025", "2026", "2027", "2028", "2029","2030" ];
+  selectedBuildingId:number=0;
+  selectedMonth:number=0;
+  selectedYear:number=0;
 
   constructor(
     private toastr: ToastrService,
     private buildingService: BuildingService,
     private formBuilder: FormBuilder,
     private commonExepenseService: CommonExpenseService,
-    private expenseTypeService: ExpenseTypeService
+    private expenseTypeService: ExpenseTypeService,
+    private selectionService: SelectionService
   ) {}
 
   ngOnInit(): void {
     this.getAllBuildings();
     this.getAllExpenses();
-    const currentDate = new Date();
-    const currentMonth = currentDate.getMonth() + 1; // Os meses são indexados de 0 a 11, então somamos 1 para obter o mês atual
-    const currentYear = currentDate.getFullYear().toString(); // Obter o ano atual como uma string
-    this.myForm = this.formBuilder.group({
-      building_id: [0, Validators.required], // Defina o prédio com id=1 como selecionado por padrão
-      months: [currentMonth, Validators.required], // Defina o mês atual como selecionado por padrão
-      years: [currentYear, Validators.required] // Defina o ano atual como selecionado por padrão
-      // Adicione outros controles de formulário conforme necessário
-    });
     this.manualGastoForm = this.formBuilder.group({
       detalhe: ['Selecione', Validators.required],
       predioID:['Selecione', Validators.required],
@@ -77,6 +57,14 @@ export class BuildingsReviewComponent implements OnInit {
       parcela:['1', [Validators.required, Validators.min(1)]]      
     });
     this.loadExpenses();
+
+    this.selectionService.selecao$.subscribe(selecao => {
+      this.selectedBuildingId = selecao.predioID;
+      this.selectedMonth = selecao.month;
+      this.selectedYear = selecao.year;
+      this.loadExpenses();
+    });
+
   }
   
   getAllBuildings(): void {
@@ -222,16 +210,11 @@ export class BuildingsReviewComponent implements OnInit {
   }
  
   loadExpenses(): void {
-    this.buildingId = Number(this.myForm.get('building_id')?.value);
-    this.buildingIdForCommonExpenses = this.buildingId ;
-    
-    const month = this.myForm.get('months')?.value;
-    const year = this.myForm.get('years')?.value;
     this.rateio = 0;
     this.provisao = 0;
     this.commonExepenses = [];  
-    if ( this.buildingId && month && year) {
-      this.commonExepenseService.getExpensesByBuildingAndMonth( this.buildingId, month, year).subscribe(
+    if ( this.selectedBuildingId && this.selectedMonth && this.selectedYear) {
+      this.commonExepenseService.getExpensesByBuildingAndMonth( this.selectedBuildingId, this.selectedMonth, this.selectedYear).subscribe(
         (expenses: any[]) => {
           expenses.forEach(expense=>{
             expense.valor = parseFloat(expense.valor);

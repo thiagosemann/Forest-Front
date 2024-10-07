@@ -1,21 +1,60 @@
 <nav class="navbar navbar-expand-lg sticky-top">
   <a class="navbar-brand" href="#">
     <img src="../../../assets/images/Forest-logo-V2.png" alt="Logo Lamp" class="logo" width="150" height="70">
-    <span class="texto-logo" >FOREST</span>
+    <span class="texto-logo">FOREST</span>
   </a>
 
+  <!-- Adicionando selects entre o logo e os botões -->
+  <div class="selects-container" *ngIf="showSelects()">
+    <form [formGroup]="myForm">
+      <div class="row">
+        <div class="col-md-2"></div>
+        <div class="col-md-5">
+          <select id="building_id" name="building_id" class="form-control custom-select" formControlName="building_id" required (change)="changeValues()">
+            <option value="0" disabled selected>Selecione o prédio</option>
+            <option *ngFor="let building of buildings" [value]="building.id">{{ building.nome }}</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <select id="months" name="months" class="form-control custom-select" formControlName="months" required (change)="changeValues()">
+            <option value="" disabled selected>Selecione o mês</option>
+            <option *ngFor="let month of months" [value]="month.monthNumber">{{ month.monthName }}</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <select id="years" name="years" class="form-control custom-select" formControlName="years" required (change)="changeValues()">
+            <option value="" disabled selected>Selecione o ano</option>
+            <option *ngFor="let year of years" [value]="year">{{ year }}</option>
+          </select>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Menu para telas maiores (desktop) -->
   <div class="navbar-nav ms-auto" *ngIf="isDesktopView">
     <button class="navbar-perfil-btn" (click)="content()"><i class="fas fa-home"></i> Home</button>
-    <button class="navbar-perfil-btn" (click)="rateio()"><i class="fas fa-money-check"></i> Rateio</button>
-    <button class="navbar-perfil-btn" (click)="gastosComuns()"><i class="fas fa-money-check"></i> Gastos Comuns</button>
-    <button class="navbar-perfil-btn" (click)="gastosIndividuais()"><i class="fas fa-money-check"></i> Gastos Individuais</button>
-
-    <!-- Cadastros submenu -->
     <div class="dropdown">
-      <button class="navbar-perfil-btn dropdown-toggle" type="button" id="cadastrosDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+      <button class="navbar-perfil-btn dropdown-toggle" type="button" id="rateioDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="fas fa-money-check"></i> Rateio
+      </button>
+      <ul class="dropdown-menu" aria-labelledby="rateioDropdown">
+        <li><button class="navbar-perfil-btn" (click)="rateio()"><i class="fas fa-money-check"></i> Rateio</button></li>
+        <li><button class="navbar-perfil-btn" (click)="gastosComuns()"><i class="fas fa-money-check"></i>Gastos Comuns</button></li>
+        <li><button class="navbar-perfil-btn" (click)="gastosIndividuais()"><i class="fas fa-money-check"></i>Gastos Individuais</button></li>
+      </ul>
+    </div>
+
+    
+    
+    
+
+    <!-- Fundos submenu -->
+    <div class="dropdown">
+      <button class="navbar-perfil-btn dropdown-toggle" type="button" id="fundosDropdown" data-bs-toggle="dropdown" aria-expanded="false">
         <i class="fas fa-money-check"></i> Fundos
       </button>
-      <ul class="dropdown-menu" aria-labelledby="cadastrosDropdown">
+      <ul class="dropdown-menu" aria-labelledby="fundosDropdown">
         <li><button class="dropdown-item" (click)="provisao()">Provisão</button></li>
         <li><button class="dropdown-item" (click)="fundos()">Fundos</button></li>
       </ul>
@@ -32,20 +71,28 @@
         <li><button class="dropdown-item" (click)="vagas()">Vagas</button></li>
       </ul>
     </div>
-    
+
     <button class="navbar-perfil-btn" (click)="profile()"><i class="fas fa-user"></i> Perfil</button>
     <button class="navbar-logout-btn" (click)="logout()"><i class="fas fa-sign-out-alt"></i> Sair</button>
   </div>
 
-  <!-- Botão para abrir o menu (menu sanduíche) -->
+  <!-- Menu para telas menores (menu sanduíche) -->
   <div class="menu-wrapper">
     <button class="navbar-toggler" type="button" (click)="toggleMenu()">
       <span class="navbar-toggler-icon"></span>
     </button>
 
-    <!-- Menu contendo os botões "Perfil" e "Sair" -->
+    <!-- Menu de sanduíche com todas as funções -->
     <div class="navbar-menu" *ngIf="isMenuOpen && !isDesktopView">
       <button class="navbar-perfil-btn" (click)="content()"><i class="fas fa-home"></i> Home</button>
+      <button class="navbar-perfil-btn" (click)="rateio()"><i class="fas fa-money-check"></i> Rateio</button>
+      <button class="navbar-perfil-btn" (click)="gastosComuns()"><i class="fas fa-money-check"></i> Gastos Comuns</button>
+      <button class="navbar-perfil-btn" (click)="gastosIndividuais()"><i class="fas fa-money-check"></i> Gastos Individuais</button>
+      <button class="navbar-perfil-btn" (click)="fundos()"><i class="fas fa-money-check"></i> Fundos</button>
+      <button class="navbar-perfil-btn" (click)="provisao()">Provisão</button>
+      <button class="navbar-perfil-btn" (click)="usuarios()"><i class="fas fa-users"></i> Usuários</button>
+      <button class="navbar-perfil-btn" (click)="predios()"><i class="fas fa-building"></i> Prédios</button>
+      <button class="navbar-perfil-btn" (click)="vagas()"><i class="fas fa-car"></i> Vagas</button>
       <button class="navbar-perfil-btn" (click)="profile()"><i class="fas fa-user"></i> Perfil</button>
       <button class="navbar-logout-btn" (click)="logout()"><i class="fas fa-sign-out-alt"></i> Sair</button>
     </div>
