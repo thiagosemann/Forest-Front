@@ -16,7 +16,11 @@ export class AppComponent implements OnInit {
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
         // Verifica se a rota atual é a de login
-        this.showNavBar = this.router.url !== '/login';
+        if(this.router.url=="/login" || this.router.url=="/register"){
+          this.showNavBar = false;
+        }else{
+          this.showNavBar = true;
+        }
       }
     });
   }

@@ -74,7 +74,7 @@ export class RegisterComponent implements OnInit {
       
       this.user.data_nasc = new Date(this.user.data_nasc!);
       this.user.role = 'usuario';    
-      this.user.building_id = 1;
+      this.user.building_id = 16;
       this.userService.addUser(this.user).subscribe(
         (res) => {
           this.resetForm();

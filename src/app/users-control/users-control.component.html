@@ -1,10 +1,13 @@
-<div *ngIf="showEditComponent" style="margin-top: 30px;">
+
+
+
+<div *ngIf="showEditComponent || showCreateUserComponent" style="margin-top: 30px;">
     <div class="scrollable-container ">
         <div class="container">
           <div class="row d-flex justify-content-center align-items-center">
             <div class="col-md-8 col-lg-6 col-xl-5">
-              <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="p-4 p-md-5 border rounded bg-light">
-                <h4 class="text-center mb-2">Editar</h4>
+              <form [formGroup]="registerForm" (ngSubmit)="criarOuEditarUsuario()" class="p-4 p-md-5 border rounded bg-light">
+                <h4 class="text-center mb-2">{{telaEditaCriar}}</h4>
                 <!-- Nome e Sobrenome na mesma linha -->
                 <div class="row mb-3">
                   <div class="col-md-6">
@@ -62,7 +65,7 @@
       </div>
   </div>
   
-  <div *ngIf="!showEditComponent" style="margin-top: 30px;">
+  <div *ngIf="showUsuariosComponent" style="margin-top: 30px;">
     <div class="container" [formGroup]="myGroup">
       <select id="building_id" name="building_id" class="form-control" formControlName="building_id" required  (change)="onBuildingSelect($event)">
         <option value="" disabled selected>Selecione o prédio</option>

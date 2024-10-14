@@ -27,6 +27,10 @@ export class UsersControlComponent implements OnInit {
   isEditing: boolean = false;
   user: any = null; // Use o tipo de dado adequado para o usuário
   showEditComponent:boolean = false;
+  showCreateUserComponent:boolean = false;
+  showUsuariosComponent:boolean = true;
+  showAddUsuariosLoteComponent:boolean = false;
+  telaEditaCriar:string="";
   registerForm!: FormGroup;
   userID: string = '';
   userEditing : User | undefined;
@@ -69,11 +73,28 @@ export class UsersControlComponent implements OnInit {
 
   }
 
-  createNewUser():void{
-    this.showEditComponent = true;
-    this.userEditing = undefined; // Resetar o prédio em edição
-    this.registerForm.reset(); // Resetar o formulário
-    this.botaoForm="Criar";
+  manageScreens(type:String):void{
+    if(type=="edit"){
+      this.showEditComponent = true;
+      this.showUsuariosComponent = false;
+      this.showAddUsuariosLoteComponent = false;
+      this.showCreateUserComponent = false;
+    }else if(type=="usuarios"){
+      this.showEditComponent = false;
+      this.showUsuariosComponent = true;
+      this.showAddUsuariosLoteComponent = false;
+      this.showCreateUserComponent = false;
+    }else if(type=="usuariosLote"){
+      this.showEditComponent = false;
+      this.showUsuariosComponent = false;
+      this.showAddUsuariosLoteComponent = true;
+      this.showCreateUserComponent = false;
+    }else if(type=="addUsuario"){
+      this.showEditComponent = false;
+      this.showUsuariosComponent = false;
+      this.showAddUsuariosLoteComponent = false;
+      this.showCreateUserComponent = true;
+    }
   }
 
   getAllBuildings():void{
@@ -106,9 +127,18 @@ export class UsersControlComponent implements OnInit {
     }
   }
 
+  createNewUser():void{
+    this.manageScreens("addUsuario");
+    this.userEditing = undefined; // Resetar o prédio em edição
+    this.registerForm.reset(); // Resetar o formulário
+    this.telaEditaCriar="Criar Usuário";
+    this.botaoForm="Criar";
+  }
+
   editUser(userAux: User): void {
+    this.manageScreens("edit")
     this.botaoForm="Atualizar";
-    console.log(userAux)
+    this.telaEditaCriar = "Editar Usuário"
     this.userEditing = userAux;
     this.registerForm.patchValue({
       first_name: this.userEditing.first_name,
@@ -117,11 +147,11 @@ export class UsersControlComponent implements OnInit {
       email: this.userEditing.email,
       role: this.userEditing.role // Preencha o campo 'role' com o valor do usuário
     });
-    this.showEditComponent = !this.showEditComponent;
+    this.manageScreens("edit")
 
   }
   cancelarEdit(): void {
-    this.showEditComponent = !this.showEditComponent;
+    this.manageScreens("usuarios")
   }
 
   deleteUser(user: User): void {
@@ -156,7 +186,7 @@ export class UsersControlComponent implements OnInit {
         );
       }
     }
-    onSubmit(): void {
+    criarOuEditarUsuario(): void {
         if (this.registerForm.valid) {
           if (this.userEditing) {
               const { id } = this.userEditing;
