@@ -35,6 +35,28 @@ exportToExcel(data: any[], fileName: string) {
     FileSaver.saveAs(blob, fileName + '.xlsx');
 }
 
+downloadModelUsersLote(): void {
+  // Definir o cabeçalho do arquivo Excel (sem valores, apenas o cabeçalho)
+  const headers = [
+      ['first_name', 'last_name', 'cpf', 'email']
+  ];
+
+  // Criar uma planilha a partir dos cabeçalhos (sem dados)
+  const worksheet: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet(headers);
+
+  // Criar o workbook (livro de trabalho) e adicionar a planilha
+  const workbook: XLSX.WorkBook = { Sheets: { 'Usuários': worksheet }, SheetNames: ['Usuários'] };
+
+  // Converter o workbook em um buffer do Excel
+  const excelBuffer: any = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+
+  // Criar um Blob a partir do buffer e definir o tipo de arquivo
+  const data: Blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+  // Usar o FileSaver para salvar o arquivo no navegador
+  FileSaver.saveAs(data, 'usuario_modelo.xlsx');
+}
+
   
   
 }

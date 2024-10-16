@@ -6,6 +6,8 @@ import { Building } from '../shared/utilitarios/building';
 import { BuildingService } from '../shared/service/Banco_de_Dados/buildings_service';
 import { UserService } from '../shared/service/Banco_de_Dados/user_service';
 import { AuthenticationService } from '../shared/service/Banco_de_Dados/authentication';
+import { ExcelService } from '../shared/service/excelService';
+import * as XLSX from 'xlsx';
 
 export const ConfirmValidator = (controlName: string, matchingControlName: string): ValidatorFn => {
   return (control: AbstractControl): {[key: string]: boolean} | null => {
@@ -28,8 +30,8 @@ export class UsersControlComponent implements OnInit {
   user: any = null; // Use o tipo de dado adequado para o usuário
   showEditComponent:boolean = false;
   showCreateUserComponent:boolean = false;
-  showUsuariosComponent:boolean = true;
-  showAddUsuariosLoteComponent:boolean = false;
+  showUsuariosComponent:boolean = false;
+  showAddUsuariosLoteComponent:boolean = true;
   telaEditaCriar:string="";
   registerForm!: FormGroup;
   userID: string = '';
@@ -44,6 +46,12 @@ export class UsersControlComponent implements OnInit {
     emailGroup: 'Verifique os e-mails digitados',
     passwordGroup: 'Verifique as senhas digitadas'
   };
+  loading: boolean = false;
+  usersInsert: User[] = [];
+  saveData:boolean =false;
+  uploading: boolean = false;
+
+
 
   constructor(
     private userService: UserService,
@@ -51,12 +59,14 @@ export class UsersControlComponent implements OnInit {
     private ngZone: NgZone, // Adicione o NgZone
     private formBuilder: FormBuilder,
     private toastr: ToastrService,
-    private buildingService: BuildingService
+    private buildingService: BuildingService,
+    private excelService: ExcelService,
 
   ) {
     this.myGroup = new FormGroup({
       building_id: new FormControl(''), // Create a form control for 'building_id'
     });
+
   }
 
   ngOnInit(): void {
@@ -242,7 +252,77 @@ export class UsersControlComponent implements OnInit {
           }
       }
     }
+
+
+    saveGastosIndividuais():void{
+      this.saveData = false;
+    }
     
+    cancelGastosIndividuais():void{
+      this.saveData = false;
+    }
+    handleFileInput(event: any): void {
+      // Começar a girar o spinner
+      this.loading = true
+      this.saveData = true;
+      this.usersInsert = [];
+    
+      // Obter o arquivo do evento
+      const file: File = event.target.files[0];
+    
+      // Verificar se o arquivo é válido (excel)
+      if (file && file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+        const reader = new FileReader();
+    
+        // Definir o comportamento quando o arquivo for lido
+        reader.onload = (e: any) => {
+          const binaryString = e.target.result;
+          const workbook: XLSX.WorkBook = XLSX.read(binaryString, { type: 'binary' });
+    
+          // Obter a primeira planilha (Assumindo que o arquivo tem apenas uma planilha)
+          const worksheet: XLSX.WorkSheet = workbook.Sheets[workbook.SheetNames[0]];
+    
+          // Converter a planilha em JSON
+          const data: any[] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+    
+          // Remover o cabeçalho e iterar sobre as linhas para armazenar os dados
+          const headers = data[0]; // Cabeçalho da planilha
+          for (let i = 1; i < data.length; i++) {
+            const row = data[i];
+            const user: any = {
+              first_name: row[0], // Primeiro nome
+              last_name: row[1], // Sobrenome
+              cpf: row[2], // CPF
+              email: row[3] // E-mail
+            };
+            this.usersInsert.push(user);
+          }
+    
+          // Finalizar a operação
+          this.loading = false;
+          this.saveData = false;
+    
+          // Exibir mensagem de sucesso ou erro (opcional)
+          if (this.usersInsert.length > 0) {
+            this.toastr.success(`${this.usersInsert.length} usuários carregados com sucesso.`);
+          } else {
+            this.toastr.error('Nenhum usuário encontrado no arquivo.');
+          }
+        };
+    
+        // Ler o arquivo como uma string binária
+        reader.readAsBinaryString(file);
+      } else {
+        this.uploading = false;
+        this.saveData = false;
+        this.toastr.error('Por favor, envie um arquivo Excel válido.');
+      }
+    }
+    
+    downloadModel(): void {
+      this.excelService.downloadModelUsersLote();
+    }
+
     formatDate(dateString: string | undefined): string {
       if (dateString) {
         const dateParts = dateString.split('T')[0].split('-');
