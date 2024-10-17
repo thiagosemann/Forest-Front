@@ -1,25 +1,22 @@
 
+<div class="container">
+
 <ng-container *ngIf="showUsuariosComponent || showAddUsuariosLoteComponent || showCreateUserComponent "> 
-  <div class="container">
     <form [formGroup]="myGroup">
       <select id="building_id" name="building_id" class="form-control" formControlName="building_id" required  (change)="onBuildingSelect($event)">
         <option value="" disabled selected>Selecione o prédio</option>
         <option *ngFor="let building of buildings" [value]="building.id">{{ building.nome }}</option>
       </select>
     </form>
-  </div>
 
 </ng-container>
 
 <div *ngIf="showUsuariosComponent" >
-  <div class="container">
-    <br>
-    <div class="container" *ngIf="buildingId">
+    <div *ngIf="buildingId"  style="margin-top: 15px;">
       <button class="btn btn-primary" (click)="createNewUser()">Add Usuário</button>
       <button class="btn btn-primary" style="margin-left:5px;" (click)="manageScreens('usuariosLote')">Add Usuário Lote</button>
-      
-   </div>
-    <div class="table-wrapper">
+    </div>
+    <div class="table-wrapper"  style="margin-top: 15px;">
       <table class="table narrow-table">
         <thead>
           <tr>
@@ -45,40 +42,40 @@
         </tbody>
       </table>
     </div>
-  </div>
 </div>
 
 <div *ngIf="showAddUsuariosLoteComponent" >
-  <div class="container">
       <div class="row">
         <div *ngIf="loading" class="spinner-border text-success col-md-5" role="status">
           <span class="visually-hidden">Carregando...</span>
         </div>
         <div  *ngIf="!loading" class="col-md-5">
           <ng-container *ngIf="saveData">
-            <button class="btn btn-save" (click)="saveGastosIndividuais()">
+            <button class="btn btn-save" (click)="saveUsersInBatch()">
               <i class="fas fa-save"></i>Salvar
             </button>
-            <button class="btn btn-danger" style="margin-left: 5px;" (click)="cancelGastosIndividuais()">
+            <button class="btn btn-danger" style="margin-left: 5px;" (click)="cancelUsersInBatch()">
               <i class="fas fa-cancel"></i>Cancelar
             </button>
           </ng-container>
-          <ng-container *ngIf="!saveData">
-            <label class="btn btn-success" >
-              <i class="fas fa-upload"></i> Inserir
-              <input type="file" style="display: none;" (change)="handleFileInput($event)">
-              <span *ngIf="uploading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-            </label>
+          <ng-container *ngIf="!saveData && buildingId">
+            <div style="margin-top: 15px;">
+              <label class="btn btn-success" >
+                <i class="fas fa-upload"></i> Inserir
+                <input type="file" style="display: none;" (change)="handleFileInput($event)">
+                <span *ngIf="uploading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              </label>
+              <button class="btn btn-primary" (click)="downloadModel()" style="margin-left: 5px;">
+                <i class="fas fa-download"></i> Modelo
+              </button>
+              <button class="btn btn-secondary" (click)="manageScreens('usuarios')" style="margin-left: 5px;">
+                Voltar
+             </button>
+            </div>
           </ng-container>       
-          <button class="btn btn-primary" (click)="downloadModel()" style="margin-left: 5px;">
-            <i class="fas fa-download"></i> Modelo
-          </button>
-          <button class="btn btn-secondary" (click)="manageScreens('usuarios')" style="margin-left: 5px;">
-             Voltar
-          </button>
         </div>
       </div>
-      <table class="table" *ngIf="!loading">
+      <table class="table" *ngIf="!loading && usersInsert.length>0">
         <thead>
           <tr>
             <th scope="col" style="width: 20%;">Primeiro Nome</th>
@@ -100,12 +97,10 @@
         </tbody>
       </table>
       
-  </div>
 </div>
 
   <div *ngIf="showEditComponent || showCreateUserComponent" >
     <div class="scrollable-container ">
-        <div class="container">
           <div class="row d-flex justify-content-center align-items-center">
             <div class="col-md-8 col-lg-6 col-xl-5">
               <form [formGroup]="registerForm" (ngSubmit)="criarOuEditarUsuario()" class="p-4 p-md-5 border rounded bg-light">
@@ -163,6 +158,6 @@
               </form>
             </div>
           </div>
-        </div>
       </div>
   </div>
+</div>

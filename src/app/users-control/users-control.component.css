@@ -38,6 +38,7 @@
   /* Adicione margem antes do select */
   .container {
     padding: 10px; /* Ajuste o preenchimento conforme necessário */
+    height: 85vh;
   }
 
   .table-light-gray {
@@ -122,3 +123,26 @@
   overflow-y: auto;
 }
 
+
+/* Estilos para os ícones */
+.btn i {
+  margin-right: 5px;
+}
+
+/* Estilos para o botão de upload */
+.btn-success input[type=file] {
+  display: none;
+}
+.btn-save {
+  background-color: orange;
+  border-color: orange;
+}
+
+.btn-save:hover {
+  background-color: darkorange;
+  border-color: darkorange;
+}
+
+.btn-save:focus {
+  box-shadow: 0 0 0 0.2rem rgba(255, 165, 0, 0.5);
+}

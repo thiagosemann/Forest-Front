@@ -120,6 +120,10 @@ export class UsersControlComponent implements OnInit {
 
   onBuildingSelect(event: any): void {
     this.buildingId = parseInt(event.target.value, 10);
+    this.getUsersByBuilding();
+  }
+
+  getUsersByBuilding():void{
     if (this.buildingId) {
       this.userService.getUsersByBuilding(this.buildingId).subscribe(
         (users: User[]) => {
@@ -254,12 +258,35 @@ export class UsersControlComponent implements OnInit {
     }
 
 
-    saveGastosIndividuais():void{
+    saveUsersInBatch(): void {
       this.saveData = false;
+      
+      // Verifica se há usuários a serem inseridos
+      if (this.usersInsert.length > 0) {
+        // Inicia a chamada para o serviço que salvará os usuários em lote
+        this.userService.saveUsersInBatch(this.usersInsert).subscribe(
+          (response) => {
+            // Sucesso na inserção em lote
+            this.getUsersByBuilding()
+            this.toastr.success('Usuários salvos com sucesso!');
+            this.usersInsert = []; // Limpa a lista após o sucesso
+            this.manageScreens('usuarios');
+            this.saveData = false; // Oculta o botão de salvar
+          },
+          (error) => {
+            // Lida com o erro
+            console.error('Erro ao salvar usuários em lote:', error);
+            this.toastr.error('Erro ao salvar os usuários.');
+          }
+        );
+      } else {
+        this.toastr.error('Nenhum usuário para salvar.');
+      }
     }
     
-    cancelGastosIndividuais():void{
+    cancelUsersInBatch():void{
       this.saveData = false;
+      this.usersInsert = [];
     }
     handleFileInput(event: any): void {
       // Começar a girar o spinner
@@ -293,14 +320,15 @@ export class UsersControlComponent implements OnInit {
               first_name: row[0], // Primeiro nome
               last_name: row[1], // Sobrenome
               cpf: row[2], // CPF
-              email: row[3] // E-mail
+              email: row[3], // E-mail
+              building_id: this.buildingId,
+              role:'usuario'
             };
             this.usersInsert.push(user);
           }
     
           // Finalizar a operação
           this.loading = false;
-          this.saveData = false;
     
           // Exibir mensagem de sucesso ou erro (opcional)
           if (this.usersInsert.length > 0) {

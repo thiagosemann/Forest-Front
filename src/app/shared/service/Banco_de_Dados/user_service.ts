@@ -33,6 +33,16 @@ export class UserService {
     return this.http.post(`${this.url}/users`, user, { headers });
   }
 
+  // Nova função para inserção em lote de usuários
+  saveUsersInBatch(users: User[]): Observable<any> {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const headers = new HttpHeaders({
+      'Authorization': 'Bearer ' + token
+    });
+
+    return this.http.post(`${this.url}/users/batch`, users, { headers });
+  }
+
   updateUserList(): void {
     this.getUsers().subscribe(users => {
       this.users = users;
@@ -61,7 +71,7 @@ export class UserService {
 
     return this.http.get<User>(`${this.url}/users/${userId}`, { headers });
   }
-  
+
   updateUser(user: User): Observable<any> {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     const headers = new HttpHeaders({
@@ -81,7 +91,7 @@ export class UserService {
 
     return this.http.get<User[]>(`${this.url}/users/building/${buildingId}`, { headers });
   }
-  
+
   deleteUser(userId: number): Observable<any> {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     const headers = new HttpHeaders({
