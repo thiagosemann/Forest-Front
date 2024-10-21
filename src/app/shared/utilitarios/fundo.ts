@@ -4,5 +4,7 @@ export interface Fundo {
     predio_id: number;
     predioName?:string;
     porcentagem:number;
+    saldo?:number;
+    isEditable?:boolean;
 }
   
