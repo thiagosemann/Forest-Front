@@ -17,6 +17,7 @@ import { RateioComponent } from './rateio/rateio.component';
 import { VagasComponent } from './vagas/vagas.component';
 import { FundosComponent } from './fundos/fundos.component';
 import { ProvisoesComponent } from './provisoes/provisoes.component';
+import { ApartamentosControlComponent } from './apartamentos-control/apartamentos-control.component';
 
 
 const routes: Routes = [
@@ -29,6 +30,7 @@ const routes: Routes = [
   { path: 'users', component: UsersControlComponent, canActivate: [AuthGuardService] },
   { path: 'predios', component: BuildingsControlComponent, canActivate: [AuthGuardService] },
   { path: 'vagas', component: VagasComponent, canActivate: [AuthGuardService] },
+  { path: 'apartamentos', component: ApartamentosControlComponent, canActivate: [AuthGuardService] },
   { path: 'gastosComuns', component: BuildingsReviewComponent, canActivate: [AuthGuardService] },
   { path: 'gastosIndividuais', component: GastosIndividuaisComponent, canActivate: [AuthGuardService] },
   { path: 'rateio', component: RateioComponent, canActivate: [AuthGuardService] },

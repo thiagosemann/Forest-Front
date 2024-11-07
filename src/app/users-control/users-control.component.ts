@@ -30,8 +30,8 @@ export class UsersControlComponent implements OnInit {
   user: any = null; // Use o tipo de dado adequado para o usuário
   showEditComponent:boolean = false;
   showCreateUserComponent:boolean = false;
-  showUsuariosComponent:boolean = false;
-  showAddUsuariosLoteComponent:boolean = true;
+  showUsuariosComponent:boolean = true;
+  showAddUsuariosLoteComponent:boolean = false;
   telaEditaCriar:string="";
   registerForm!: FormGroup;
   userID: string = '';

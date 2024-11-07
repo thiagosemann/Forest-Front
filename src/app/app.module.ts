@@ -29,6 +29,7 @@ import { RateioComponent } from './rateio/rateio.component';
 import { VagasComponent } from './vagas/vagas.component';
 import { FundosComponent } from './fundos/fundos.component';
 import { ProvisoesComponent } from './provisoes/provisoes.component';
+import { ApartamentosControlComponent } from './apartamentos-control/apartamentos-control.component';
 
 @NgModule({
   declarations: [
@@ -48,7 +49,8 @@ import { ProvisoesComponent } from './provisoes/provisoes.component';
     RateioComponent,
     VagasComponent,
     FundosComponent,
-    ProvisoesComponent
+    ProvisoesComponent,
+    ApartamentosControlComponent
   ],
   imports: [
     BrowserModule,
