@@ -7,7 +7,7 @@ import { Router, NavigationEnd } from '@angular/router';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-  title = 'FRST';
+  title = 'Forest';
   showNavBar: boolean = true;
 
   constructor(private router: Router) {}
