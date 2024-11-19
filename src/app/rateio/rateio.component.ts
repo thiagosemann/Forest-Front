@@ -7,6 +7,8 @@ import { BuildingService } from '../shared/service/Banco_de_Dados/buildings_serv
 import { Rateio } from '../shared/utilitarios/rateio';
 import { RateioService } from '../shared/service/Banco_de_Dados/rateio_service';
 import { SelectionService } from '../shared/service/selectionService';
+import { PdfService } from '../shared/service/Pdf-Service/pdfService';
+import { CommonExpenseService } from '../shared/service/Banco_de_Dados/commonExpense_service';
 
 @Component({
   selector: 'app-rateio',
@@ -32,7 +34,11 @@ export class RateioComponent implements OnInit {
     private toastr: ToastrService,
     private buildingService: BuildingService,
     private rateioService: RateioService, 
-    private selectionService: SelectionService
+    private selectionService: SelectionService,
+    private pdfService: PdfService,
+    private commonExepenseService: CommonExpenseService,
+
+
   ) {}
   ngOnInit(): void {
     this.getAllBuildings();
@@ -73,6 +79,7 @@ export class RateioComponent implements OnInit {
           this.loading = false; // Encerrar o loading
           if (resp.rateio) {
             this.usersRateio = resp.rateio;
+            this.generateRateio();
           } else {
             this.mensagemErro = 'Insira todos os dados necessários para se realizar o rateio.';
             this.usersRateio = [];
@@ -87,6 +94,55 @@ export class RateioComponent implements OnInit {
     }
   }
   
+  generateRateio():void{
+    console.log(this.usersRateio)
+    let rateio = this.usersRateio[2];
+    let valorComum = rateio.valorComum + rateio.valorFundos + rateio.valorProvisoes;
+    let valorIndividual = rateio.valorIndividual;
+    let totalCondo = valorComum + valorIndividual;
+    let vagas_fracao = 0;
+    rateio.vagas.forEach((vaga: { fracao: any; }) => {
+      vagas_fracao += Number(vaga.fracao);
+    });
+
+    this.commonExepenseService.getExpensesByBuildingAndMonth( this.selectedBuildingId, this.selectedMonth, this.selectedYear).subscribe(
+      (expenses: any[]) => {
+        console.log(expenses)
+        const rateioData = {
+          month: this.selectedMonth ,
+          apartment: rateio.apt_name,
+          condoTotal: totalCondo ,
+          apt_fracao: rateio.apt_fracao,
+          fracao_total: rateio.fracao_total,
+          vagas_fracao: vagas_fracao.toString(),
+          summary: {
+            individualExpenses: valorIndividual,
+            collectiveExpenses: valorComum ,
+            totalCondo: totalCondo,
+          },
+          individualExpenses: [
+            { category: 'Água', value: 93.28, consumption: 1.88 },
+            { category: 'Gás', value: 15.85, consumption: 2.9 },
+            { category: 'Garagem', value: 25.0, consumption: null },
+          ],
+          collectiveExpenses: expenses,
+          reserves: [
+            { category: 'Provisão Alvará Bombeiros', value: -33.33, fraction: -1.44 },
+            { category: 'Fundo de Reserva', value: -463.29, fraction: -20.08 },
+          ]
+        };
+        console.log(rateioData)
+        this.pdfService.generateCondoStatement(rateioData);
+      },
+      (error) => {
+        console.error('Error fetching expenses:', error);
+      }
+    );
+  
+
+
+  }
+
   formatCurrency(value: number| undefined): string {
     if(value){
       return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
