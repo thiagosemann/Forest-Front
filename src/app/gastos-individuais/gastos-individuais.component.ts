@@ -93,6 +93,7 @@ export class GastosIndividuaisComponent implements OnInit {
         },
         (error) => {
           this.toastr.error("Nenhum gasto comum inserido para esse mês.");
+          this.valorAguaGastoComum = 0;
           console.error('Error fetching expenses:', error);
         }
       );
@@ -170,7 +171,7 @@ export class GastosIndividuaisComponent implements OnInit {
     const date = this.setDate();
     this.apartamentos.forEach(apartamento=>{
       let apartamentoAux : GastoIndividual = {
-        apt_id: apartamento.id,
+        apt_id: apartamento.id!,
         apt_name: apartamento.nome,
         apt_fracao: apartamento.fracao,
         aguaM3: 0,
@@ -255,7 +256,7 @@ export class GastosIndividuaisComponent implements OnInit {
         if (apartamento) {
           this.m3TotalAgua+=Number(aguaM3);
           let apartamentoAux : GastoIndividual = {
-            apt_id: apartamento.id,
+            apt_id: apartamento.id!,
             apt_name: apartamento.nome,
             apt_fracao: apartamento.fracao,
             aguaM3: aguaM3  || 0,
@@ -286,18 +287,20 @@ export class GastosIndividuaisComponent implements OnInit {
     // Ler o conteúdo do arquivo como um array buffer
     reader.readAsArrayBuffer(file);
   }
-  calculateGasValue():void{
-    let taxaGas =  Number(this.myForm.get('taxaGas')?.value);
-
-    this.gastosIndividuaisInsert.forEach(expense=>{
-      expense.gasValor= expense.gasM3 * taxaGas;
+  calculateGasValue(): void {
+    let taxaGas = this.myForm.get('taxaGas')?.value.replace(',', '.'); // Substitui vírgula por ponto
+    let taxaGasNumber = Number(taxaGas); // Converte para número
+  
+    this.gastosIndividuaisInsert.forEach(expense => {
+      expense.gasValor = expense.gasM3 * taxaGasNumber;
       expense.valorTotal = Number(expense.aguaValor) + 
-      Number(expense.gasValor) + 
-      Number(expense.lazer) + 
-      Number(expense.lavanderia) + 
-      Number(expense.multa);
-    })
+        Number(expense.gasValor) + 
+        Number(expense.lazer) + 
+        Number(expense.lavanderia) + 
+        Number(expense.multa);
+    });
   }
+  
   calculateAguaValue(): void {
     let taxaAgua =  Number(this.myForm.get('taxaAgua')?.value);
     let valorTotalAgua = taxaAgua * this.apartamentos.length;

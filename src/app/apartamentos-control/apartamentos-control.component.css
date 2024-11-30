@@ -122,3 +122,18 @@
   max-height: 85vh; /* Adjust the value as needed */
   overflow-y: auto;
 }
+
+.btn-save {
+  background-color: orange;
+  border-color: orange;
+}
+
+.btn-save:hover {
+  background-color: darkorange;
+  border-color: darkorange;
+}
+
+.btn-save:focus {
+  box-shadow: 0 0 0 0.2rem rgba(255, 165, 0, 0.5);
+}
+

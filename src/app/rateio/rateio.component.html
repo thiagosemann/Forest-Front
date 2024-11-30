@@ -1,11 +1,22 @@
 <div class="container">
   <h3>Rateio</h3>
-
-
   <!-- Loading Spinner -->
   <div *ngIf="loading" class="loading-spinner">
-    <p>Carregando dados...</p>
+    <p>{{ textoLoading }}</p>
+    <ng-container *ngIf="downloading">
+    <!-- Barra de Progresso -->
+    <div class="progress-container">
+      <div class="progress-bar" [ngStyle]="{'width': loadingPercentage + '%'}"></div>
+    </div>
+  
+    <!-- Botão de Cancelar -->
+    <button class="cancel-button" (click)="cancelDownloadProcess()">Cancelar</button>
+    </ng-container>
+
   </div>
+  
+  
+  
 
   <!-- Mensagem de erro personalizada -->
   <div *ngIf="!loading && !usersRateio.length && mensagemErro" class="error-message">
@@ -13,39 +24,55 @@
   </div>
 
   <!-- Tabela de contas -->
-  <div *ngIf="!loading && usersRateio.length" class="table-wrapper">
-    <table class="table">
-      <thead>
-        <tr>
-          <th scope="col" style="width: 30%;">Apartamento</th>
-          <th scope="col" style="width: 10%;">Fração</th>
-          <th scope="col" style="width: 10%;">Valor Individual</th>
-          <th scope="col" style="width: 10%;">Valor Comum</th>
-          <th scope="col" style="width: 10%;">Provisões</th>
-          <th scope="col" style="width: 10%;">Fundos</th>
-          <th scope="col" style="width: 10%;">Valor Total</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let user of usersRateio">
-          <td>{{user.apt_name}}</td>
-          <td class="tooltip-container">
-            <span class="tooltip-text">{{user.fracao_total.toFixed(7)}}</span>
-            <div class="tooltip-message">
-              Frações:<br>
-              Apartamento: {{user.apt_fracao}}
-              <div *ngFor="let vaga of user.vagas; let i = index">
-                {{vaga.nome}}: {{vaga.fracao}} <br>
+  <div *ngIf="!loading && usersRateio.length">
+    <div class="d-flex justify-content-end mb-2">
+      <button class="btn btn-secondary" (click)="downloadAllRateios()">
+        <i class="fas fa-download"></i> Prévia
+      </button>
+      <button class="btn btn-primary"  style="margin-left: 15px;" (click)="downloadAllRateios()">
+        <i class="fas fa-download"></i> Gerar Rateios
+      </button>
+    </div>
+    <div class="table-wrapper">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col" style="width: 25%;">Apartamento</th>
+            <th scope="col" style="width: 10%;">Fração</th>
+            <th scope="col" style="width: 10%;">Valor Individual</th>
+            <th scope="col" style="width: 10%;">Valor Comum</th>
+            <th scope="col" style="width: 10%;">Provisões</th>
+            <th scope="col" style="width: 10%;">Fundos</th>
+            <th scope="col" style="width: 10%;">Valor Total</th>
+            <th scope="col" style="width: 15%;">Gerar PDF</th> <!-- Nova coluna -->
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of usersRateio">
+            <td>{{ user.apt_name }}</td>
+            <td class="tooltip-container">
+              <span class="tooltip-text">{{ user.fracao_total.toFixed(7) }}</span>
+              <div class="tooltip-message">
+                Frações:<br />
+                Apartamento: {{ user.apt_fracao }}
+                <div *ngFor="let vaga of user.vagas; let i = index">
+                  {{ vaga.nome }}: {{ vaga.fracao }} <br />
+                </div>
               </div>
-            </div>
-          </td>
-          <td>{{formatCurrency(user.valorIndividual)}}</td>
-          <td>{{formatCurrency(user.valorComum) }}</td>
-          <td>{{formatCurrency(user.valorProvisoes) }}</td>
-          <td>{{formatCurrency(user.valorFundos) }}</td>
-          <td>{{returnValorTotal(user)}}</td>
-        </tr>
-      </tbody>
-    </table>
+            </td>
+            <td>{{ formatCurrency(user.valorIndividual) }}</td>
+            <td>{{ formatCurrency(user.valorComum) }}</td>
+            <td>{{ formatCurrency(user.valorProvisoes) }}</td>
+            <td>{{ formatCurrency(user.valorFundos) }}</td>
+            <td>{{ returnValorTotal(user) }}</td>
+            <td>
+              <button class="" (click)="generateAndDownloadPDF(user)">
+                Gerar PDF
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>

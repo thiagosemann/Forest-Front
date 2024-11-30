@@ -5,6 +5,8 @@ import { FormBuilder, Validators, FormGroup, FormControl } from '@angular/forms'
 import { BuildingService } from '../shared/service/Banco_de_Dados/buildings_service';
 import { ApartamentoService } from '../shared/service/Banco_de_Dados/apartamento_service';
 import { ToastrService } from 'ngx-toastr';
+import { ExcelService } from '../shared/service/excelService';
+import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-apartamentos-control',
@@ -13,6 +15,8 @@ import { ToastrService } from 'ngx-toastr';
 })
 export class ApartamentosControlComponent {
   showEditComponent = false;
+  showAddApartamentosLoteComponent = false;
+  showApartamentosComponent = false;
   isEditing: boolean = false;  // Flag para indicar se está editando
   buildingId: number | null = null;
   buildings: Building[] = [];
@@ -20,12 +24,18 @@ export class ApartamentosControlComponent {
   myGroup: FormGroup;
   registerForm: FormGroup;
   titleEditApartamento: string = "Editar apartamento";
+  loading: boolean = false;
+  saveData:boolean =false;
+  uploading: boolean = false;
+  apartamentosInsert: Apartamento[] = [];
 
   constructor(
     private buildingService: BuildingService,
     private apartamentoService: ApartamentoService,
     private toastr: ToastrService,
-    private formBuilder: FormBuilder
+    private formBuilder: FormBuilder,
+    private excelService: ExcelService
+
   ) {
     this.myGroup = new FormGroup({
       building_id: new FormControl(''),
@@ -56,6 +66,7 @@ export class ApartamentosControlComponent {
   }
 
   onBuildingSelect(event: any): void {
+    this.manageScreens("apartamentos")
     this.buildingId = event.target.value;
     if (this.buildingId) {
       this.getAllApartamentosByBuildingId(this.buildingId);
@@ -78,7 +89,7 @@ export class ApartamentosControlComponent {
 
 
   editApartamento(apartamento: Apartamento): void {
-    this.showEditComponent = true;
+    this.manageScreens('edit')
     this.isEditing = true;
     this.titleEditApartamento = "Editar Apartamento"
     this.registerForm.patchValue({
@@ -92,7 +103,7 @@ export class ApartamentosControlComponent {
   }
 
   cancelarEdit(): void {
-    this.showEditComponent = false;
+    this.manageScreens('apartamentos')
     this.isEditing = false;
     this.registerForm.reset({
       id: "",
@@ -108,16 +119,15 @@ export class ApartamentosControlComponent {
     if (apartamento && apartamento.id) {
       if (confirm(`Você tem certeza que deseja excluir o apartamento: ${apartamento.nome}?`)) {
         this.apartamentoService.deleteApartamento(apartamento.id).subscribe(() => {
-          this.toastr.success("Apartamento deletada com sucesso!")
+          this.toastr.success("Apartamento deletado com sucesso!")
           this.getAllApartamentosByBuildingId(this.buildingId!);
         });
       }
     }
-    
   }
 
   addApartamento(): void {
-    this.showEditComponent = true;
+    this.manageScreens('edit')
     this.isEditing = false;  // Estamos criando uma nova apartamento
     this.titleEditApartamento = "Criar Apartamento"
     this.registerForm.reset({  // Resetar o formulário para valores padrão
@@ -162,5 +172,127 @@ export class ApartamentosControlComponent {
     }
   
   }
+
+  manageScreens(type:String):void{
+    if(type=="edit"){
+      this.showEditComponent = true;
+      this.showAddApartamentosLoteComponent = false;
+      this.showApartamentosComponent = false;
+    }else if(type=="apartamentos"){
+      this.showEditComponent = false;
+      this.showAddApartamentosLoteComponent = false;
+      this.showApartamentosComponent = true;
+    }else if(type=="apartamentosLote"){
+      this.showEditComponent = false;
+      this.showAddApartamentosLoteComponent = true;
+      this.showApartamentosComponent = false;
+    }
+  }
+
+  addApartamentoEmLote(): void {
+    this.manageScreens('apartamentosLote')
+
+  }
+
+  saveApartamentosInBatch(): void {
+    // Verifica se há usuários a serem inseridos
+    if (this.apartamentosInsert.length > 0) {
+      // Inicia a chamada para o serviço que salvará os usuários em lote
+      this.apartamentoService.saveApartamentosInBatch(this.apartamentosInsert).subscribe(
+        (response) => {
+          // Sucesso na inserção em lote
+          this.getAllApartamentosByBuildingId(this.buildingId!)
+          this.toastr.success('Apartamentos salvos com sucesso!');
+          this.apartamentosInsert = []; // Limpa a lista após o sucesso
+          this.manageScreens('apartamentos');
+          this.saveData = false; // Oculta o botão de salvar
+        },
+        (error) => {
+          // Lida com o erro
+          console.error('Erro ao salvar usuários em lote:', error);
+          this.toastr.error('Erro ao salvar os usuários.');
+        }
+      );
+    } else {
+      this.toastr.error('Nenhum usuário para salvar.');
+    }
+  }
+  
+  cancelUsersInBatch():void{
+    this.saveData = false;
+
+  }
+  handleFileInput(event: any): void {
+    // Começar a girar o spinner
+    this.loading = true
+    this.saveData = true;
+    this.apartamentosInsert = [];
+  
+    // Obter o arquivo do evento
+    const file: File = event.target.files[0];
+  
+    // Verificar se o arquivo é válido (excel)
+    if (file && file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+      const reader = new FileReader();
+  
+      // Definir o comportamento quando o arquivo for lido
+      reader.onload = (e: any) => {
+        const binaryString = e.target.result;
+        const workbook: XLSX.WorkBook = XLSX.read(binaryString, { type: 'binary' });
+  
+        // Obter a primeira planilha (Assumindo que o arquivo tem apenas uma planilha)
+        const worksheet: XLSX.WorkSheet = workbook.Sheets[workbook.SheetNames[0]];
+  
+        // Converter a planilha em JSON
+        const data: any[] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+  
+        // Remover o cabeçalho e iterar sobre as linhas para armazenar os dados
+        const headers = data[0]; // Cabeçalho da planilha
+        for (let i = 1; i < data.length; i++) {
+          const row = data[i];
+          const apartamento: Apartamento = {
+            nome: row[1], // Primeiro nome
+            bloco: row[2], // Sobrenome
+            fracao: row[3], // E-mail
+            predio_id: Number(this.buildingId),
+          };
+          this.apartamentosInsert.push(apartamento);
+        }
+  
+        // Finalizar a operação
+        this.loading = false;
+  
+        // Exibir mensagem de sucesso ou erro (opcional)
+        if (this.apartamentosInsert.length > 0) {
+          this.toastr.success(`${this.apartamentosInsert.length} usuários carregados com sucesso.`);
+        } else {
+          this.toastr.error('Nenhum usuário encontrado no arquivo.');
+        }
+      };
+  
+      // Ler o arquivo como uma string binária
+      reader.readAsBinaryString(file);
+    } else {
+      this.uploading = false;
+      this.saveData = false;
+      this.toastr.error('Por favor, envie um arquivo Excel válido.');
+    }
+  }
+
+  downloadModel(): void {
+    console.log(this.buildings);
+    
+    if (this.buildingId) {
+        const building = this.buildings.find(building => building.id === Number(this.buildingId));
+        
+        if (building) {
+            this.excelService.downloadModelApartamentosLote(building);
+        } else {
+            console.error("Prédio não encontrado para o ID fornecido:", this.buildingId);
+        }
+    } else {
+        console.warn("Nenhum prédio selecionado.");
+    }
+}
 
 }

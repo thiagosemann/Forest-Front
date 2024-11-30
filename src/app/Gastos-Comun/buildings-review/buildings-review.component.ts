@@ -305,6 +305,8 @@ export class BuildingsReviewComponent implements OnInit {
     if(!conta.checkboxDetalhe){
       conta.tipo_Gasto_Extra= "";
     }
+
+    console.log(this.contasAdicionar)
   }
   
   selectContaAddChange(conta:any):void{
@@ -458,6 +460,7 @@ export class BuildingsReviewComponent implements OnInit {
   }
 
   sendCommonExpenses(commonExpenses:CommonExpense[]):void{
+    console.log(commonExpenses)
     this.commonExepenseService.createCommonExpenses(commonExpenses).subscribe(
       (createdExpenses: CommonExpense[]) => {
         console.log('Despesas comuns criadas com sucesso:', createdExpenses);

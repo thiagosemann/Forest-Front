@@ -17,6 +17,16 @@ export class ApartamentoService {
     return new HttpHeaders({ 'Authorization': 'Bearer ' + token });
   }
 
+  // Nova função para inserção em lote de usuários
+  saveApartamentosInBatch(apartamentos: Apartamento[]): Observable<any> {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const headers = new HttpHeaders({
+      'Authorization': 'Bearer ' + token
+    });
+
+    return this.http.post(`${this.apiUrl}/batch`, apartamentos, { headers });
+  }
+
   getAllApartamentos(): Observable<Apartamento[]> {
     return this.http.get<Apartamento[]>(this.apiUrl, { headers: this.getHeaders() });
   }

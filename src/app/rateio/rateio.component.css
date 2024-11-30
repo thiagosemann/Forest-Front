@@ -142,3 +142,32 @@
   color: #dc3545;
   margin-top: 20px;
 }
+.progress-container {
+  width: 100%;
+  height: 20px;
+  background-color: #f3f3f3;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: #4caf50;
+  border-radius: 10px;
+  transition: width 0.3s;
+}
+.cancel-button {
+  background-color: #f44336; /* Cor vermelha */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  margin-top: 10px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.cancel-button:hover {
+  background-color: #d32f2f;
+}
+
+

@@ -1,4 +1,11 @@
 <div  class="container">
+    <div [formGroup]="myGroup" >
+      <select id="building_id" name="building_id" class="form-control" formControlName="building_id" required  (change)="onBuildingSelect($event)" style="margin-bottom: 10px;">
+        <option value="" disabled selected>Selecione o prédio</option>
+        <option *ngFor="let building of buildings" [value]="building.id">{{ building.nome }}</option>
+      </select>
+    </div>
+
 
     <div *ngIf="showEditComponent" style="margin-top: 30px;">
           <div class="row d-flex justify-content-center align-items-center">
@@ -51,14 +58,64 @@
           </div>
   
     </div>
-    
-    <div *ngIf="!showEditComponent" style="margin-top: 30px;">
-      <div [formGroup]="myGroup" >
-        <select id="building_id" name="building_id" class="form-control" formControlName="building_id" required  (change)="onBuildingSelect($event)" style="margin-bottom: 10px;">
-          <option value="" disabled selected>Selecione o prédio</option>
-          <option *ngFor="let building of buildings" [value]="building.id">{{ building.nome }}</option>
-        </select>
+    <div *ngIf="showAddApartamentosLoteComponent" >
+      <div class="row">
+        <div *ngIf="loading" class="spinner-border text-success col-md-5" role="status">
+          <span class="visually-hidden">Carregando...</span>
+        </div>
+        <div  *ngIf="!loading" class="col-md-5" style="margin-bottom: 10px;">
+          <ng-container *ngIf="saveData">
+            <button class="btn btn-save" (click)="saveApartamentosInBatch()">
+              <i class="fas fa-save"></i>Salvar
+            </button>
+            <button class="btn btn-danger" style="margin-left: 5px;" (click)="cancelUsersInBatch()">
+              <i class="fas fa-cancel"></i>Cancelar
+            </button>
+          </ng-container>
+          <ng-container *ngIf="!saveData && buildingId">
+            <div style="margin-top: 15px;">
+              <label class="btn btn-success" >
+                <i class="fas fa-upload"></i> Inserir
+                <input type="file" style="display: none;" (change)="handleFileInput($event)">
+                <span *ngIf="uploading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              </label>
+              <button class="btn btn-primary" (click)="downloadModel()" style="margin-left: 5px;">
+                <i class="fas fa-download"></i> Modelo
+              </button>
+              <button class="btn btn-secondary" (click)="manageScreens('apartamentos')" style="margin-left: 5px;">
+                Voltar
+             </button>
+            </div>
+          </ng-container>       
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table class="table" *ngIf="!loading && apartamentosInsert.length>0">
+          <thead>
+            <tr>
+              <th scope="col" style="width: 20%;">Nome</th>
+              <th scope="col" style="width: 20%;">Teste</th>
+              <th scope="col" style="width: 20%;">Fraçao</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Itera sobre os dados dos usuários e preenche as linhas da tabela -->
+            <ng-container *ngFor="let apartamento of apartamentosInsert; let i = index">
+              <tr [ngClass]="{'table-light': i % 2 === 0, 'table-light-gray': i % 2 !== 0}">
+                <td>{{ apartamento.nome }}</td>
+                <td>{{ apartamento.bloco }}</td>
+                <td>{{ apartamento.fracao }}</td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div *ngIf="showApartamentosComponent" style="margin-top: 30px;">
         <button class="btn btn-primary" style="margin-bottom: 10px;"(click)="addApartamento()">Adicionar Apartamento</button>
+        <button class="btn btn-primary" style="margin-left:5px; margin-bottom: 10px;" (click)="addApartamentoEmLote()" >Add Apartamento Lote</button>
+
         <div class="table-wrapper">
           <table class="table narrow-table">
             <thead>
@@ -81,6 +138,5 @@
             </tbody>
           </table>
         </div>
-      </div>
     </div>
   </div>

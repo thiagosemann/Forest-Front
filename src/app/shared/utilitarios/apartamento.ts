@@ -1,7 +1,7 @@
 export interface Apartamento {
-    id: number;
+    id?: number;
     nome: string;
     bloco: string;
-    predio_id: string;
+    predio_id: number;
     fracao:number;
 }
