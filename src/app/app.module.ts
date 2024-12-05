@@ -30,6 +30,7 @@ import { VagasComponent } from './vagas/vagas.component';
 import { FundosComponent } from './fundos/fundos.component';
 import { ProvisoesComponent } from './provisoes/provisoes.component';
 import { ApartamentosControlComponent } from './apartamentos-control/apartamentos-control.component';
+import { CameraAppComponent } from './camera-app/camera-app.component';
 
 @NgModule({
   declarations: [
@@ -50,7 +51,8 @@ import { ApartamentosControlComponent } from './apartamentos-control/apartamento
     VagasComponent,
     FundosComponent,
     ProvisoesComponent,
-    ApartamentosControlComponent
+    ApartamentosControlComponent,
+    CameraAppComponent
   ],
   imports: [
     BrowserModule,
