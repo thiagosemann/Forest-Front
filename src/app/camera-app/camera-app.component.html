@@ -1,45 +1,47 @@
-<div class="container">
-  <h1>Forest</h1>
-
-  <!-- Etapa 1: Formulário de informações -->
-  <div *ngIf="step === 1">
-    <form (ngSubmit)="onSubmit()">
-      <div class="form-group">
-        <label for="id">Código da Reserva:</label>
-        <input type="text" class="form-control" id="id" [(ngModel)]="id" name="id" required>
-      </div>
-      <div class="form-group">
-        <input type="text" class="form-control" id="cpf" placeholder="CPF" [(ngModel)]="formData.cpf" name="cpf" required>
-      </div>
-      <div class="form-group">
-        <input type="text" class="form-control" id="name" placeholder="Nome" [(ngModel)]="formData.nome" name="nome" required>
-      </div>
-      <div class="form-group">
-        <input type="tel" class="form-control" id="phone" placeholder="Telefone" [(ngModel)]="formData.telefone" name="telefone" required>
-      </div>
-      <button type="submit" class="btn btn-primary">Próximo</button>
-    </form>
-  </div>
-
-  <!-- Etapa 2: Captura de foto -->
-  <div *ngIf="step === 2">
-    <div class="camera-container">
-      <video #video autoplay playsinline></video>
-      <img #photo [src]="photoDataUrl" alt="Sua foto aparecerá aqui." *ngIf="photoDataUrl">
+<div class="full-screen-container">
+  <div class="container">
+    <img src="../../../assets/images/logo-com-frase-V2.png" alt="Logo Lamp" class="logo-img">
+    
+    <!-- Etapa 1: Formulário de informações -->
+    <div *ngIf="step === 1">
+      <form (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <label for="id">Código da Reserva:</label>
+          <input type="text" class="form-control" id="id" [(ngModel)]="id" name="id" disabled required>
+        </div>
+        <div class="form-group">
+          <input type="text" class="form-control" id="cpf" placeholder="CPF" [(ngModel)]="formData.cpf" name="cpf" required mask="000.000.000-00">
+        </div>
+        <div class="form-group">
+          <input type="text" class="form-control" id="name" placeholder="Nome" [(ngModel)]="formData.nome" name="nome" required>
+        </div>
+        <div class="form-group">
+          <input type="tel" class="form-control" id="phone" placeholder="Telefone" [(ngModel)]="formData.telefone" name="telefone" required>
+        </div>
+        <button type="submit" class="btn btn-success">Próximo</button>
+      </form>
     </div>
-    <button (click)="capturePhoto()" class="btn btn-success mt-3">Capturar Foto</button>
-    <button (click)="cancelPhoto()" class="btn btn-danger mt-3" *ngIf="photoDataUrl">Cancelar</button>
-    <button (click)="sendPhoto()" class="btn btn-success mt-3" *ngIf="photoDataUrl">Enviar</button>
-  </div>
+    <!-- Etapa 2: Captura de foto -->
+    <div *ngIf="step === 2">
+      <div class="camera-container">
+        <video #video autoplay playsinline></video>
+        <img #photo [src]="photoDataUrl" alt="Sua foto aparecerá aqui." *ngIf="photoDataUrl">
+      </div>
+      <button (click)="capturePhoto()" class="btn btn-success mt-3" *ngIf="!photoDataUrl">Capturar Foto</button>
+      <button (click)="cancelPhoto()" class="btn btn-danger mt-3" *ngIf="photoDataUrl">Cancelar</button>
+      <button (click)="sendPhoto()" class="btn btn-success mt-3" *ngIf="photoDataUrl">Enviar</button>
+      <button (click)="goBack()" class="btn btn-secondary mt-3" *ngIf="!photoDataUrl">Voltar</button> <!-- Botão para voltar -->
+    </div>
 
-  <!-- Etapa 3: Carregando -->
-  <div *ngIf="step === 3" class="text-center">
-    <div class="loader"></div>
-    <p>Processando...</p>
-  </div>
+    <!-- Etapa 3: Carregando -->
+    <div *ngIf="step === 3" class="text-center">
+      <div class="loader"></div>
+      <p>Processando...</p>
+    </div>
 
-  <!-- Etapa 4: Concluído -->
-  <div *ngIf="step === 4" class="text-center">
-    <h2>Cadastro concluído com sucesso.</h2>
+    <!-- Etapa 4: Concluído -->
+    <div *ngIf="step === 4" class="text-center">
+      <h2>Cadastro concluído com sucesso.</h2>
+    </div>
   </div>
 </div>

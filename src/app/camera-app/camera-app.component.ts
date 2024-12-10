@@ -1,4 +1,5 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, ViewChild, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { GoogleScriptService } from '../shared/service/googleService';
 
 @Component({
@@ -6,7 +7,7 @@ import { GoogleScriptService } from '../shared/service/googleService';
   templateUrl: './camera-app.component.html',
   styleUrls: ['./camera-app.component.css']
 })
-export class CameraAppComponent {
+export class CameraAppComponent implements OnInit {
   step = 1; // Etapas do fluxo
   id: string = ''; // Código da reserva
   formData = { cpf: '', nome: '', telefone: '' }; // Dados do formulário
@@ -15,7 +16,17 @@ export class CameraAppComponent {
   @ViewChild('photo', { static: false }) photoElement!: ElementRef;
   private mediaStream: MediaStream | null = null; // Para parar a câmera depois do uso
 
-  constructor(private googleScriptService: GoogleScriptService) {}
+  constructor(
+    private googleScriptService: GoogleScriptService,
+    private route: ActivatedRoute // Injete o ActivatedRoute
+  ) {}
+
+  ngOnInit() {
+    // Acessa o parâmetro 'id' da URL
+    this.route.paramMap.subscribe(params => {
+      this.id = params.get('id') ?? ''; // Atribui o valor do 'id' à variável
+    });
+  }
 
   // Submissão do formulário de informações
   onSubmit() {
@@ -23,8 +34,8 @@ export class CameraAppComponent {
       alert("CPF inválido!");
       return;
     }
-    this.step = 2;
-    this.startCamera();
+    this.step = 2; // Avançar para a etapa de captura de foto
+    this.startCamera(); // Iniciar a câmera
   }
 
   // Inicia a câmera do usuário
@@ -45,12 +56,15 @@ export class CameraAppComponent {
     const context = canvas.getContext('2d');
     context?.drawImage(this.videoElement.nativeElement, 0, 0);
     this.photoDataUrl = canvas.toDataURL('image/png');
+    
+    // Pausa o vídeo após capturar a foto
+    this.videoElement.nativeElement.pause();
   }
 
   // Cancela a foto capturada e reinicia a câmera
   cancelPhoto() {
     this.photoDataUrl = null;
-    this.startCamera();
+    this.startCamera(); // Reinicia a câmera
   }
 
   // Envia a foto e as informações para o Google Apps Script
@@ -59,28 +73,44 @@ export class CameraAppComponent {
       alert('Por favor, capture a foto antes de enviar.');
       return;
     }
-
-    this.step = 3; // Exibir "carregando..."
-    const imageFile = this.dataUrlToFile(this.photoDataUrl, 'captura.png');
+  
+    // Alterar a etapa para "carregando..." enquanto a imagem está sendo enviada
+    this.step = 3;
+  
+    // Verificar se a string Base64 contém o prefixo "data:image/png;base64,"
+    const base64Prefix = "data:image/png;base64,";
+    let base64Image = this.photoDataUrl;
     
-    this.googleScriptService.enviarDados(
-      this.id, 
-      this.formData.cpf, 
-      this.formData.nome, 
-      this.formData.telefone, 
-      imageFile
-    ).subscribe({
-      next: (response) => {
+    // Se o prefixo estiver presente, remova-o
+    if (base64Image.startsWith(base64Prefix)) {
+      base64Image = base64Image.substring(base64Prefix.length);
+    } else {
+      console.log("Erro: Base64 não contém o prefixo esperado.");
+    }
+  
+    // Enviar os dados e a imagem para o backend
+    this.googleScriptService.enviarImagem(
+      this.id, // Código da reserva
+      this.formData.cpf, // CPF
+      this.formData.nome, // Nome
+      this.formData.telefone, // Telefone
+      base64Image // Imagem sem o prefixo
+    ).subscribe(
+      response => {
         console.log('Dados enviados com sucesso:', response);
-        this.step = 4; // Exibir tela de "Concluído"
+        alert('Foto e dados enviados com sucesso!');
+        this.step = 1; // Voltar para a primeira etapa
+        this.formData = { cpf: '', nome: '', telefone: '' }; // Limpar formulário
+        this.id = ''; // Limpar ID
         this.stopCamera();
       },
-      error: (error) => {
+      error => {
         console.error('Erro ao enviar dados:', error);
-        alert('Erro ao enviar as informações. Tente novamente.');
-        this.step = 2; // Voltar para o passo de captura de foto
+        alert('Erro ao enviar dados, tente novamente!');
+        this.step = 1;
+        this.stopCamera();
       }
-    });
+    );
   }
 
   // Valida o CPF do usuário
@@ -92,24 +122,18 @@ export class CameraAppComponent {
     return true;
   }
 
-  // Converte a URL de uma imagem Base64 para um arquivo File
-  dataUrlToFile(dataUrl: string, filename: string): File {
-    const arr = dataUrl.split(',');
-    const mime = arr[0].match(/:(.*?);/)![1];
-    const bstr = atob(arr[1]);
-    let n = bstr.length;
-    const u8arr = new Uint8Array(n);
-    while (n--) {
-      u8arr[n] = bstr.charCodeAt(n);
-    }
-    return new File([u8arr], filename, { type: mime });
-  }
-
   // Para a câmera e limpa o fluxo de vídeo
   stopCamera() {
     if (this.mediaStream) {
       this.mediaStream.getTracks().forEach(track => track.stop());
       this.mediaStream = null;
+    }
+  }
+
+  // Volta para a etapa anterior
+  goBack() {
+    if (this.step > 1) {
+      this.step--; // Decrementa a etapa
     }
   }
 }

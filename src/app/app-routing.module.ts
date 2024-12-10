@@ -25,7 +25,7 @@ import { CameraAppComponent } from './camera-app/camera-app.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
-  { path: 'cameraApp', component: CameraAppComponent},
+  { path: 'cameraApp/:id', component: CameraAppComponent },
   { path: 'forgotPassword', component: ForgotPasswordComponent},
   { path: 'landing', component: LandingComponent, canActivate: [AuthGuardService] },
   { path: 'content/:id', component: ContentComponent, canActivate: [AuthGuardService] },
