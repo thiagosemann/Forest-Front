@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 })
 export class GoogleScriptService {
 
-  private apiUrl = 'https://script.google.com/a/macros/forestgip.com.br/s/AKfycbyASttmV7DbqbKmJv0s1TAr_3Y3jsTLGk9oQJ0Ca5rvvMIlCR0qsJktwvqMhAYDluqhvg/exec';
+  private apiUrl = 'https://script.google.com/macros/s/AKfycbxc05xZznOZ5yk87_arMQ2CqHpgfombfiXzib-bzZm1bcgq_JAvoNCM2W2uANxhP9RFbQ/exec';
 
   constructor(private http: HttpClient) {}
 
