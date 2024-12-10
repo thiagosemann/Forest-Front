@@ -1,0 +1,77 @@
+/* Estilos gerais da tabela */
+.calendar-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para cabeçalhos */
+.calendar-table th, .calendar-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border: 1px solid #ddd;
+}
+
+/* Cor de fundo para os cabeçalhos */
+.calendar-table th {
+  background-color: #4CAF50;
+  color: white;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+/* Estilo para os links */
+.calendar-table a {
+  color: #0066cc;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+/* Efeito de hover nos links */
+.calendar-table a:hover {
+  text-decoration: underline;
+  color: #004d99;
+}
+
+/* Estilos para as linhas da tabela */
+.calendar-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.calendar-table tr:hover {
+  background-color: #f1f1f1;
+  cursor: pointer;
+}
+
+/* Estilo para o rodapé da tabela */
+.calendar-table tfoot {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+/* Estilos responsivos para dispositivos menores */
+@media (max-width: 768px) {
+  .calendar-table {
+    font-size: 0.9rem;
+  }
+
+  .calendar-table th, .calendar-table td {
+    padding: 8px;
+  }
+
+  .calendar-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .calendar-table th {
+    display: none;
+  }
+
+  .calendar-table td::before {
+    content: attr(data-label);
+    font-weight: bold;
+    padding-right: 10px;
+  }
+}

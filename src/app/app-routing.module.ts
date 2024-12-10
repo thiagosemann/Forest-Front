@@ -18,11 +18,14 @@ import { VagasComponent } from './vagas/vagas.component';
 import { FundosComponent } from './fundos/fundos.component';
 import { ProvisoesComponent } from './provisoes/provisoes.component';
 import { ApartamentosControlComponent } from './apartamentos-control/apartamentos-control.component';
+import { AirbnbCalendarService } from './shared/service/Banco_de_Dados/calendarioAirBnb_service';
+import { CalendarioAirbnbComponent } from './calendario-airbnb/calendario-airbnb.component';
 import { CameraAppComponent } from './camera-app/camera-app.component';
 
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
+  { path: 'cameraApp', component: CameraAppComponent},
   { path: 'forgotPassword', component: ForgotPasswordComponent},
   { path: 'landing', component: LandingComponent, canActivate: [AuthGuardService] },
   { path: 'content/:id', component: ContentComponent, canActivate: [AuthGuardService] },
@@ -37,11 +40,8 @@ const routes: Routes = [
   { path: 'rateio', component: RateioComponent, canActivate: [AuthGuardService] },
   { path: 'provisao', component: ProvisoesComponent, canActivate: [AuthGuardService] },
   { path: 'fundos', component: FundosComponent, canActivate: [AuthGuardService] },
-  { path: 'cameraApp', component: CameraAppComponent },
+  { path: 'Airbnb', component: CalendarioAirbnbComponent},
 
-
-  
-  
   { path: '', redirectTo: '/content', pathMatch: 'full' }, // redireciona para '/home' quando o caminho é vazio
   { path: '**', component: ContentComponent, canActivate: [AuthGuardService] }, // rota de fallback quando nenhuma outra corresponder
 

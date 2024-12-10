@@ -1,16 +1,14 @@
-<div class="calendar-container">
-    <h1>Calendário do Airbnb</h1>
-    <div *ngIf="events.length > 0; else loading">
-      <ul>
-        <li *ngFor="let event of events">
-          <strong>{{ event.title }}</strong><br />
-          De: {{ event.start | date: 'short' }}<br />
-          Até: {{ event.end | date: 'short' }}
-        </li>
-      </ul>
-    </div>
-    <ng-template #loading>
-      <p>Carregando eventos...</p>
-    </ng-template>
-  </div>
-  
+<h1>{{ title }}</h1>
+
+<button (click)="login()">Login</button>
+<button (click)="logout()">Logout</button>
+<button (click)="listFiles()">Listar Arquivos</button>
+
+<input type="file" (change)="uploadFile($event)" />
+
+<h2>Arquivos:</h2>
+<ul>
+  <li *ngFor="let file of files">
+    {{ file.name }} ({{ file.mimeType }})
+  </li>
+</ul>

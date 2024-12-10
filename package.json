@@ -32,6 +32,7 @@
     "chart.js": "^4.3.0",
     "cpf-cnpj-validator": "^1.0.3",
     "file-saver": "^2.0.5",
+    "gapi-script": "^1.2.0",
     "ical": "^0.8.0",
     "ical.js": "^2.1.0",
     "ics-parser": "^0.1.5",

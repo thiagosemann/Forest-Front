@@ -1,37 +1,53 @@
-import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-const icsParser = require('ics-parser');
+import { Component, ElementRef, ViewChild } from '@angular/core';
+import { GoogleDriveService } from '../shared/service/googleService';
 
 @Component({
   selector: 'app-camera-app',
   templateUrl: './camera-app.component.html',
-  styleUrls: ['./camera-app.component.css'],
+  styleUrls: ['./camera-app.component.css']
 })
-export class CameraAppComponent implements OnInit {
-  events: { title: string; start: Date | null; end: Date | null }[] = [];
+export class CameraAppComponent {
+  title = 'Google Drive Integration';
+  files: any[] = [];
 
-  constructor(private http: HttpClient) {}
+  constructor(private googleDriveService: GoogleDriveService) {}
 
-  ngOnInit(): void {
-    const icsUrl =
-      'https://www.airbnb.com.br/calendar/ical/45528337.ics?s=6e3d033213a65bdbf6ad95a7785f7b38';
+  ngOnInit(): void {}
 
-    this.http.get(icsUrl, { responseType: 'text' }).subscribe(
-      (icsData) => {
-        const parser = new icsParser();
-        const parsedData = parser.parse(icsData);  // Usando ics-parser
+  login(): void {
+    this.googleDriveService.login().then(() => {
+      console.log('Login bem-sucedido');
+    }).catch(error => {
+      console.error('Erro ao fazer login', error);
+    });
+  }
 
-        parsedData.forEach((event: any) => {
-          this.events.push({
-            title: event.summary || 'Sem título',
-            start: event.startDate ? new Date(event.startDate) : null,
-            end: event.endDate ? new Date(event.endDate) : null,
-          });
-        });
-      },
-      (error) => {
-        console.error('Erro ao carregar o calendário:', error);
-      }
-    );
+  logout(): void {
+    this.googleDriveService.logout().then(() => {
+      console.log('Logout realizado');
+    }).catch(error => {
+      console.error('Erro ao fazer logout', error);
+    });
+  }
+
+  listFiles(): void {
+    this.googleDriveService.listFiles().then(files => {
+      this.files = files;
+      console.log('Arquivos:', files);
+    }).catch(error => {
+      console.error('Erro ao listar arquivos', error);
+    });
+  }
+
+  uploadFile(event: any): void {
+    const file = event.target.files[0];
+    if (file) {
+      this.googleDriveService.uploadFile(file).then(response => {
+        console.log('Arquivo enviado:', response);
+        this.listFiles();
+      }).catch(error => {
+        console.error('Erro ao enviar arquivo', error);
+      });
+    }
   }
 }
