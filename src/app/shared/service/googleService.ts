@@ -1,128 +1,65 @@
 import { Injectable } from '@angular/core';
-import { environment } from 'enviroments';
-import { BehaviorSubject } from 'rxjs';
-
-declare var gapi: any;
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
-export class GoogleDriveService {
-  private isAuthInitialized = new BehaviorSubject<boolean>(false);
-  private authInstance: any;
+export class GoogleScriptService {
 
-  constructor() {
-    this.initializeGapi();
-  }
+  private apiUrl = 'https://script.google.com/a/macros/forestgip.com.br/s/AKfycbyASttmV7DbqbKmJv0s1TAr_3Y3jsTLGk9oQJ0Ca5rvvMIlCR0qsJktwvqMhAYDluqhvg/exec';
+
+  constructor(private http: HttpClient) {}
 
   /**
-   * Inicializa o cliente gapi e configura OAuth2
+   * Envia os dados e a imagem para o Google Apps Script.
+   * 
+   * @param cod_reserva O código da reserva.
+   * @param CPF O CPF do usuário.
+   * @param Nome O nome do usuário.
+   * @param Telefone O telefone do usuário.
+   * @param imageFile O arquivo de imagem a ser enviado.
+   * @returns Observable com a resposta do servidor.
    */
-  private initializeGapi(): void {
-    gapi.load('client:auth2', () => {
-      gapi.client.init({
-        apiKey: environment.googleApiKey,
-        clientId: environment.googleClientId,
-        discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
-        scope: 'https://www.googleapis.com/auth/drive'
-      }).then(() => {
-        this.authInstance = gapi.auth2.getAuthInstance();
-        this.isAuthInitialized.next(true);
-      }).catch((error: any) => {
-        console.error('Erro ao inicializar GAPI', error);
-      });
-    });
-  }
+  enviarDados(
+    cod_reserva: string, 
+    CPF: string, 
+    Nome: string, 
+    Telefone: string, 
+    imageFile: File
+  ): Observable<any> {
+    // Converter a imagem em Base64
+    return new Observable(observer => {
+      const reader = new FileReader();
+      reader.readAsDataURL(imageFile);
+      
+      reader.onload = () => {
+        const base64Image = reader.result?.toString().split(',')[1]; // Remove o prefixo 'data:image/png;base64,'
+        
+        const body = {
+          cod_reserva,
+          CPF,
+          Nome,
+          Telefone,
+          imagemBase64: base64Image
+        };
 
-  /**
-   * Faz login no Google
-   */
-  public login(): Promise<any> {
-    return new Promise((resolve, reject) => {
-      if (this.authInstance) {
-        this.authInstance.signIn().then((user: any) => {
-          const profile = user.getBasicProfile();
-          console.log('Usuário logado:', profile.getName());
-          resolve(user);
-        }).catch((error: any) => {
-          console.error('Erro ao fazer login', error);
-          reject(error);
+        const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+
+        this.http.post(this.apiUrl, body, { headers }).subscribe({
+          next: (response) => {
+            observer.next(response);
+            observer.complete();
+          },
+          error: (error) => {
+            observer.error(error);
+          }
         });
-      } else {
-        console.error('Auth instance não inicializada');
-      }
-    });
-  }
-
-  /**
-   * Faz logout do Google
-   */
-  public logout(): Promise<any> {
-    return new Promise((resolve, reject) => {
-      if (this.authInstance) {
-        this.authInstance.signOut().then(() => {
-          console.log('Logout realizado');
-          resolve(true);
-        }).catch((error: any) => {
-          console.error('Erro ao fazer logout', error);
-          reject(error);
-        });
-      } else {
-        console.error('Auth instance não inicializada');
-      }
-    });
-  }
-
-  /**
-   * Verifica se o usuário está logado
-   */
-  public isLoggedIn(): boolean {
-    return this.authInstance && this.authInstance.isSignedIn.get();
-  }
-
-  /**
-   * Obtém os arquivos do Google Drive
-   */
-  public listFiles(): Promise<any> {
-    return new Promise((resolve, reject) => {
-      gapi.client.drive.files.list({
-        pageSize: 10,
-        fields: 'nextPageToken, files(id, name, mimeType)'
-      }).then((response: any) => {
-        console.log('Arquivos do Google Drive:', response.result.files);
-        resolve(response.result.files);
-      }).catch((error: any) => {
-        console.error('Erro ao listar arquivos', error);
-        reject(error);
-      });
-    });
-  }
-
-  /**
-   * Faz o upload de um arquivo para o Google Drive
-   */
-  public uploadFile(file: File): Promise<any> {
-    return new Promise((resolve, reject) => {
-      const fileMetadata = {
-        name: file.name
       };
 
-      const formData = new FormData();
-      formData.append('metadata', new Blob([JSON.stringify(fileMetadata)], { type: 'application/json' }));
-      formData.append('file', file);
-
-      fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-        method: 'POST',
-        headers: new Headers({ 'Authorization': `Bearer ${gapi.auth.getToken().access_token}` }),
-        body: formData
-      }).then(response => response.json())
-        .then(result => {
-          console.log('Arquivo enviado para o Google Drive:', result);
-          resolve(result);
-        }).catch(error => {
-          console.error('Erro ao enviar arquivo', error);
-          reject(error);
-        });
+      reader.onerror = (error) => {
+        observer.error(`Erro ao converter imagem: ${error}`);
+      };
     });
   }
 }
