@@ -7,7 +7,10 @@ import { environment } from 'enviroments';
   providedIn: 'root'
 })
 export class GoogleScriptService {
-  private apiUrl = environment.backendUrl + '/enviar-imagem'; // Defina sua URL do backend aqui
+  
+  private apiUrlDados = environment.backendUrl + '/enviar-dados';
+  private apiUrlImagem = environment.backendUrl + '/enviar-imagem';
+  private apiUrlPDF = environment.backendUrl + '/enviar-pdf';
 
   constructor(private http: HttpClient) { }
 
@@ -15,20 +18,25 @@ export class GoogleScriptService {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     return new HttpHeaders({ 'Authorization': 'Bearer ' + token });
   }
+ 
+  //Envia os dados para o Google Script
+  enviarDados(cod_reserva: string, CPF: string, Nome: string, Telefone: string): Observable<any> {
+    const dados = { cod_reserva, CPF, Nome, Telefone };
+    console.log('Enviando dados para o backend:', dados);
+    return this.http.post(this.apiUrlDados, dados, { headers: this.getHeaders() });
+  }
 
-  // Função para enviar dados e imagem
-  enviarImagem(cod_reserva: string, CPF: string, Nome: string, Telefone: string, imagemBase64: string): Observable<any> {
-    const dados = {
-      cod_reserva,
-      CPF,
-      Nome,
-      Telefone,
-      imagemBase64
-    };
+  //Envia a imagem (Base64) para o Google Script
+  enviarImagem(imagemBase64: string,cod_reserva: string, CPF: string): Observable<any> {
+    const dados = { imagemBase64,cod_reserva,CPF };
+    console.log('Enviando imagem para o backend:', dados);
+    return this.http.post(this.apiUrlImagem, dados, { headers: this.getHeaders() });
+  }
 
-    console.log('Enviando dados para o backend:', dados);  // Log para checar os dados enviados
-
-    return this.http.post(this.apiUrl, dados, { headers: this.getHeaders() });
+  //Envia o PDF (Base64) para o Google Script
+  enviarPDF(documentBase64: string,cod_reserva: string, CPF: string): Observable<any> {
+    const dados = { documentBase64,cod_reserva,CPF };
+    console.log('Enviando PDF para o backend:', dados);
+    return this.http.post(this.apiUrlPDF, dados, { headers: this.getHeaders() });
   }
 }
-

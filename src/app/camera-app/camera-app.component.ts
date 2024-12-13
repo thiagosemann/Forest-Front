@@ -1,6 +1,7 @@
 import { Component, ElementRef, ViewChild, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { GoogleScriptService } from '../shared/service/googleService';
+import { Toast, ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-camera-app',
@@ -12,32 +13,47 @@ export class CameraAppComponent implements OnInit {
   id: string = ''; // Código da reserva
   formData = { cpf: '', nome: '', telefone: '' }; // Dados do formulário
   photoDataUrl: string | null = null; // Imagem capturada
+  documentPhotoUrl: string | null = null; // Imagem capturada
+  documentFile: string | null = null; // Arquivo do documento
+  fotoOuDocumentoString:string='';
   @ViewChild('video', { static: false }) videoElement!: ElementRef;
-  @ViewChild('photo', { static: false }) photoElement!: ElementRef;
+  @ViewChild('videoDoc', { static: false }) videoDocElement!: ElementRef;
   private mediaStream: MediaStream | null = null; // Para parar a câmera depois do uso
+  private documentMediaStream: MediaStream | null = null; // Para parar a câmera do documento
 
   constructor(
     private googleScriptService: GoogleScriptService,
-    private route: ActivatedRoute // Injete o ActivatedRoute
+    private route: ActivatedRoute, // Injete o ActivatedRoute
+    private toastr: ToastrService
   ) {}
 
   ngOnInit() {
-    // Acessa o parâmetro 'id' da URL
     this.route.paramMap.subscribe(params => {
       this.id = params.get('id') ?? ''; // Atribui o valor do 'id' à variável
     });
   }
 
-  // Submissão do formulário de informações
-  onSubmit() {
-    if (!this.validateCPF(this.formData.cpf)) {
-      alert("CPF inválido!");
-      return;
+  // Recebe o arquivo selecionado para envio
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      
+      reader.onload = () => {
+        // Aqui o conteúdo do arquivo em base64
+        const base64String = reader.result as string;
+        this.documentFile = base64String; // Salva o base64 no atributo
+        this.toastr.success('Documento selecionado com sucesso.');
+      };
+      
+      reader.onerror = () => {
+        this.toastr.error('Erro ao ler o arquivo.');
+      };
+      
+      reader.readAsDataURL(file); // Lê o arquivo como DataURL (base64)
     }
-    this.step = 2; // Avançar para a etapa de captura de foto
-    this.startCamera(); // Iniciar a câmera
   }
-
+  
   // Inicia a câmera do usuário
   startCamera() {
     navigator.mediaDevices.getUserMedia({ video: true })
@@ -48,6 +64,16 @@ export class CameraAppComponent implements OnInit {
       .catch(err => console.error('Erro ao acessar câmera', err));
   }
 
+  // Inicia a câmera para capturar a foto do documento
+  startDocumentCamera() {
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        this.documentMediaStream = stream; // Salvar a referência do stream
+        this.videoDocElement.nativeElement.srcObject = stream;
+      })
+      .catch(err => console.error('Erro ao acessar câmera do documento', err));
+  }
+
   // Captura a foto da câmera
   capturePhoto() {
     const canvas = document.createElement('canvas');
@@ -56,10 +82,27 @@ export class CameraAppComponent implements OnInit {
     const context = canvas.getContext('2d');
     context?.drawImage(this.videoElement.nativeElement, 0, 0);
     this.photoDataUrl = canvas.toDataURL('image/png');
-    
-    // Pausa o vídeo após capturar a foto
-    this.videoElement.nativeElement.pause();
+    this.stopCamera();
+    //this.videoElement.nativeElement.pause(); // Pausa o vídeo após capturar a foto
   }
+
+   // Captura a foto do documento
+   captureDocumentPhoto() {
+    const canvas = document.createElement('canvas');
+    canvas.width = this.videoDocElement.nativeElement.videoWidth;
+    canvas.height = this.videoDocElement.nativeElement.videoHeight;
+    const context = canvas.getContext('2d');
+    context?.drawImage(this.videoDocElement.nativeElement, 0, 0);
+    this.documentPhotoUrl = canvas.toDataURL('image/png');
+    this.stopDocumentCamera();
+  }
+  // Cancela a foto do documento e reinicia a câmera
+  cancelDocumentPhoto() {
+    this.documentPhotoUrl = null;
+    this.startDocumentCamera(); // Reinicia a câmera do documento
+  }
+  
+
 
   // Cancela a foto capturada e reinicia a câmera
   cancelPhoto() {
@@ -68,59 +111,109 @@ export class CameraAppComponent implements OnInit {
   }
 
   // Envia a foto e as informações para o Google Apps Script
-  sendPhoto() {
+  sendData() {
     if (!this.photoDataUrl) {
-      alert('Por favor, capture a foto antes de enviar.');
       return;
     }
-  
-    // Alterar a etapa para "carregando..." enquanto a imagem está sendo enviada
-    this.step = 3;
-  
-    // Verificar se a string Base64 contém o prefixo "data:image/png;base64,"
-    const base64Prefix = "data:image/png;base64,";
-    let base64Image = this.photoDataUrl;
-    
-    // Se o prefixo estiver presente, remova-o
-    if (base64Image.startsWith(base64Prefix)) {
-      base64Image = base64Image.substring(base64Prefix.length);
-    } else {
-      console.log("Erro: Base64 não contém o prefixo esperado.");
-    }
-  
-    // Enviar os dados e a imagem para o backend
-    this.googleScriptService.enviarImagem(
-      this.id, // Código da reserva
-      this.formData.cpf, // CPF
-      this.formData.nome, // Nome
-      this.formData.telefone, // Telefone
-      base64Image // Imagem sem o prefixo
-    ).subscribe(
+
+    this.step = 4; // Alterar a etapa para "carregando..."=
+
+    this.googleScriptService.enviarDados( this.id,this.formData.cpf,this.formData.nome,this.formData.telefone).subscribe(
       response => {
-        console.log('Dados enviados com sucesso:', response);
-        alert('Foto e dados enviados com sucesso!');
-        this.step = 1; // Voltar para a primeira etapa
-        this.formData = { cpf: '', nome: '', telefone: '' }; // Limpar formulário
-        this.id = ''; // Limpar ID
-        this.stopCamera();
+        this.step = 5; // Alterar a etapa para "carregando..."=
       },
       error => {
         console.error('Erro ao enviar dados:', error);
-        alert('Erro ao enviar dados, tente novamente!');
-        this.step = 1;
-        this.stopCamera();
+        this.toastr.warning('Erro ao enviar dados, tente novamente!');
+        this.resetFlow();
       }
     );
+    this.googleScriptService.enviarImagem(this.photoDataUrl,this.id,this.formData.cpf).subscribe(
+      response => {
+        this.step = 5; // Alterar a etapa para "carregando..."=
+      },
+      error => {
+        console.error('Erro ao enviar image:', error);
+        this.toastr.warning('Erro ao enviar image, tente novamente!');
+        this.resetFlow();
+      }
+    );
+    if(this.documentPhotoUrl){
+      this.googleScriptService.enviarImagem(this.documentPhotoUrl,this.id,this.formData.cpf).subscribe(
+        response => {
+          this.step = 5; // Alterar a etapa para "carregando..."=
+        },
+        error => {
+          console.error('Erro ao enviar image:', error);
+          this.toastr.warning('Erro ao enviar image, tente novamente!');
+          this.resetFlow();
+        }
+      );
+    }
+    if(this.documentFile){
+      this.googleScriptService.enviarPDF(this.documentFile,this.id,this.formData.cpf).subscribe(
+        response => {
+          this.step = 5; // Alterar a etapa para "carregando..."=
+        },
+        error => {
+          console.error('Erro ao enviar image:', error);
+          this.toastr.warning('Erro ao enviar image, tente novamente!');
+          this.resetFlow();
+        }
+      );
+    }
+
+
+  }
+
+  // Reseta o fluxo para o início
+  resetFlow() {
+    this.step = 1;
+    this.formData = { cpf: '', nome: '', telefone: '' };
+    this.stopCamera();
+    this.photoDataUrl = null;
+    this.documentPhotoUrl = null;
+    this.documentFile = null;
   }
 
   // Valida o CPF do usuário
-  validateCPF(cpf: string) {
+  validateCPF(cpf: string): boolean {
+    // Remove todos os caracteres que não forem dígitos
     cpf = cpf.replace(/\D/g, '');
-    if (cpf.length !== 11) return false;
-    const repeatedNumbers = /^(.)\1+$/;
-    if (repeatedNumbers.test(cpf)) return false;
+
+    // Verifica se o CPF tem 11 dígitos ou se todos os dígitos são iguais
+    if (cpf.length !== 11 || /^(.)\1+$/.test(cpf)) return false;
+
+    // Cálculo do primeiro dígito verificador
+    let soma = 0;
+    for (let i = 0; i < 9; i++) {
+      soma += parseInt(cpf.charAt(i)) * (10 - i);
+    }
+    let primeiroDigitoVerificador = (soma * 10) % 11;
+    if (primeiroDigitoVerificador === 10 || primeiroDigitoVerificador === 11) {
+      primeiroDigitoVerificador = 0;
+    }
+    if (primeiroDigitoVerificador !== parseInt(cpf.charAt(9))) {
+      return false;
+    }
+
+    // Cálculo do segundo dígito verificador
+    soma = 0;
+    for (let i = 0; i < 10; i++) {
+      soma += parseInt(cpf.charAt(i)) * (11 - i);
+    }
+    let segundoDigitoVerificador = (soma * 10) % 11;
+    if (segundoDigitoVerificador === 10 || segundoDigitoVerificador === 11) {
+      segundoDigitoVerificador = 0;
+    }
+    if (segundoDigitoVerificador !== parseInt(cpf.charAt(10))) {
+      return false;
+    }
+
+    // CPF válido
     return true;
   }
+
 
   // Para a câmera e limpa o fluxo de vídeo
   stopCamera() {
@@ -129,11 +222,62 @@ export class CameraAppComponent implements OnInit {
       this.mediaStream = null;
     }
   }
+  // Para a câmera do documento e limpa o fluxo de vídeo
+  stopDocumentCamera() {
+    if (this.documentMediaStream) {
+      this.documentMediaStream.getTracks().forEach(track => track.stop());
+      this.documentMediaStream = null;
+    }
+  }
 
   // Volta para a etapa anterior
   goBack() {
     if (this.step > 1) {
       this.step--; // Decrementa a etapa
     }
+  
+    if (this.step === 2) {
+      if (!this.photoDataUrl) {
+        this.startCamera(); // Inicia a câmera se a foto não estiver presente
+      } 
+    }
   }
+  
+  
+  goForward() {
+    if(this.step==1){
+      if (!this.validateCPF(this.formData.cpf)) {
+        this.toastr.warning("CPF inválido!")
+        return;
+      }
+      if(this.formData.cpf==""){
+        this.toastr.warning("Digite o CPF!")
+        return;
+      }
+      if(this.formData.nome==""){
+        this.toastr.warning("Digite o nome!")
+        return;
+      }
+      if(this.formData.telefone==""){
+        this.toastr.warning("Digite o telefone!")
+        return;
+      }
+      this.step = 2; // Avançar para a etapa de captura de foto
+      this.startCamera(); // Iniciar a câmera
+    }else if (this.step < 5) {
+      this.step++; // Decrementa a etapa
+    }
+  }
+
+  documentoComoFoto():void{
+    this.fotoOuDocumentoString="foto"
+    this.startDocumentCamera();
+  }
+  documentoComoArquivo():void{
+    this.fotoOuDocumentoString="arquivo"
+  }
+  voltarParaEntregaDocumentos():void{
+    this.fotoOuDocumentoString=""
+  }
+  
 }

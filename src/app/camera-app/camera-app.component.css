@@ -34,6 +34,11 @@ h1 {
   font-weight: 600;
   margin-bottom: 20px;
 }
+h3 {
+  color:  #28a745; /* Verde principal */
+  font-weight: 600;
+  margin-bottom: 20px;
+}
 
 .form-group {
   margin-bottom: 20px;

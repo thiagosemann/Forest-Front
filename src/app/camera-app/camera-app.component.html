@@ -4,7 +4,7 @@
     
     <!-- Etapa 1: Formulário de informações -->
     <div *ngIf="step === 1">
-      <form (ngSubmit)="onSubmit()">
+      <form (ngSubmit)="goForward()">
         <div class="form-group">
           <label for="id">Código da Reserva:</label>
           <input type="text" class="form-control" id="id" [(ngModel)]="id" name="id" disabled required>
@@ -24,24 +24,59 @@
     <!-- Etapa 2: Captura de foto -->
     <div *ngIf="step === 2">
       <div class="camera-container">
-        <video #video autoplay playsinline></video>
-        <img #photo [src]="photoDataUrl" alt="Sua foto aparecerá aqui." *ngIf="photoDataUrl">
+        <ng-container  *ngIf="!photoDataUrl">
+          <video #video autoplay playsinline></video>
+        </ng-container>
+        <ng-container  *ngIf="photoDataUrl">
+          <img #photo [src]="photoDataUrl" alt="Sua foto aparecerá aqui." >
+        </ng-container>
       </div>
       <button (click)="capturePhoto()" class="btn btn-success mt-3" *ngIf="!photoDataUrl">Capturar Foto</button>
+      <button (click)="goForward()" class="btn btn-success mt-3" *ngIf="photoDataUrl">Próximo</button>
       <button (click)="cancelPhoto()" class="btn btn-danger mt-3" *ngIf="photoDataUrl">Cancelar</button>
-      <button (click)="sendPhoto()" class="btn btn-success mt-3" *ngIf="photoDataUrl">Enviar</button>
       <button (click)="goBack()" class="btn btn-secondary mt-3" *ngIf="!photoDataUrl">Voltar</button> <!-- Botão para voltar -->
     </div>
-
-    <!-- Etapa 3: Carregando -->
+    
+    <!-- Etapa 3: Entrega Documentos -->
     <div *ngIf="step === 3" class="text-center">
-      <div class="loader"></div>
-      <p>Processando...</p>
+      <h3>Entrega de documentos</h3>
+      <ng-container *ngIf="fotoOuDocumentoString==''">
+        <button (click)="documentoComoFoto()" class="btn btn-success mt-3">Usar câmera</button>
+        <button (click)="documentoComoArquivo()" class="btn btn-success mt-3">Upload de Arquivo</button>
+        <button (click)="goBack()" class="btn btn-secondary mt-3">Voltar</button>  
+      </ng-container>
+      <ng-container *ngIf="fotoOuDocumentoString=='foto'">
+        <div class="camera-container">
+          <ng-container *ngIf="!documentPhotoUrl">
+            <video #videoDoc autoplay playsinline></video>
+          </ng-container>
+          <ng-container *ngIf="documentPhotoUrl">
+            <img #photoDoc [src]="documentPhotoUrl" alt="Sua foto do documento aparecerá aqui." >
+          </ng-container>
+        </div>
+        <button (click)="captureDocumentPhoto()" class="btn btn-success mt-3" *ngIf="!documentPhotoUrl">Capturar Foto do Documento</button>
+        <button (click)="cancelDocumentPhoto()" class="btn btn-danger mt-3" *ngIf="documentPhotoUrl">Cancelar</button> 
+        <button (click)="sendData()" class="btn btn-success mt-3" *ngIf="documentPhotoUrl" >Enviar</button>
+        <button (click)="voltarParaEntregaDocumentos()" class="btn btn-secondary mt-3" *ngIf="!documentPhotoUrl">Voltar</button>
+      </ng-container>
+      <ng-container *ngIf="fotoOuDocumentoString=='arquivo'">
+      <!-- Opções de envio de documento -->
+      <div class="form-group">
+        <label for="fileUpload">Envie seu documento</label>
+        <input type="file" class="form-control" id="fileUpload" (change)="onFileSelected($event)">
+      </div>
+      <button (click)="sendData()" class="btn btn-success mt-3">Enviar</button>
+      <button (click)="voltarParaEntregaDocumentos()" class="btn btn-success mt-3">Voltar</button>
+      </ng-container>
+
     </div>
 
+
     <!-- Etapa 4: Concluído -->
-    <div *ngIf="step === 4" class="text-center">
+    <div *ngIf="step === 5" class="text-center">
       <h2>Cadastro concluído com sucesso.</h2>
+      <label >Para cadastrar outro hóspede clique aqui:</label>
+      <button (click)="resetFlow()" class="btn btn-success mt-3">Voltar</button>
     </div>
   </div>
 </div>
