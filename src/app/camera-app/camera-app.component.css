@@ -30,12 +30,12 @@
 
 h1 {
   font-size: 36px;
-  color:  #28a745; /* Verde principal */
+  color: #28a745; /* Verde principal */
   font-weight: 600;
   margin-bottom: 20px;
 }
 h3 {
-  color:  #28a745; /* Verde principal */
+  color: #28a745; /* Verde principal */
   font-weight: 600;
   margin-bottom: 20px;
 }
@@ -55,7 +55,7 @@ h3 {
 }
 
 .form-control:focus {
-  border: 2px solid  #3aac55; /* Verde mais intenso no foco */
+  border: 2px solid #3aac55; /* Verde mais intenso no foco */
 }
 
 button {
@@ -126,14 +126,37 @@ video, img {
   border-radius: 8px;
 }
 
+/* Loader container para centralizar */
+.loader-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: rgba(255, 255, 255, 0.8); /* Leve fundo branco translúcido */
+  z-index: 10; /* Para garantir que fica acima do vídeo */
+}
+
 /* Loader */
 .loader {
-  border: 12px solid #f3f3f3;
-  border-top: 12px solid #3498db;
+  border: 8px solid #f3f3f3; 
+  border-top: 8px solid #28a745; /* Verde principal */
   border-radius: 50%;
   width: 50px;
   height: 50px;
   animation: spin 1s linear infinite;
+}
+
+.loader-container-processando {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+ 
+  background-color: rgba(255, 255, 255, 0.8); /* Leve fundo branco translúcido */
+  z-index: 10; /* Para garantir que fica acima do vídeo */
 }
 
 @keyframes spin {

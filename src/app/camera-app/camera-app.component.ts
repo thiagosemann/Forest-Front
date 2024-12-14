@@ -2,6 +2,7 @@ import { Component, ElementRef, ViewChild, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { GoogleScriptService } from '../shared/service/googleService';
 import { Toast, ToastrService } from 'ngx-toastr';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-camera-app',
@@ -20,6 +21,7 @@ export class CameraAppComponent implements OnInit {
   @ViewChild('videoDoc', { static: false }) videoDocElement!: ElementRef;
   private mediaStream: MediaStream | null = null; // Para parar a câmera depois do uso
   private documentMediaStream: MediaStream | null = null; // Para parar a câmera do documento
+  loadingCamera:Boolean=false;
 
   constructor(
     private googleScriptService: GoogleScriptService,
@@ -56,22 +58,34 @@ export class CameraAppComponent implements OnInit {
   
   // Inicia a câmera do usuário
   startCamera() {
+    this.loadingCamera = true;
     navigator.mediaDevices.getUserMedia({ video: true })
       .then(stream => {
         this.mediaStream = stream; // Salvar a referência do stream
         this.videoElement.nativeElement.srcObject = stream;
       })
-      .catch(err => console.error('Erro ao acessar câmera', err));
+      .catch(err => {
+        console.error('Erro ao acessar câmera', err);
+      })
+      .finally(() => {
+        this.loadingCamera = false;
+      });
   }
 
   // Inicia a câmera para capturar a foto do documento
   startDocumentCamera() {
+    this.loadingCamera = true;
     navigator.mediaDevices.getUserMedia({ video: true })
       .then(stream => {
         this.documentMediaStream = stream; // Salvar a referência do stream
         this.videoDocElement.nativeElement.srcObject = stream;
       })
-      .catch(err => console.error('Erro ao acessar câmera do documento', err));
+      .catch(err => {
+        console.error('Erro ao acessar câmera', err);
+      })
+      .finally(() => {
+        this.loadingCamera = false;
+      });
   }
 
   // Captura a foto da câmera
@@ -115,55 +129,37 @@ export class CameraAppComponent implements OnInit {
     if (!this.photoDataUrl) {
       return;
     }
-
-    this.step = 4; // Alterar a etapa para "carregando..."=
-
-    this.googleScriptService.enviarDados( this.id,this.formData.cpf,this.formData.nome,this.formData.telefone).subscribe(
-      response => {
-        this.step = 5; // Alterar a etapa para "carregando..."=
+  
+    this.step = 4; // Alterar a etapa para "carregando..."
+    console.log(this.formData.cpf)
+    const requests = [
+      this.googleScriptService.enviarDados(this.id, this.formData.cpf, this.formData.nome, this.formData.telefone)
+    ];
+  
+    // Adiciona a requisição de envio da imagem principal
+    requests.push(this.googleScriptService.enviarImagem(this.photoDataUrl, this.id, this.formData.cpf,"Foto"));
+  
+    // Se o `documentPhotoUrl` existir, adiciona ao array de requests
+    if (this.documentPhotoUrl) {
+      requests.push(this.googleScriptService.enviarImagem(this.documentPhotoUrl, this.id, this.formData.cpf,"Documento"));
+    }
+  
+    // Se o `documentFile` existir, adiciona ao array de requests
+    if (this.documentFile) {
+      requests.push(this.googleScriptService.enviarPDF(this.documentFile, this.id, this.formData.cpf));
+    }
+  
+    // Utiliza o forkJoin para esperar todas as requisições serem finalizadas
+    forkJoin(requests).subscribe(
+      responses => {
+        this.step = 5; // Só avança para o step 5 após todas as requisições serem concluídas
       },
       error => {
-        console.error('Erro ao enviar dados:', error);
-        this.toastr.warning('Erro ao enviar dados, tente novamente!');
+        console.error('Erro ao enviar dados ou imagens:', error);
+        this.toastr.warning('Erro ao enviar dados ou imagens, tente novamente!');
         this.resetFlow();
       }
     );
-    this.googleScriptService.enviarImagem(this.photoDataUrl,this.id,this.formData.cpf).subscribe(
-      response => {
-        this.step = 5; // Alterar a etapa para "carregando..."=
-      },
-      error => {
-        console.error('Erro ao enviar image:', error);
-        this.toastr.warning('Erro ao enviar image, tente novamente!');
-        this.resetFlow();
-      }
-    );
-    if(this.documentPhotoUrl){
-      this.googleScriptService.enviarImagem(this.documentPhotoUrl,this.id,this.formData.cpf).subscribe(
-        response => {
-          this.step = 5; // Alterar a etapa para "carregando..."=
-        },
-        error => {
-          console.error('Erro ao enviar image:', error);
-          this.toastr.warning('Erro ao enviar image, tente novamente!');
-          this.resetFlow();
-        }
-      );
-    }
-    if(this.documentFile){
-      this.googleScriptService.enviarPDF(this.documentFile,this.id,this.formData.cpf).subscribe(
-        response => {
-          this.step = 5; // Alterar a etapa para "carregando..."=
-        },
-        error => {
-          console.error('Erro ao enviar image:', error);
-          this.toastr.warning('Erro ao enviar image, tente novamente!');
-          this.resetFlow();
-        }
-      );
-    }
-
-
   }
 
   // Reseta o fluxo para o início
@@ -171,9 +167,12 @@ export class CameraAppComponent implements OnInit {
     this.step = 1;
     this.formData = { cpf: '', nome: '', telefone: '' };
     this.stopCamera();
+    this.stopDocumentCamera();
     this.photoDataUrl = null;
     this.documentPhotoUrl = null;
     this.documentFile = null;
+    this.loadingCamera = false;
+    this.fotoOuDocumentoString = '';
   }
 
   // Valida o CPF do usuário
@@ -278,6 +277,10 @@ export class CameraAppComponent implements OnInit {
   }
   voltarParaEntregaDocumentos():void{
     this.fotoOuDocumentoString=""
+  }
+
+  concluirCadastro(){
+    this.step=6;
   }
   
 }

@@ -24,11 +24,16 @@
     <!-- Etapa 2: Captura de foto -->
     <div *ngIf="step === 2">
       <div class="camera-container">
-        <ng-container  *ngIf="!photoDataUrl">
+        <ng-container *ngIf="!photoDataUrl">
+          <ng-container *ngIf="loadingCamera">
+            <div class="loader-container">
+              <div class="loader"></div>
+            </div>
+          </ng-container>
           <video #video autoplay playsinline></video>
         </ng-container>
-        <ng-container  *ngIf="photoDataUrl">
-          <img #photo [src]="photoDataUrl" alt="Sua foto aparecerá aqui." >
+        <ng-container *ngIf="photoDataUrl">
+          <img #photo [src]="photoDataUrl" alt="Sua foto aparecerá aqui.">
         </ng-container>
       </div>
       <button (click)="capturePhoto()" class="btn btn-success mt-3" *ngIf="!photoDataUrl">Capturar Foto</button>
@@ -36,6 +41,7 @@
       <button (click)="cancelPhoto()" class="btn btn-danger mt-3" *ngIf="photoDataUrl">Cancelar</button>
       <button (click)="goBack()" class="btn btn-secondary mt-3" *ngIf="!photoDataUrl">Voltar</button> <!-- Botão para voltar -->
     </div>
+
     
     <!-- Etapa 3: Entrega Documentos -->
     <div *ngIf="step === 3" class="text-center">
@@ -48,7 +54,12 @@
       <ng-container *ngIf="fotoOuDocumentoString=='foto'">
         <div class="camera-container">
           <ng-container *ngIf="!documentPhotoUrl">
-            <video #videoDoc autoplay playsinline></video>
+            <ng-container *ngIf="loadingCamera">
+            <div class="loader-container">
+              <div class="loader"></div>
+            </div>
+          </ng-container>
+          <video #videoDoc autoplay playsinline></video>
           </ng-container>
           <ng-container *ngIf="documentPhotoUrl">
             <img #photoDoc [src]="documentPhotoUrl" alt="Sua foto do documento aparecerá aqui." >
@@ -68,15 +79,26 @@
       <button (click)="sendData()" class="btn btn-success mt-3">Enviar</button>
       <button (click)="voltarParaEntregaDocumentos()" class="btn btn-success mt-3">Voltar</button>
       </ng-container>
-
     </div>
 
+    <!-- Etapa 4: Carregando -->
+    <div *ngIf="step === 4" class="text-center">
+      <div class="loader-container-processando ">
+        <div class="loader"></div>
+      </div>
+      <h2>Processando...</h2>
+    </div>
 
-    <!-- Etapa 4: Concluído -->
+    <!-- Etapa 5: Concluído -->
     <div *ngIf="step === 5" class="text-center">
       <h2>Cadastro concluído com sucesso.</h2>
-      <label >Para cadastrar outro hóspede clique aqui:</label>
-      <button (click)="resetFlow()" class="btn btn-success mt-3">Voltar</button>
+      <button (click)="resetFlow()" class="btn btn-success mt-3">Cadastrar outro Hóspede</button>
+      <button (click)="concluirCadastro()" class="btn btn-danger mt-3">Encerrar</button>
+    </div>
+
+    <!-- Etapa 6: Concluído -->
+    <div *ngIf="step === 6" class="text-center">
+      <h2>Obrigado por se hospedar com a Forest!!</h2>
     </div>
   </div>
 </div>

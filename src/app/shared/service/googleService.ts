@@ -27,8 +27,8 @@ export class GoogleScriptService {
   }
 
   //Envia a imagem (Base64) para o Google Script
-  enviarImagem(imagemBase64: string,cod_reserva: string, CPF: string): Observable<any> {
-    const dados = { imagemBase64,cod_reserva,CPF };
+  enviarImagem(imagemBase64: string,cod_reserva: string, CPF: string ,tipo:string): Observable<any> {
+    const dados = { imagemBase64,cod_reserva,CPF,tipo };
     console.log('Enviando imagem para o backend:', dados);
     return this.http.post(this.apiUrlImagem, dados, { headers: this.getHeaders() });
   }
