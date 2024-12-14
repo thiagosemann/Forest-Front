@@ -75,18 +75,22 @@ export class CameraAppComponent implements OnInit {
   // Inicia a câmera para capturar a foto do documento
   startDocumentCamera() {
     this.loadingCamera = true;
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then(stream => {
-        this.documentMediaStream = stream; // Salvar a referência do stream
-        this.videoDocElement.nativeElement.srcObject = stream;
-      })
-      .catch(err => {
-        console.error('Erro ao acessar câmera', err);
-      })
-      .finally(() => {
-        this.loadingCamera = false;
-      });
+    navigator.mediaDevices.getUserMedia({ 
+      video: { facingMode: { ideal: 'environment' } } // Solicita a câmera traseira
+    })
+    .then(stream => {
+      this.documentMediaStream = stream; // Salvar a referência do stream
+      this.videoDocElement.nativeElement.srcObject = stream;
+    })
+    .catch(err => {
+      console.error('Erro ao acessar câmera traseira', err);
+      this.toastr.error('Erro ao acessar a câmera traseira.');
+    })
+    .finally(() => {
+      this.loadingCamera = false;
+    });
   }
+  
 
   // Captura a foto da câmera
   capturePhoto() {
