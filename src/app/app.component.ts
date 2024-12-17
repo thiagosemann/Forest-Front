@@ -16,7 +16,7 @@ export class AppComponent implements OnInit {
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
         // Verifica se a rota atual é a de login
-        if(this.router.url=="/login" || this.router.url=="/register" || this.router.url=="/Airbnb" || this.router.url.includes("/cameraApp")   ){
+        if(this.router.url=="/login" || this.router.url=="/register" || this.router.url=="/Airbnb" || this.router.url.includes("/reservas")  || this.router.url.includes("/cameraApp")   ){
           this.showNavBar = false;
         }else{
           this.showNavBar = true;
