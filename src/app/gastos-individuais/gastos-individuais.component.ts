@@ -409,7 +409,7 @@ export class GastosIndividuaisComponent implements OnInit {
     let day = date.getDate().toString().padStart(2,'0');
     let year = date.getFullYear().toString();
 
-    return year + '-' + this.selectedMonth + '-' + day;
+    return this.selectedYear + '-' + this.selectedMonth + '-' + day;
 
   }
 
