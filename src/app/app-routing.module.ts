@@ -21,6 +21,7 @@ import { ApartamentosControlComponent } from './apartamentos-control/apartamento
 import { AirbnbCalendarService } from './shared/service/Banco_de_Dados/calendarioAirBnb_service';
 import { CalendarioAirbnbComponent } from './calendario-airbnb/calendario-airbnb.component';
 import { CameraAppComponent } from './camera-app/camera-app.component';
+import { ExpenseTypeControllComponent } from './expense-type-controll/expense-type-controll.component';
 
 
 const routes: Routes = [
@@ -35,6 +36,7 @@ const routes: Routes = [
   { path: 'users', component: UsersControlComponent, canActivate: [AuthGuardService] },
   { path: 'predios', component: BuildingsControlComponent, canActivate: [AuthGuardService] },
   { path: 'vagas', component: VagasComponent, canActivate: [AuthGuardService] },
+  { path: 'expenseType', component: ExpenseTypeControllComponent, canActivate: [AuthGuardService] },
   { path: 'apartamentos', component: ApartamentosControlComponent, canActivate: [AuthGuardService] },
   { path: 'gastosComuns', component: BuildingsReviewComponent, canActivate: [AuthGuardService] },
   { path: 'gastosIndividuais', component: GastosIndividuaisComponent, canActivate: [AuthGuardService] },

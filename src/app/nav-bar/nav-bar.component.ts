@@ -118,6 +118,9 @@ export class NavBarComponent implements OnInit {
   vagas(): void {
     this.router.navigate(['/vagas']);
   }
+  expenseType(): void {
+    this.router.navigate(['/expenseType']);
+  }
   apartamentos(): void {
     this.router.navigate(['/apartamentos']);
   }

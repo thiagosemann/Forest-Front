@@ -1,0 +1,50 @@
+<div class="container">
+    <h2>Gerenciar Tipos de Despesas</h2>
+    <button class="btn add-btn" (click)="addExpenseType()">Adicionar Tipo de Despesa</button>
+    <div class="table-wrapper">
+        <table class="table mt-4">
+            <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Detalhes</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let expense of expenseTypes">
+                  <td>{{ expense.id }}</td>
+                  <td>{{ expense.detalhes }}</td>
+                  <td>
+                    <button class="btn edit-btn" (click)="editExpenseType(expense)"><i class="fas fa-edit"></i></button>
+                    <button class="btn delete-btn" (click)="deleteExpenseType(expense.id)"><i class="fas fa-trash"></i></button>
+                  </td>
+                </tr>
+              </tbody>
+        </table>
+    </div>
+
+  
+  <!-- Modal -->
+  <div class="modal" *ngIf="showModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>{{ editingExpense ? 'Editar' : 'Adicionar' }} Tipo de Despesa</h3>
+        <button class="close-btn" (click)="closeModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <label for="details" class="input-label">Detalhes</label>
+        <input
+          id="details"
+          [(ngModel)]="currentExpense.detalhes"
+          class="input-field"
+          placeholder="Digite os detalhes"
+        />
+      </div>
+      <div class="modal-footer">
+        <button class="btn save-btn" (click)="saveExpenseType()">Salvar</button>
+        <button class="btn cancel-btn" (click)="closeModal()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+  
