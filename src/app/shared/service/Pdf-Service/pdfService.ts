@@ -30,17 +30,29 @@ async generateCondoStatement(data: any): Promise<Blob> {
     currentY = this.addIndividualExpensesSection(pdf, startX, currentY, data);
 
     // Adiciona Despesas Coletivas
-    currentY = this.addCollectiveExpensesSection(pdf, startX, currentY, data);
+    let totalValue=0;
 
-    // Gráficos
+    [currentY,totalValue] = this.addCollectiveExpensesSection(pdf, startX, currentY, data);
+
+    // Reinicia o Y
+    currentY = 60;
+    // Adiciona Provisões.
+    currentY = this.addProvisionsSection(pdf, 110, currentY, data);
+    // Adiciona Fundos .
+    currentY = this.addFundosSection(pdf, 110, currentY, data,totalValue);
+
+    
+
+    
+    /* // Gráficos
     const chart1 = await this.generateDonutChart(data.individualExpenses);
     const chart2 = await this.generateChartAguaGas(data.individualExpensesHistory, 'Água (m³)');
     const chart3 = await this.generateChartAguaGas(data.individualExpensesHistory, 'Gás (m³)');
 
-    pdf.addImage(chart1, 'PNG', 120, 65, canvasWidth, canvasHeight);
+    pdf.addImage(chart1, 'PNG', 120, 60, canvasWidth, canvasHeight);
     pdf.addImage(chart2, 'PNG', 120, 135, canvasWidth, canvasHeight);
     pdf.addImage(chart3, 'PNG', 120, 200, canvasWidth, canvasHeight);
-
+   */
     // Retorna o PDF como Blob
     const pdfBlob = pdf.output('blob');
     return pdfBlob;
@@ -60,87 +72,217 @@ private addHeader(pdf: any, logoPath: string, logoWidth: number, logoHeight: num
 }
 
 private addSummarySection(pdf: any, startX: number, data: any): number {
-    let currentY = 65;
-    pdf.setFont('Helvetica', 'normal');
-    pdf.setFontSize(10);
-    pdf.text('Sua Fração ideal:', startX, currentY);
-    pdf.text('Fração garagem:', 60, currentY);
-    currentY += 5;
-    pdf.text(data.apt_fracao, startX, currentY);
-    pdf.text(data.vagas_fracao, 60, currentY);
-    currentY += 10;
-    pdf.setFont('Helvetica', 'bold');
-    pdf.setFontSize(14);
-    pdf.text('Resumo', startX, currentY);
-    currentY += 5;
-    pdf.setFontSize(10);
-    pdf.setFont('Helvetica', 'normal');
-    pdf.text('Aqui você confere o resumo do Mês', startX, currentY);
+  let currentY = 60;
+  // Adiciona os textos estáticos
+  pdf.setFont('Helvetica', 'normal');
+  pdf.setFontSize(10);
+  pdf.text('Sua Fração ideal:', startX, currentY);
+  pdf.text('Fração garagem:', 60, currentY);
+  currentY += 5;
+  pdf.text(data.apt_fracao, startX, currentY);
+  pdf.text(data.vagas_fracao, 60, currentY);
+  currentY += 10;
 
-    autoTable(pdf, {
-        startY: currentY + 5,
-        margin: { left: startX, right: 110 },
-        head: [['Categoria', 'Valor']],
-        body: [
-            ['Despesas Individuais', `R$ ${data.summary.individualExpenses.toFixed(2)}`],
-            ['Despesas Coletivas', `R$ ${data.summary.collectiveExpenses.toFixed(2)}`],
-            ['Seu Condomínio', `R$ ${data.summary.totalCondo.toFixed(2)}`],
-        ],
-        theme: 'grid',
-        styles: { fontSize: 6, cellPadding: 1 },
-        headStyles: { fontSize: 6, fillColor: [0, 128, 0], textColor: [255, 255, 255], fontStyle: 'bold' },
-    });
-    return (pdf as any).lastAutoTable.finalY + 10;
+  // Adiciona o título "Resumo"
+  pdf.setFont('Helvetica', 'bold');
+  pdf.setFontSize(14);
+  pdf.text('Resumo', startX, currentY);
+  currentY += 5;
+  
+  // Texto explicativo
+  pdf.setFontSize(10);
+  pdf.setFont('Helvetica', 'normal');
+  pdf.text('Aqui você confere o resumo do Mês', startX, currentY);
+
+  // Cria a tabela utilizando a função auxiliar
+  currentY = this.generateTable(pdf, startX, currentY, 
+      ['Categoria', 'Valor'], 
+      [
+          ['Despesas Individuais', `R$ ${data.summary.individualExpenses.toFixed(2)}`],
+          ['Despesas Coletivas', `R$ ${data.summary.collectiveExpenses.toFixed(2)}`],
+          ['Seu Condomínio', `R$ ${data.summary.totalCondo.toFixed(2)}`]
+      ], 
+      [45, 45], 7);
+
+  return currentY;
 }
+
 
 private addIndividualExpensesSection(pdf: any, startX: number, currentY: number, data: any): number {
-    pdf.setFont('Helvetica', 'bold');
-    pdf.setFontSize(14);
-    pdf.text('Despesas Individuais', startX, currentY);
-    currentY += 5;
-    pdf.setFontSize(10);
-    pdf.setFont('Helvetica', 'normal');
-    pdf.text('Aqui você confere em detalhe as despesas de sua unidade.', startX, currentY);
+  pdf.setFont('Helvetica', 'bold');
+  pdf.setFontSize(14);
+  pdf.text('Despesas Individuais', startX, currentY);
+  currentY += 5;
+  pdf.setFontSize(10);
+  pdf.setFont('Helvetica', 'normal');
+  pdf.text('Aqui você confere em detalhe as despesas de sua unidade.', startX, currentY);
 
-    autoTable(pdf, {
-        startY: currentY + 5,
-        margin: { left: startX, right: 110 },
-        head: [['Categoria', 'Valor']],
-        body: data.individualExpenses.map((item: any) => [item.category, `R$ ${item.value || '0,00'}`]),
-        theme: 'grid',
-        styles: { fontSize: 6, cellPadding: 1 },
-        headStyles: { fontSize: 6, fillColor: [0, 128, 0], textColor: [255, 255, 255], fontStyle: 'bold' },
-    });
-    return (pdf as any).lastAutoTable.finalY + 10;
+  // Calcula o total das despesas individuais
+  const totalIndividualExpenses = data.individualExpenses.reduce((sum: number, item: any) => {
+      return sum + (parseFloat(item.value) || 0);
+  }, 0);
+
+  // Cria a tabela utilizando a função auxiliar
+  currentY = this.generateTable(pdf, startX, currentY + 5, 
+      ['Categoria', 'Valor'], 
+      [
+          ...data.individualExpenses.map((item: any) => [
+              item.category,
+              `R$ ${parseFloat(item.value || '0').toFixed(2)}`
+          ]),
+          // Adiciona o item "Total" ao final da tabela
+          [
+              { content: 'Total', styles: { fontStyle: 'bold' } },
+              { content: `R$ ${totalIndividualExpenses.toFixed(2)}`, styles: { fontStyle: 'bold' } },
+          ]
+      ], 
+      [45, 45], 7);
+
+  return currentY;
 }
 
-private addCollectiveExpensesSection(pdf: any, startX: number, currentY: number, data: any): number {
-    pdf.setFont('Helvetica', 'bold');
-    pdf.setFontSize(14);
-    pdf.text('Despesas Coletivas', startX, currentY);
-    currentY += 5;
-    pdf.setFontSize(10);
-    pdf.setFont('Helvetica', 'normal');
-    pdf.text('Esta é a listagem de todas as contas pagas pelo seu ', startX, currentY);
-    currentY += 5;
-    pdf.text('condomínio, e a sua respectiva fração.', startX, currentY);
 
-    autoTable(pdf, {
-        startY: currentY + 5,
-        margin: { left: startX, right: 110 },
-        head: [['Categoria', 'Valor', 'Sua Fração']],
-        body: data.collectiveExpenses.map((item: any) => [
-            item.nome_original,
-            `R$ ${item.valor}`,
-            `R$ ${(item.valor * data.fracao_total).toFixed(2)}`,
-        ]),
-        theme: 'grid',
-        styles: { fontSize: 6, cellPadding: 1 },
-        headStyles: { fontSize: 6, fillColor: [0, 128, 0], textColor: [255, 255, 255], fontStyle: 'bold' },
-        columnStyles: { 1: { cellWidth: 15 }, 2: { cellWidth: 15 } },
-    });
-    return (pdf as any).lastAutoTable.finalY + 10;
+private addCollectiveExpensesSection(pdf: any, startX: number, currentY: number, data: any):  [number, number] {
+  pdf.setFont('Helvetica', 'bold');
+  pdf.setFontSize(14);
+  pdf.text('Despesas Coletivas', startX, currentY);
+  currentY += 5;
+  pdf.setFontSize(10);
+  pdf.setFont('Helvetica', 'normal');
+  pdf.text('Esta é a listagem de todas as contas pagas pelo seu ', startX, currentY);
+  currentY += 5;
+  pdf.text('condomínio, e a sua respectiva fração.', startX, currentY);
+
+  // Agrupar e somar os valores pelo mesmo tipo_Gasto_Extra
+  const groupedExpenses = data.collectiveExpenses.reduce((acc: any, item: any) => {
+      const existing = acc.find((exp: any) => exp.tipo_Gasto_Extra === item.tipo_Gasto_Extra);
+      if (existing) {
+          existing.valor += Number(item.valor);
+      } else {
+          acc.push({ tipo_Gasto_Extra: item.tipo_Gasto_Extra, valor: Number(item.valor) });
+      }
+      return acc;
+  }, []);
+
+  // Calcula o total dos valores
+  const totalValue = groupedExpenses.reduce((sum: number, item: any) => sum + item.valor, 0);
+
+  // Cria a tabela utilizando a função auxiliar
+  currentY = this.generateTable(pdf, startX, currentY + 5, 
+      ['Categoria', 'Valor', 'Sua Fração'], 
+      [
+          ...groupedExpenses.map((item: any) => [
+              item.tipo_Gasto_Extra,
+              `R$ ${item.valor.toFixed(2)}`,
+              `R$ ${(item.valor * data.fracao_total).toFixed(2)}`
+          ]),
+          // Adiciona o item "Total" ao final da tabela
+          [
+              { content: 'Total', styles: { fontStyle: 'bold' } },
+              { content: `R$ ${totalValue.toFixed(2)}`, styles: { fontStyle: 'bold' } },
+              { content: `R$ ${(totalValue * data.fracao_total).toFixed(2)}`, styles: { fontStyle: 'bold' } },
+          ]
+      ], 
+      [30, 30, 30], 7);
+
+  return [currentY,totalValue];
 }
+
+
+private addProvisionsSection(pdf: any, startX: number, currentY: number, data: any): number {
+  pdf.setFont('Helvetica', 'bold');
+  pdf.setFontSize(14);
+  pdf.text('Provisões', startX, currentY);
+  currentY += 5;
+  pdf.setFontSize(10);
+  pdf.setFont('Helvetica', 'normal');
+  pdf.text('Resumo das provisões do condomínio.', startX, currentY);
+
+  // Calcula o total das provisoes
+  const totalProvisoes = data.provisoes.reduce((sum: number, item: any) => {
+    return sum + (Number(item.valor)/ Number(item.frequencia) || 0);
+  }, 0);
+
+  // Cria a tabela utilizando a função auxiliar
+  currentY = this.generateTable(pdf, startX, currentY + 5, 
+      ['Categoria', 'Valor Mensal', 'Sua Fração'],
+      [
+          ...data.provisoes.map((item: any) => [
+              item.detalhe,
+              `R$ ${(Number(item.valor)/ Number(item.frequencia)).toFixed(2)}`,
+              `R$ ${((Number(item.valor)/ Number(item.frequencia)) * data.fracao_total).toFixed(2)}`
+          ]),
+          // Adiciona o item "Total" ao final da tabela
+          [
+              { content: 'Total', styles: { fontStyle: 'bold' } },
+              { content: `R$ ${totalProvisoes.toFixed(2)}`, styles: { fontStyle: 'bold' } },
+              { content: `R$ ${(totalProvisoes * data.fracao_total).toFixed(2)}`, styles: { fontStyle: 'bold' } },
+
+          ]
+      ], 
+      [30, 30, 30], 7);
+
+  return currentY;
+}
+
+private addFundosSection(pdf: any, startX: number, currentY: number, data: any, totalValue:number): number {
+  pdf.setFont('Helvetica', 'bold');
+  pdf.setFontSize(14);
+  pdf.text('Fundos ', startX, currentY);
+  currentY += 5;
+  pdf.setFontSize(10);
+  pdf.setFont('Helvetica', 'normal');
+  pdf.text('Resumo dos fundos do condomínio.', startX, currentY);
+
+  // Calcula o total das provisoes
+  const totalFundos = data.fundos.reduce((sum: number, item: any) => {
+    return sum + (Number(item.porcentagem)* totalValue || 0);
+  }, 0);
+
+  // Cria a tabela utilizando a função auxiliar
+  currentY = this.generateTable(pdf, startX, currentY + 5, 
+      ['Categoria', 'Valor Mensal', 'Sua Fração'],
+      [
+          ...data.fundos.map((item: any) => [
+              item.tipo_fundo,
+              `R$ ${(Number(item.porcentagem)* totalValue).toFixed(2)}`,
+              `R$ ${((Number(item.porcentagem)* totalValue) * data.fracao_total).toFixed(2)}`
+          ]),
+          // Adiciona o item "Total" ao final da tabela
+          [
+              { content: 'Total', styles: { fontStyle: 'bold' } },
+              { content: `R$ ${totalFundos.toFixed(2)}`, styles: { fontStyle: 'bold' } },
+              { content: `R$ ${(totalFundos * data.fracao_total).toFixed(2)}`, styles: { fontStyle: 'bold' } },
+
+          ]
+      ], 
+      [30, 30, 30], 7);
+
+  return currentY;
+}
+
+private generateTable(pdf: any, startX: number, currentY: number, head: string[], body: any[], columnWidths: number[], fontSize: number): number {
+  pdf.setFont('Helvetica', 'normal');
+  pdf.setFontSize(fontSize);
+
+  // Adiciona a tabela
+  autoTable(pdf, {
+      startY: currentY + 5,
+      margin: { left: startX, right: 110 },
+      head: [head],
+      body: body,
+      theme: 'grid',
+      styles: { fontSize: fontSize, cellPadding: 1 },
+      headStyles: { fontSize: fontSize, fillColor: [0, 128, 0], textColor: [255, 255, 255], fontStyle: 'bold' },
+      columnStyles: columnWidths.reduce((styles: any, width, index) => {
+          styles[index] = { cellWidth: width };
+          return styles;
+      }, {}),
+  });
+
+  return (pdf as any).lastAutoTable.finalY + 10;
+}
+
 
 
   private generateChartAguaGas(data: any[], title: string): Promise<string> {

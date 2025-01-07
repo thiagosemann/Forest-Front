@@ -12,6 +12,8 @@ import { SelectionService } from '../shared/service/selectionService';
 import { PdfService } from '../shared/service/Pdf-Service/pdfService';
 import { CommonExpenseService } from '../shared/service/Banco_de_Dados/commonExpense_service';
 import { GastosIndividuaisService } from '../shared/service/Banco_de_Dados/gastosIndividuais_service';
+import { ProvisaoService } from '../shared/service/Banco_de_Dados/provisao_service';
+import { FundoService } from '../shared/service/Banco_de_Dados/fundo_service';
 
 
 @Component({
@@ -46,6 +48,8 @@ export class RateioComponent implements OnInit {
     private pdfService: PdfService,
     private commonExepenseService: CommonExpenseService,
     private gastosIndividuaisService: GastosIndividuaisService,
+    private provisaoService: ProvisaoService, // Injeta o novo service
+    private fundoService: FundoService,
 
   ) {}
   ngOnInit(): void {
@@ -101,75 +105,79 @@ export class RateioComponent implements OnInit {
     }
   }
   
-  async generateRateio(user: any): Promise<Blob | null> {
+  async generateRateio(user: any,expenses:any[],provisoes:any[],fundos:any[]): Promise<Blob | null> {
     try {
-      const rateio = user;
-      const valorComum = rateio.valorComum + rateio.valorFundos + rateio.valorProvisoes;
-      const valorIndividual = rateio.valorIndividual;
-      const totalCondo = valorComum + valorIndividual;
-      let vagas_fracao = 0;
+      const {
+        apt_id,
+        apt_name,
+        apt_fracao,
+        fracao_total,
+        vagas,
+        valorComum,
+        valorFundos,
+        valorProvisoes,
+        valorIndividual,
+      } = user;
   
-      rateio.vagas.forEach((vaga: { fracao: any }) => {
-        vagas_fracao += Number(vaga.fracao);
+      const totalCondo = valorComum + valorFundos + valorProvisoes + valorIndividual;
+  
+      // Calcular a fração total das vagas
+      const vagas_fracao = vagas.reduce((sum: number, { fracao }: { fracao: any }) => sum + Number(fracao), 0);
+  
+      // Obter despesas individuais de forma simples
+      const individualExpenses = await this.gastosIndividuaisService.getGastosIndividuaisByApartment(apt_id).toPromise();
+
+  
+      if (!expenses || !individualExpenses || !provisoes || ! fundos ) return null;
+  
+      // Filtrar apenas as despesas do tipo 'Rateio'
+      const collectiveExpenses = expenses.filter((expense) => expense.tipo === 'Rateio');
+  
+      // Encontrar o gasto individual relevante
+      const gastoIndividual = individualExpenses.find((gasto) => {
+        const dataGasto = new Date(gasto.data_gasto);
+        return (
+          dataGasto.getMonth() + 1 === Number(this.selectedMonth) &&
+          dataGasto.getFullYear() === Number(this.selectedYear)
+        );
       });
   
-      // Obtendo despesas comuns
-      let expenses = await this.commonExepenseService
-        .getExpensesByBuildingAndMonth(this.selectedBuildingId, this.selectedMonth, this.selectedYear)
-        .toPromise();
+      if (!gastoIndividual) return null;
   
-      if (expenses) {
-        expenses = expenses.filter((expense) => expense.tipo === 'Rateio');
-        const gastosIndividuais = await this.gastosIndividuaisService
-          .getGastosIndividuaisByApartment(rateio.apt_id)
-          .toPromise();
-  
-        if (gastosIndividuais) {
-          const gastoIndividual = gastosIndividuais.find((gasto) => {
-            const dataGasto = new Date(gasto.data_gasto);
-            return (
-              dataGasto.getMonth() + 1 === Number(this.selectedMonth) &&
-              dataGasto.getFullYear() === Number(this.selectedYear)
-            );
-          });
-  
-          if (gastoIndividual) {
-            const rateioData = {
-              month: this.selectedMonth,
-              apartment: rateio.apt_name,
-              condoTotal: totalCondo,
-              apt_fracao: rateio.apt_fracao,
-              fracao_total: rateio.fracao_total,
-              vagas_fracao: vagas_fracao.toString(),
-              summary: {
-                individualExpenses: valorIndividual,
-                collectiveExpenses: valorComum,
-                totalCondo: totalCondo,
-              },
-              individualExpenses: [
-                { category: 'Água', value: gastoIndividual.aguaValor },
-                { category: 'Gás', value: gastoIndividual.gasValor },
-                { category: 'Lavanderia', value: gastoIndividual.lavanderia },
-                { category: 'Lazer', value: gastoIndividual.lazer },
-                { category: 'Multa', value: gastoIndividual.multa },
-                { category: 'Total', value: valorIndividual },
-              ],
-              collectiveExpenses: expenses,
-              individualExpensesHistory: gastosIndividuais,
-            };
-  
-            // Gere o PDF e retorne como Blob
-            const pdfBlob = await this.pdfService.generateCondoStatement(rateioData);
-            return pdfBlob;
-          }
-        }
-      }
-      return null;
+      // Estruturar os dados para o PDF
+      const rateioData = {
+        month: this.selectedMonth,
+        apartment: apt_name,
+        condoTotal: totalCondo,
+        apt_fracao,
+        fracao_total,
+        vagas_fracao: vagas_fracao.toString(),
+        summary: {
+          individualExpenses: valorIndividual,
+          collectiveExpenses: valorComum + valorFundos + valorProvisoes,
+          totalCondo,
+        },
+        individualExpenses: [
+          { category: 'Água', value: gastoIndividual.aguaValor },
+          { category: 'Gás', value: gastoIndividual.gasValor },
+          { category: 'Lavanderia', value: gastoIndividual.lavanderia },
+          { category: 'Lazer', value: gastoIndividual.lazer },
+          { category: 'Multa', value: gastoIndividual.multa },
+        ],
+        collectiveExpenses,
+        individualExpensesHistory: individualExpenses,
+        provisoes:provisoes,
+        fundos:fundos
+      };
+      console.log(rateioData)
+      // Gerar o PDF e retornar como Blob
+      return await this.pdfService.generateCondoStatement(rateioData);
     } catch (error) {
       console.error('Error generating rateio:', error);
       return null;
     }
   }
+  
   
 
   async downloadAllRateios(): Promise<void> {
@@ -208,12 +216,22 @@ export class RateioComponent implements OnInit {
   
       this.textoLoading = `Gerando arquivos PDF... (${index}/${totalUsers})`;
       this.loadingPercentage = (index / totalUsers) * 100;
+      // Obter despesas comuns e individuais em paralelo
+      const [expenses = [], provisoes = [], fundos = []] = await Promise.all([
+        this.commonExepenseService
+          .getExpensesByBuildingAndMonth(this.selectedBuildingId, this.selectedMonth, this.selectedYear)
+          .toPromise(),
+        this.provisaoService.getProvisoesByBuildingId(this.selectedBuildingId).toPromise(),
+        this.fundoService.getFundosByBuildingId(this.selectedBuildingId).toPromise(),
+      ]);
   
-      const pdfBlob = await this.generateRateio(user);
+      const pdfBlob = await this.generateRateio(user,expenses,provisoes,fundos);
       if (pdfBlob) {
         zip.file(`Rateio_${user.apt_name || 'User'}_${index}.pdf`, pdfBlob);
         index++;
       }
+   
+ 
     }
   
     this.textoLoading = "Compactando arquivos no formato ZIP...";
@@ -236,7 +254,15 @@ export class RateioComponent implements OnInit {
   // Método para gerar e baixar o PDF para um único usuário
   async generateAndDownloadPDF(user: any): Promise<void> {
     try {
-      const pdfBlob = await this.generateRateio(user);  // Gera o PDF para esse usuário específico
+      // Obter despesas comuns e individuais em paralelo
+      const [expenses = [], provisoes = [], fundos = []] = await Promise.all([
+        this.commonExepenseService
+          .getExpensesByBuildingAndMonth(this.selectedBuildingId, this.selectedMonth, this.selectedYear)
+          .toPromise(),
+        this.provisaoService.getProvisoesByBuildingId(this.selectedBuildingId).toPromise(),
+        this.fundoService.getFundosByBuildingId(this.selectedBuildingId).toPromise(),
+      ]);
+      const pdfBlob = await this.generateRateio(user,expenses,provisoes,fundos); // Gera o PDF para esse usuário específico
       
       if (pdfBlob) {
         // Nome do arquivo PDF
