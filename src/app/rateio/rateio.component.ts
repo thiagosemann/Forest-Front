@@ -6,14 +6,17 @@ import { ToastrService } from 'ngx-toastr';
 import { Apartamento } from '../shared/utilitarios/apartamento';
 import { GastoIndividual } from '../shared/utilitarios/gastoIndividual';
 import { BuildingService } from '../shared/service/Banco_de_Dados/buildings_service';
-import { Rateio } from '../shared/utilitarios/rateio';
-import { RateioService } from '../shared/service/Banco_de_Dados/rateio_service';
+import { RateioPorApartamento } from '../shared/utilitarios/rateioPorApartamento';
+import { CalculateRateioService } from '../shared/service/Banco_de_Dados/calculateRateio_service';
 import { SelectionService } from '../shared/service/selectionService';
 import { PdfService } from '../shared/service/Pdf-Service/pdfService';
 import { CommonExpenseService } from '../shared/service/Banco_de_Dados/commonExpense_service';
 import { GastosIndividuaisService } from '../shared/service/Banco_de_Dados/gastosIndividuais_service';
 import { ProvisaoService } from '../shared/service/Banco_de_Dados/provisao_service';
 import { FundoService } from '../shared/service/Banco_de_Dados/fundo_service';
+import { RateioService } from '../shared/service/Banco_de_Dados/rateio_service';
+import { Rateio } from '../shared/utilitarios/rateio';
+import { RateioPorApartamentoService } from '../shared/service/Banco_de_Dados/rateioPorApartamento_service';
 
 
 @Component({
@@ -43,14 +46,15 @@ export class RateioComponent implements OnInit {
   constructor(
     private toastr: ToastrService,
     private buildingService: BuildingService,
-    private rateioService: RateioService, 
+    private calculateRateioService: CalculateRateioService, 
     private selectionService: SelectionService,
     private pdfService: PdfService,
     private commonExepenseService: CommonExpenseService,
     private gastosIndividuaisService: GastosIndividuaisService,
     private provisaoService: ProvisaoService, // Injeta o novo service
     private fundoService: FundoService,
-
+    private rateioService: RateioService,
+    private rateioPorApartamento: RateioPorApartamentoService
   ) {}
   ngOnInit(): void {
     this.getAllBuildings();
@@ -85,15 +89,52 @@ export class RateioComponent implements OnInit {
     if (this.selectedMonth != 0 && this.selectedYear != 0 && this.selectedBuildingId != 0) {
       this.loading = true; // Iniciar o loading
       this.mensagemErro = ''; // Limpar mensagem de erro
-  
-      this.rateioService.getRateioByBuildingAndMonth(this.selectedBuildingId, this.selectedMonth, this.selectedYear).subscribe(
+
+      this.rateioService.getRateiosByBuildingIdAndMonth(this.selectedBuildingId,this.selectedMonth).subscribe(
         (resp: any) => {
-          this.loading = false; // Encerrar o loading
-          if (resp.rateio) {
-            this.usersRateio = resp.rateio;
+          console.log(resp)
+         if (resp.length>0) {
+            this.rateioPorApartamento.getRateiosPorApartamentoByRateioId(resp[resp.length-1].id).subscribe(
+              (resp: any) => {
+                console.log(resp)
+                this.usersRateio = resp
+                this.usersRateio.forEach(user => {
+                  // Converte as propriedades 'valorIndividual', 'valorComum', 'valorProvisoes' e 'valorFundos' para Number
+                  user.valor = Number(user.valor);
+                  user.valorIndividual = Number(user.valorIndividual);
+                  user.valorComum = Number(user.valorComum);
+                  user.valorProvisoes = Number(user.valorProvisoes);
+                  user.valorFundos = Number(user.valorFundos);
+                });
+                
+                this.loading = false; // Encerrar o loading
+
+              },
+              (error) => {
+                this.loading = false; // Encerrar o loading
+                this.mensagemErro = 'Erro ao carregar os dados: ' + error.message;
+                this.usersRateio = [];
+              }
+            );
+           // this.usersRateio = resp.rateio;
           } else {
-            this.mensagemErro = 'Insira todos os dados necessários para se realizar o rateio.';
-            this.usersRateio = [];
+            this.calculateRateioService.getRateioByBuildingAndMonth(this.selectedBuildingId, this.selectedMonth, this.selectedYear).subscribe(
+              (resp: any) => {
+                this.loading = false; // Encerrar o loading
+                if (resp.rateio) {
+                  this.usersRateio = resp.rateio;
+                  console.log( this.usersRateio)
+                } else {
+                  this.mensagemErro = 'Insira todos os dados necessários para se realizar o rateio.';
+                  this.usersRateio = [];
+                }
+              },
+              (error) => {
+                this.loading = false; // Encerrar o loading
+                this.mensagemErro = 'Erro ao carregar os dados: ' + error.message;
+                this.usersRateio = [];
+              }
+            );
           }
         },
         (error) => {
@@ -102,30 +143,43 @@ export class RateioComponent implements OnInit {
           this.usersRateio = [];
         }
       );
+
+
     }
   }
   
   async generateRateio(user: any,expenses:any[],provisoes:any[],fundos:any[]): Promise<Blob | null> {
     try {
       const {
-        apt_id,
+        apartamento_id,
         apt_name,
         apt_fracao,
         fracao_total,
         vagas,
+        valor,
         valorComum,
         valorFundos,
         valorProvisoes,
         valorIndividual,
+        fracao_vagas,
       } = user;
-  
-      const totalCondo = valorComum + valorFundos + valorProvisoes + valorIndividual;
-  
+      let totalCondo =0;
+      if(valor){
+        totalCondo = valor;
+      }else{
+        totalCondo = valorComum + valorFundos + valorProvisoes + valorIndividual;
+      }
+       
+      let vagas_fracao =0;
       // Calcular a fração total das vagas
-      const vagas_fracao = vagas.reduce((sum: number, { fracao }: { fracao: any }) => sum + Number(fracao), 0);
+      if(vagas && vagas.length>0){
+        vagas_fracao = vagas.reduce((sum: number, { fracao }: { fracao: any }) => sum + Number(fracao), 0);
+      }else{
+        vagas_fracao = fracao_vagas
+      }
   
       // Obter despesas individuais de forma simples
-      const individualExpenses = await this.gastosIndividuaisService.getGastosIndividuaisByApartment(apt_id).toPromise();
+      const individualExpenses = await this.gastosIndividuaisService.getGastosIndividuaisByApartment(apartamento_id).toPromise();
 
   
       if (!expenses || !individualExpenses || !provisoes || ! fundos ) return null;
@@ -180,8 +234,8 @@ export class RateioComponent implements OnInit {
   
   
 
-  async downloadAllRateios(): Promise<void> {
-    // Adiciona a confirmação antes de iniciar o processo
+  async downloadAllRateios(type:string): Promise<void> {
+    // Adiciona a confirmação antes de iniciar o processo  
     const confirmacao = window.confirm('Você tem certeza que deseja gerar os rateios?');
 
     if (!confirmacao) {
@@ -230,8 +284,25 @@ export class RateioComponent implements OnInit {
         zip.file(`Rateio_${user.apt_name || 'User'}_${index}.pdf`, pdfBlob);
         index++;
       }
-   
+
  
+    }
+    if (type == 'gerar') {
+      // Gerar os rateios
+      let rateio: Rateio = {
+        mes: this.selectedMonth,
+        predio_id: this.selectedBuildingId,
+        usersRateio:this.usersRateio
+      };
+      this.rateioService.createRateio(rateio).subscribe(
+        (response) => {
+          // Trate a resposta aqui, se necessário
+        },
+        (error) => {
+          // Trate o erro aqui, se necessário
+        }
+      );
+      return
     }
   
     this.textoLoading = "Compactando arquivos no formato ZIP...";
@@ -295,7 +366,7 @@ export class RateioComponent implements OnInit {
     return "R$ 0,00"
   }
 
-  returnValorTotal(rateio:Rateio): string {
+  returnValorTotal(rateio:RateioPorApartamento): string {
     if(rateio && rateio.valorComum && rateio.valorFundos && rateio.valorProvisoes && rateio.valorIndividual){
       return this.formatCurrency(rateio.valorComum + rateio.valorFundos + rateio.valorProvisoes + rateio.valorIndividual )
     }

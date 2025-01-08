@@ -26,10 +26,10 @@
   <!-- Tabela de contas -->
   <div *ngIf="!loading && usersRateio.length">
     <div class="d-flex justify-content-end mb-2">
-      <button class="btn btn-secondary" (click)="downloadAllRateios()">
+      <button class="btn btn-secondary" (click)="downloadAllRateios('preview')">
         <i class="fas fa-download"></i> Prévia
       </button>
-      <button class="btn btn-primary"  style="margin-left: 15px;" (click)="downloadAllRateios()">
+      <button class="btn btn-primary"  style="margin-left: 15px;" (click)="downloadAllRateios('gerar')">
         <i class="fas fa-download"></i> Gerar Rateios
       </button>
     </div>
@@ -51,20 +51,26 @@
           <tr *ngFor="let user of usersRateio">
             <td>{{ user.apt_name }}</td>
             <td class="tooltip-container">
-              <span class="tooltip-text">{{ user.fracao_total.toFixed(7) }}</span>
+              <span class="tooltip-text">{{ user.fracao_total }}</span>
               <div class="tooltip-message">
                 Frações:<br />
-                Apartamento: {{ user.apt_fracao }}
-                <div *ngFor="let vaga of user.vagas; let i = index">
-                  {{ vaga.nome }}: {{ vaga.fracao }} <br />
-                </div>
+                <ng-container *ngIf="!user.vagas">
+                  Fraçao Total: {{ user.fracao_total }}
+                </ng-container>
+                <ng-container *ngIf="user.vagas">
+                  Apartamento: {{ user.apt_fracao }}
+                  <div *ngFor="let vaga of user.vagas; let i = index">
+                    {{ vaga.nome }}: {{ vaga.fracao }} <br />
+                  </div>
+                </ng-container>
               </div>
             </td>
             <td>{{ formatCurrency(user.valorIndividual) }}</td>
             <td>{{ formatCurrency(user.valorComum) }}</td>
             <td>{{ formatCurrency(user.valorProvisoes) }}</td>
             <td>{{ formatCurrency(user.valorFundos) }}</td>
-            <td>{{ returnValorTotal(user) }}</td>
+            <td *ngIf="user.valor">{{ formatCurrency(user.valor) }}</td>
+            <td *ngIf="!user.valor">{{ returnValorTotal(user) }}</td>
             <td>
               <button class="" (click)="generateAndDownloadPDF(user)">
                 Gerar PDF
