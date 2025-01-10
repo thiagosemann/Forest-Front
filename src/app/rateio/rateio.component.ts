@@ -43,6 +43,7 @@ export class RateioComponent implements OnInit {
   loadingPercentage: number = 0;  // Nova variável para a porcentagem de carregamento
   cancelDownload: boolean = false;  // Variável para controlar o cancelamento
   downloading: boolean = false;
+  rateioGerado: boolean = false;
   constructor(
     private toastr: ToastrService,
     private buildingService: BuildingService,
@@ -92,11 +93,11 @@ export class RateioComponent implements OnInit {
 
       this.rateioService.getRateiosByBuildingIdAndMonth(this.selectedBuildingId,this.selectedMonth).subscribe(
         (resp: any) => {
-          console.log(resp)
          if (resp.length>0) {
+          this.rateioGerado=true;
+
             this.rateioPorApartamento.getRateiosPorApartamentoByRateioId(resp[resp.length-1].id).subscribe(
               (resp: any) => {
-                console.log(resp)
                 this.usersRateio = resp
                 this.usersRateio.forEach(user => {
                   // Converte as propriedades 'valorIndividual', 'valorComum', 'valorProvisoes' e 'valorFundos' para Number
@@ -118,6 +119,7 @@ export class RateioComponent implements OnInit {
             );
            // this.usersRateio = resp.rateio;
           } else {
+            this.rateioGerado=true;
             this.calculateRateioService.getRateioByBuildingAndMonth(this.selectedBuildingId, this.selectedMonth, this.selectedYear).subscribe(
               (resp: any) => {
                 this.loading = false; // Encerrar o loading
@@ -170,12 +172,17 @@ export class RateioComponent implements OnInit {
         totalCondo = valorComum + valorFundos + valorProvisoes + valorIndividual;
       }
        
-      let vagas_fracao =0;
+      let vagas_fracao ="0.0";
       // Calcular a fração total das vagas
       if(vagas && vagas.length>0){
         vagas_fracao = vagas.reduce((sum: number, { fracao }: { fracao: any }) => sum + Number(fracao), 0);
       }else{
-        vagas_fracao = fracao_vagas
+        if(fracao_vagas){
+          vagas_fracao = fracao_vagas
+
+        }else{
+          vagas_fracao = "0.0"
+        }
       }
   
       // Obter despesas individuais de forma simples
@@ -197,7 +204,7 @@ export class RateioComponent implements OnInit {
       });
   
       if (!gastoIndividual) return null;
-  
+
       // Estruturar os dados para o PDF
       const rateioData = {
         month: this.selectedMonth,
@@ -302,7 +309,6 @@ export class RateioComponent implements OnInit {
           // Trate o erro aqui, se necessário
         }
       );
-      return
     }
   
     this.textoLoading = "Compactando arquivos no formato ZIP...";
@@ -373,7 +379,18 @@ export class RateioComponent implements OnInit {
     return "R$ 0,00"
   }
 
-
+  formatFracaoTotal(fracao_total: any): string {
+    if (fracao_total === null || fracao_total === undefined || isNaN(fracao_total)) {
+      return '0.0000000'; // Valor padrão para valores inválidos
+    }
+  
+    // Certifique-se de que o valor é tratado como número
+    const numberValue = Number(fracao_total);
+  
+    // Retorna o número formatado com 7 casas decimais
+    return numberValue.toFixed(7);
+  }
+  
 
 
 }

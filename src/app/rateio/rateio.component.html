@@ -29,9 +29,11 @@
       <button class="btn btn-secondary" (click)="downloadAllRateios('preview')">
         <i class="fas fa-download"></i> Prévia
       </button>
-      <button class="btn btn-primary"  style="margin-left: 15px;" (click)="downloadAllRateios('gerar')">
-        <i class="fas fa-download"></i> Gerar Rateios
-      </button>
+      <div *ngIf="!rateioGerado">
+        <button class="btn btn-primary"  style="margin-left: 15px;" (click)="downloadAllRateios('gerar')">
+          <i class="fas fa-download"></i> Gerar Rateios
+        </button>
+      </div>
     </div>
     <div class="table-wrapper">
       <table class="table">
@@ -51,11 +53,11 @@
           <tr *ngFor="let user of usersRateio">
             <td>{{ user.apt_name }}</td>
             <td class="tooltip-container">
-              <span class="tooltip-text">{{ user.fracao_total }}</span>
+              <span class="tooltip-text">{{ formatFracaoTotal(user.fracao_total) }}</span>
               <div class="tooltip-message">
                 Frações:<br />
                 <ng-container *ngIf="!user.vagas">
-                  Fraçao Total: {{ user.fracao_total }}
+                  Fraçao Total: {{ formatFracaoTotal(user.fracao_total) }}
                 </ng-container>
                 <ng-container *ngIf="user.vagas">
                   Apartamento: {{ user.apt_fracao }}
@@ -72,10 +74,10 @@
             <td *ngIf="user.valor">{{ formatCurrency(user.valor) }}</td>
             <td *ngIf="!user.valor">{{ returnValorTotal(user) }}</td>
             <td>
-              <button class="" (click)="generateAndDownloadPDF(user)">
-                Gerar PDF
+              <button class="btn btn-success" (click)="generateAndDownloadPDF(user)">
+                <i class="fas fa-download"></i>
               </button>
-            </td>
+            </td>            
           </tr>
         </tbody>
       </table>
