@@ -22,6 +22,7 @@ import { AirbnbCalendarService } from './shared/service/Banco_de_Dados/calendari
 import { CalendarioAirbnbComponent } from './calendario-airbnb/calendario-airbnb.component';
 import { CameraAppComponent } from './camera-app/camera-app.component';
 import { ExpenseTypeControllComponent } from './expense-type-controll/expense-type-controll.component';
+import { SaldoInvestimentoPredioComponent } from './saldo-investimento-predio/saldo-investimento-predio.component';
 
 
 const routes: Routes = [
@@ -43,6 +44,8 @@ const routes: Routes = [
   { path: 'rateio', component: RateioComponent, canActivate: [AuthGuardService] },
   { path: 'provisao', component: ProvisoesComponent, canActivate: [AuthGuardService] },
   { path: 'fundos', component: FundosComponent, canActivate: [AuthGuardService] },
+  { path: 'saldos', component: SaldoInvestimentoPredioComponent, canActivate: [AuthGuardService] },
+
   { path: 'Airbnb', component: CalendarioAirbnbComponent},
 
   { path: '', redirectTo: '/content', pathMatch: 'full' }, // redireciona para '/home' quando o caminho é vazio

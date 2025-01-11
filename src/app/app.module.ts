@@ -33,6 +33,7 @@ import { ApartamentosControlComponent } from './apartamentos-control/apartamento
 import { CalendarioAirbnbComponent } from './calendario-airbnb/calendario-airbnb.component';
 import { CameraAppComponent } from './camera-app/camera-app.component';
 import { ExpenseTypeControllComponent } from './expense-type-controll/expense-type-controll.component';
+import { SaldoInvestimentoPredioComponent } from './saldo-investimento-predio/saldo-investimento-predio.component';
 
 @NgModule({
   declarations: [
@@ -56,7 +57,8 @@ import { ExpenseTypeControllComponent } from './expense-type-controll/expense-ty
     ApartamentosControlComponent,
     CalendarioAirbnbComponent,
     CameraAppComponent,
-    ExpenseTypeControllComponent
+    ExpenseTypeControllComponent,
+    SaldoInvestimentoPredioComponent
   ],
   imports: [
     BrowserModule,
