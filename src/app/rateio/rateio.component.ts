@@ -91,11 +91,10 @@ export class RateioComponent implements OnInit {
       this.loading = true; // Iniciar o loading
       this.mensagemErro = ''; // Limpar mensagem de erro
 
-      this.rateioService.getRateiosByBuildingIdAndMonth(this.selectedBuildingId,this.selectedMonth).subscribe(
+      this.rateioService.getRateiosByBuildingIdAndMonthAndYear(this.selectedBuildingId,this.selectedMonth,this.selectedYear).subscribe(
         (resp: any) => {
          if (resp.length>0) {
           this.rateioGerado=true;
-
             this.rateioPorApartamento.getRateiosPorApartamentoByRateioId(resp[resp.length-1].id).subscribe(
               (resp: any) => {
                 this.usersRateio = resp
@@ -119,7 +118,7 @@ export class RateioComponent implements OnInit {
             );
            // this.usersRateio = resp.rateio;
           } else {
-            this.rateioGerado=true;
+            this.rateioGerado=false;
             this.calculateRateioService.getRateioByBuildingAndMonth(this.selectedBuildingId, this.selectedMonth, this.selectedYear).subscribe(
               (resp: any) => {
                 this.loading = false; // Encerrar o loading
@@ -230,7 +229,6 @@ export class RateioComponent implements OnInit {
         provisoes:provisoes,
         fundos:fundos
       };
-      console.log(rateioData)
       // Gerar o PDF e retornar como Blob
       return await this.pdfService.generateCondoStatement(rateioData);
     } catch (error) {
@@ -298,6 +296,7 @@ export class RateioComponent implements OnInit {
       // Gerar os rateios
       let rateio: Rateio = {
         mes: this.selectedMonth,
+        ano:this.selectedYear,
         predio_id: this.selectedBuildingId,
         usersRateio:this.usersRateio
       };

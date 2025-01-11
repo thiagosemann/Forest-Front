@@ -30,8 +30,8 @@ export class RateioService {
   }
 
   // Função para obter rateios de um prédio específico e de um mês específico
-  getRateiosByBuildingIdAndMonth(predioId: number, mes: number): Observable<Rateio[]> {
-    const url = `${this.apiUrl}/predios/${predioId}/${mes}`;
+  getRateiosByBuildingIdAndMonthAndYear(predioId: number, mes: number, ano:number): Observable<Rateio[]> {
+    const url = `${this.apiUrl}/predios/${predioId}/${mes}/${ano}`;
     return this.http.get<Rateio[]>(url, { headers: this.getHeaders() });
   }
 
