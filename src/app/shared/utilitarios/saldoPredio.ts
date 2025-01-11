@@ -3,5 +3,6 @@ export interface SaldoPredio {
     predio_id: number;
     valor:number;
     data:string;
+    type:string
 }
   
