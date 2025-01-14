@@ -3,11 +3,13 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms'; // Import V
 import { ToastrService } from 'ngx-toastr';
 import { BuildingService } from 'src/app/shared/service/Banco_de_Dados/buildings_service';
 import { CommonExpenseService } from 'src/app/shared/service/Banco_de_Dados/commonExpense_service';
+import { NotaGastoComumService } from 'src/app/shared/service/Banco_de_Dados/notasGastosComuns_service';
 import { ExpenseTypeService } from 'src/app/shared/service/Banco_de_Dados/tipoGasto_service';
 import { SelectionService } from 'src/app/shared/service/selectionService';
 import { Building } from 'src/app/shared/utilitarios/building';
 import { CommonExpense } from 'src/app/shared/utilitarios/commonExpense';
 import { ExpenseType } from 'src/app/shared/utilitarios/expenseType';
+import { NotaGastoComum } from 'src/app/shared/utilitarios/notasGastosComuns';
 
 @Component({
   selector: 'app-buildings-review',
@@ -41,7 +43,8 @@ export class BuildingsReviewComponent implements OnInit {
     private formBuilder: FormBuilder,
     private commonExepenseService: CommonExpenseService,
     private expenseTypeService: ExpenseTypeService,
-    private selectionService: SelectionService
+    private selectionService: SelectionService,
+    private notaGastoComumService:NotaGastoComumService
   ) {}
 
   ngOnInit(): void {
@@ -94,17 +97,6 @@ export class BuildingsReviewComponent implements OnInit {
     return expenseAux?.detalhes || ""
   }
 
-  getAllCommonExpenses(): void {
-    this.commonExepenseService.getAllCommonExpenses().subscribe(
-      (expenses: CommonExpense[]) => {
-        this.commonExepenses = expenses;
-        console.log(this.commonExepenses)
-      },
-      (error) => {
-        console.error('Error fetching expenses:', error);
-      }
-    );
-  }
   toggleAddGastosView(tela:string): void {
     if(tela=="inicial"){
       this.gastosView='inicial'
@@ -216,6 +208,7 @@ export class BuildingsReviewComponent implements OnInit {
     if ( this.selectedBuildingId && this.selectedMonth && this.selectedYear) {
       this.commonExepenseService.getExpensesByBuildingAndMonth( this.selectedBuildingId, this.selectedMonth, this.selectedYear).subscribe(
         (expenses: any[]) => {
+          console.log(expenses)
           expenses.forEach(expense=>{
             expense.valor = parseFloat(expense.valor);
             if(expense.tipo=="Rateio"){
@@ -495,4 +488,165 @@ export class BuildingsReviewComponent implements OnInit {
   changeBuildingIdForCommomExpenses():void{
     this.buildingId = this.buildingIdForCommonExpenses;
   }
+
+  criarNotaGastoComumSelected(event: any, expense: CommonExpense): void {
+    const files: FileList = event.target.files;
+    if (!expense.id) {
+      return;
+    }
+  
+    if (files.length > 0) {
+      const file = files[0];
+  
+      // Verifica se o arquivo selecionado é um PDF
+      if (file.type === 'application/pdf') {
+        const reader = new FileReader();
+  
+        reader.onload = () => {
+          // Converte o conteúdo do arquivo para Base64
+          const fileContentBase64 = reader.result?.toString().split(',')[1];
+  
+          if (fileContentBase64) {
+            // Cria o objeto NotaGastoComum
+            const newDocumento: NotaGastoComum = {
+              documentBlob: fileContentBase64, // Conteúdo Base64 do arquivo
+              commonExpense_id: expense.id || 0, // ID do gasto comum
+            };
+  
+            console.log(newDocumento);
+  
+            // Envia o FormData com o arquivo para o backend
+            this.notaGastoComumService.createNotaGastoComum(newDocumento).subscribe(
+              (response) => {
+                // Após o sucesso, você pode atualizar o objeto de documento na interface
+                expense.documento = newDocumento;
+                expense.nota_id = response.id;
+  
+                this.toastr.success(`Arquivo "${file.name}" adicionado com sucesso!`);
+              },
+              (error) => {
+                this.toastr.error('Erro ao adicionar o arquivo. Tente novamente.');
+              }
+            );
+          }
+        };
+  
+        // Inicia a leitura do arquivo
+        reader.readAsDataURL(file);
+      } else {
+        this.toastr.warning('Por favor, selecione um arquivo PDF.');
+      }
+    }
+  }
+  
+  downloadNotaFiscal(expense: CommonExpense): void {
+    if (expense && expense.nota_id) {
+      console.log(`Iniciando download da nota fiscal. Nota ID: ${expense.nota_id}`);
+  
+      this.notaGastoComumService.getNotaGastoComumById(expense.nota_id).subscribe(
+        (response: any) => {
+          console.log('Resposta recebida do backend:', response);
+  
+          // Verificar se a resposta contém o campo 'document' com a string Base64
+          if (!response || !response.document) {
+            console.error('A resposta não contém o campo "document". Resposta:', response);
+            return;
+          }
+  
+          const base64Data = response.document; // A string Base64 recebida no campo 'document'
+  
+          // Verificar se 'base64Data' é uma string válida e não está truncada
+          if (!base64Data || typeof base64Data !== 'string' || base64Data.length < 100) {
+            console.error('O campo "document" não contém dados Base64 válidos. Valor:', base64Data);
+            return;
+          }
+  
+          // Converter a string Base64 para um array de bytes
+          const byteArray = new Uint8Array(atob(base64Data).split('').map(char => char.charCodeAt(0)));
+  
+          // Criar o Blob a partir do array de bytes
+          const blob = new Blob([byteArray], { type: 'application/pdf' });
+          console.log('Blob criado com sucesso.');
+  
+          // Criar o link para download
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = `nota_fiscal_${expense.nota_id}.pdf`; // Nome do arquivo
+          link.click();
+  
+          console.log('Download iniciado com sucesso.');
+        },
+        (error) => {
+          console.error('Erro ao solicitar a nota fiscal ao backend:', error);
+        }
+      );
+    } else {
+      console.warn('Parâmetro "expense" inválido ou "nota_id" ausente.', expense);
+    }
+  }
+  
+  
+  // Função para validar se o array representa um PDF
+  private isValidPDF(byteArray: any): boolean {
+    try {
+      // Verificar se o byteArray tem pelo menos os primeiros e últimos 5 bytes necessários
+      if (!byteArray || byteArray.length < 10) {
+        console.warn('Array de bytes muito curto para ser um PDF.');
+        return false;
+      }
+  
+      // Comparar os primeiros bytes com a assinatura do PDF (%PDF-)
+      const startSignature = new Uint8Array(byteArray.slice(0, 5));
+      const expectedStartSignature = [0x25, 0x50, 0x44, 0x46, 0x2D]; // %PDF-
+  
+      for (let i = 0; i < expectedStartSignature.length; i++) {
+        if (startSignature[i] !== expectedStartSignature[i]) {
+          console.warn(`Assinatura inicial inválida no byte ${i}: esperado ${expectedStartSignature[i]}, encontrado ${startSignature[i]}`);
+          return false;
+        }
+      }
+  
+      console.log('Assinatura inicial do PDF válida detectada.');
+  
+      // Comparar os últimos bytes com a assinatura do PDF (%%EOF)
+      const endSignature = new Uint8Array(byteArray.slice(-5));
+      const expectedEndSignature = [0x25, 0x25, 0x45, 0x4F, 0x46]; // %%EOF
+  
+      for (let i = 0; i < expectedEndSignature.length; i++) {
+        if (endSignature[i] !== expectedEndSignature[i]) {
+          console.warn(`Assinatura final inválida no byte ${i}: esperado ${expectedEndSignature[i]}, encontrado ${endSignature[i]}`);
+          return false;
+        }
+      }
+  
+      console.log('Assinatura final do PDF válida detectada.');
+      return true;
+    } catch (error) {
+      console.error('Erro ao validar o array de bytes como PDF:', error);
+      return false;
+    }
+  }
+  
+  
+  
+    deleteNotaFiscal(expense: CommonExpense): void {
+    if (expense && expense.nota_id) {
+      this.notaGastoComumService.deleteNotaGastoComum(expense.nota_id).subscribe(
+        () => {
+          // Remover a referência da nota fiscal na despesa
+  
+          this.toastr.success('Nota fiscal excluída com sucesso!');
+        },
+        (error) => {
+          this.toastr.error('Erro ao excluir a nota fiscal. Tente novamente.');
+        }
+      );
+    } else {
+      this.toastr.warning('Não há nota fiscal associada a essa despesa.');
+    }
+  }
+  
+  
+  
+  
 }

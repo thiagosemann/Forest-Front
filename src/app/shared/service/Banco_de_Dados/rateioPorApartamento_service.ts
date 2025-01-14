@@ -28,6 +28,11 @@ export class RateioPorApartamentoService {
     const url = `${this.apiUrl}/${id}`;
     return this.http.get<RateioPorApartamento>(url, { headers: this.getHeaders() });
   }
+    // Função para obter um rateio por apartamento pelo ID
+    getRateioPorApartamentoByAptId(apartamento_id: number): Observable<RateioPorApartamento> {
+      const url = `${this.apiUrl}/apartamento/${apartamento_id}`;
+      return this.http.get<RateioPorApartamento>(url, { headers: this.getHeaders() });
+    }
 
   // Função para obter rateios por apartamento de um prédio específico
   getRateiosPorApartamentoByRateioId(rateioId: number): Observable<RateioPorApartamento[]> {

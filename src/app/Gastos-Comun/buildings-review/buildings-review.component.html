@@ -39,6 +39,7 @@
             <th scope="col" style="width: 10%;">Tipo</th>
             <th scope="col" style="width: 10%;">Parcela</th>
             <th scope="col" style="width: 10%;">Total de parcelas</th>
+            <th scope="col" style="width: 10%;">Nota Fiscal</th>  
             <th scope="col" style="width: 10%;">Ação</th>      
           </tr>
         </thead>
@@ -56,6 +57,13 @@
             <td>{{ expense.tipo }}</td>
             <td>{{ expense.parcela }}</td>
             <td>{{ expense.total_parcelas }}</td>
+            <td *ngIf="!expense.nota_id">
+              <input type="file" accept=".pdf" (change)="criarNotaGastoComumSelected($event, expense)" *ngIf="!expense.documento" />
+            </td>
+            <td *ngIf="expense.nota_id">
+              <button class="btn btn-success" (click)="downloadNotaFiscal(expense)"><i class="fas fa-download"></i></button>
+              <button class="btn btn-danger btn-xs" (click)="deleteNotaFiscal(expense)"><i class="fas fa-trash"></i></button>
+            </td>
             <td><button class="btn btn-danger btn-xs" (click)="deleteExpense(expense)"><i class="fas fa-trash"></i></button></td>
           </tr>
         </tbody>

@@ -17,6 +17,8 @@ import { FundoService } from '../shared/service/Banco_de_Dados/fundo_service';
 import { RateioService } from '../shared/service/Banco_de_Dados/rateio_service';
 import { Rateio } from '../shared/utilitarios/rateio';
 import { RateioPorApartamentoService } from '../shared/service/Banco_de_Dados/rateioPorApartamento_service';
+import { SaldoPorPredioService } from '../shared/service/Banco_de_Dados/saldo_por_predio_service';
+import { SaldoPredio } from '../shared/utilitarios/saldoPredio';
 
 
 @Component({
@@ -44,6 +46,8 @@ export class RateioComponent implements OnInit {
   cancelDownload: boolean = false;  // Variável para controlar o cancelamento
   downloading: boolean = false;
   rateioGerado: boolean = false;
+  saldoPredios: SaldoPredio[] = [];
+
   constructor(
     private toastr: ToastrService,
     private buildingService: BuildingService,
@@ -55,7 +59,9 @@ export class RateioComponent implements OnInit {
     private provisaoService: ProvisaoService, // Injeta o novo service
     private fundoService: FundoService,
     private rateioService: RateioService,
-    private rateioPorApartamento: RateioPorApartamentoService
+    private rateioPorApartamento: RateioPorApartamentoService,
+    private saldoPorPredioService: SaldoPorPredioService,
+
   ) {}
   ngOnInit(): void {
     this.getAllBuildings();
@@ -79,8 +85,20 @@ export class RateioComponent implements OnInit {
     );
   }
 
-
-
+  getSaldosByBuildingId(): void {
+    if (this.selectedBuildingId) {
+      this.saldoPorPredioService.getSaldosByBuildingId(this.selectedBuildingId).subscribe(
+        (data) => {
+          this.saldoPredios = data;
+        },
+        (error: any) => {
+          console.error('Erro ao carregar saldos de prédios:', error);
+        }
+      );
+    } else {
+      this.toastr.warning("Selecione um prédio!");
+    }
+  }
 
   changeSelect(): void {
     if(this.selectedBuildingId==0 || this.selectedMonth==0 || this.selectedYear==0){
@@ -90,7 +108,7 @@ export class RateioComponent implements OnInit {
     if (this.selectedMonth != 0 && this.selectedYear != 0 && this.selectedBuildingId != 0) {
       this.loading = true; // Iniciar o loading
       this.mensagemErro = ''; // Limpar mensagem de erro
-
+      this.getSaldosByBuildingId();
       this.rateioService.getRateiosByBuildingIdAndMonthAndYear(this.selectedBuildingId,this.selectedMonth,this.selectedYear).subscribe(
         (resp: any) => {
          if (resp.length>0) {
@@ -184,8 +202,13 @@ export class RateioComponent implements OnInit {
         }
       }
   
+      let rateiosPorApartamentoId = await this.rateioPorApartamento.getRateioPorApartamentoByAptId(apartamento_id).toPromise();
+      
       // Obter despesas individuais de forma simples
-      const individualExpenses = await this.gastosIndividuaisService.getGastosIndividuaisByApartment(apartamento_id).toPromise();
+      let individualExpenses = await this.gastosIndividuaisService.getGastosIndividuaisByApartment(apartamento_id).toPromise();
+      if(individualExpenses){
+        individualExpenses.sort((a, b) => new Date(a.data_gasto).getTime() - new Date(b.data_gasto).getTime());
+      }
 
   
       if (!expenses || !individualExpenses || !provisoes || ! fundos ) return null;
@@ -227,7 +250,9 @@ export class RateioComponent implements OnInit {
         collectiveExpenses,
         individualExpensesHistory: individualExpenses,
         provisoes:provisoes,
-        fundos:fundos
+        fundos:fundos,
+        saldosPredios:this.saldoPredios,
+        rateiosPorApartamentoId
       };
       // Gerar o PDF e retornar como Blob
       return await this.pdfService.generateCondoStatement(rateioData);

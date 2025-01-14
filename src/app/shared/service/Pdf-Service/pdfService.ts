@@ -12,13 +12,14 @@ export class PdfService {
   }
 
 async generateCondoStatement(data: any): Promise<Blob> {
+    console.log(data)
     const pdf = new jsPDF();
     const startX = 5;
     const logoPath = '../../../assets/images/logo-com-frase-V2.png';
     const logoWidth = 45;
     const logoHeight = 40;
-    const canvasWidth = 90 * 0.8;
-    const canvasHeight = 70 * 0.8;
+    const canvasWidth = 90 * 1.1;
+    const canvasHeight = 70 * 1.1;
 
     // Adiciona cabeçalho com logo e informações
     this.addHeader(pdf, logoPath, logoWidth, logoHeight, data);
@@ -40,19 +41,35 @@ async generateCondoStatement(data: any): Promise<Blob> {
     currentY = this.addProvisionsSection(pdf, 110, currentY, data);
     // Adiciona Fundos .
     currentY = this.addFundosSection(pdf, 110, currentY, data,totalValue);
-
+    // Adiciona Saldos .
+    currentY = this.addSaldosSection(pdf, 110, currentY, data,totalValue);
+     // Adiciona Histórico Condominios .
+     currentY = this.addHistoricoCondominioSection(pdf, 110, currentY, data);
+   
+    
     
 
-    
-    /* // Gráficos
+    // Adiciona nova página para os gráficos
+    pdf.addPage();
+    this.addHeaderPage2(pdf, logoPath, logoWidth, logoHeight, data);
+
+
+    // Gráficos
     const chart1 = await this.generateDonutChart(data.individualExpenses);
     const chart2 = await this.generateChartAguaGas(data.individualExpensesHistory, 'Água (m³)');
     const chart3 = await this.generateChartAguaGas(data.individualExpensesHistory, 'Gás (m³)');
 
-    pdf.addImage(chart1, 'PNG', 120, 60, canvasWidth, canvasHeight);
-    pdf.addImage(chart2, 'PNG', 120, 135, canvasWidth, canvasHeight);
-    pdf.addImage(chart3, 'PNG', 120, 200, canvasWidth, canvasHeight);
-   */
+    // Adiciona os gráficos na nova página
+    pdf.setFontSize(12);
+    pdf.text('Despesas Individuais', 5, 50);
+    pdf.addImage(chart1, 'PNG', 5, 55, canvasWidth, canvasHeight);
+    pdf.setFontSize(12);
+    pdf.text('Consumo de água (m3)', 110, 50);
+    pdf.addImage(chart2, 'PNG', 105, 55, canvasWidth, canvasHeight);
+    pdf.setFontSize(12);
+    pdf.text('Consumo de gás (m3)', 110, 140);
+    pdf.addImage(chart3, 'PNG', 105, 145, canvasWidth, canvasHeight);
+
     // Retorna o PDF como Blob
     const pdfBlob = pdf.output('blob');
     return pdfBlob;
@@ -69,6 +86,17 @@ private addHeader(pdf: any, logoPath: string, logoWidth: number, logoHeight: num
     pdf.setDrawColor(0, 128, 0);
     pdf.setLineWidth(0.5);
     pdf.line(105, 60, 105, 290);
+}
+
+private addHeaderPage2(pdf: any, logoPath: string, logoWidth: number, logoHeight: number, data: any): void {
+  pdf.addImage(logoPath, 'PNG', 82.5, -5, logoWidth, logoHeight);
+  pdf.setFontSize(20);
+  pdf.setFont('Helvetica', 'bold');
+  pdf.setFontSize(14);
+  pdf.text(`Demonstrativo dos seus gastos individuais para o mês  ${data.month}`, 105, 35, { align: 'center' });
+  pdf.setDrawColor(0, 128, 0);
+  pdf.setLineWidth(0.5);
+  pdf.line(105, 50, 105, 290);
 }
 
 private addSummarySection(pdf: any, startX: number, data: any): number {
@@ -108,6 +136,7 @@ private addSummarySection(pdf: any, startX: number, data: any): number {
 }
 
 
+
 private addIndividualExpensesSection(pdf: any, startX: number, currentY: number, data: any): number {
   pdf.setFont('Helvetica', 'bold');
   pdf.setFontSize(14);
@@ -123,7 +152,7 @@ private addIndividualExpensesSection(pdf: any, startX: number, currentY: number,
   }, 0);
 
   // Cria a tabela utilizando a função auxiliar
-  currentY = this.generateTable(pdf, startX, currentY + 5, 
+  currentY = this.generateTable(pdf, startX, currentY , 
       ['Categoria', 'Valor'], 
       [
           ...data.individualExpenses.map((item: any) => [
@@ -168,7 +197,7 @@ private addCollectiveExpensesSection(pdf: any, startX: number, currentY: number,
   const totalValue = groupedExpenses.reduce((sum: number, item: any) => sum + item.valor, 0);
 
   // Cria a tabela utilizando a função auxiliar
-  currentY = this.generateTable(pdf, startX, currentY + 5, 
+  currentY = this.generateTable(pdf, startX, currentY , 
       ['Categoria', 'Valor', 'Sua Fração'], 
       [
           ...groupedExpenses.map((item: any) => [
@@ -204,7 +233,7 @@ private addProvisionsSection(pdf: any, startX: number, currentY: number, data: a
   }, 0);
 
   // Cria a tabela utilizando a função auxiliar
-  currentY = this.generateTable(pdf, startX, currentY + 5, 
+  currentY = this.generateTable(pdf, startX, currentY , 
       ['Categoria', 'Valor Mensal', 'Sua Fração'],
       [
           ...data.provisoes.map((item: any) => [
@@ -240,7 +269,7 @@ private addFundosSection(pdf: any, startX: number, currentY: number, data: any, 
   }, 0);
 
   // Cria a tabela utilizando a função auxiliar
-  currentY = this.generateTable(pdf, startX, currentY + 5, 
+  currentY = this.generateTable(pdf, startX, currentY , 
       ['Categoria', 'Valor Mensal', 'Sua Fração'],
       [
           ...data.fundos.map((item: any) => [
@@ -260,6 +289,97 @@ private addFundosSection(pdf: any, startX: number, currentY: number, data: any, 
 
   return currentY;
 }
+
+private addSaldosSection(pdf: any, startX: number, currentY: number, data: any, totalValue: number): number {
+  // Configurações iniciais de fonte e título
+  pdf.setFont('Helvetica', 'bold');
+  pdf.setFontSize(14);
+  pdf.text('Saldo ', startX, currentY);
+  currentY += 5;
+  pdf.setFontSize(10);
+  pdf.setFont('Helvetica', 'normal');
+  pdf.text('Resumo do saldo do condomínio.', startX, currentY);
+
+  // Acessa os saldos em data.saldosPredios
+  const sortedSaldos = [...data.saldosPredios].sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime());
+  const latestConta = sortedSaldos.find((item) => item.type === 'conta');
+  const latestInvestimento = sortedSaldos.find((item) => item.type === 'investimento');
+
+  const contaValue = latestConta ? parseFloat(latestConta.valor) : 0;
+  const investimentoValue = latestInvestimento ? parseFloat(latestInvestimento.valor) : 0;
+
+  // Cria a tabela utilizando a função auxiliar
+  currentY = this.generateTable(
+    pdf,
+    startX,
+    currentY ,
+    ['Categoria', 'Valor'],
+    [
+      [
+        { content: 'Conta Corrente', styles: { fontStyle: 'bold' } },
+        { content: `R$ ${contaValue.toFixed(2)}`, styles: { fontStyle: 'bold' } },
+      ],
+      [
+        { content: 'Investimento', styles: { fontStyle: 'bold' } },
+        { content: `R$ ${investimentoValue.toFixed(2)}`, styles: { fontStyle: 'bold' } },
+      ],
+      [
+        { content: 'Total', styles: { fontStyle: 'bold' } },
+        { content: `R$ ${(Number(contaValue)+Number(investimentoValue)).toFixed(2)}`, styles: { fontStyle: 'bold' } },
+
+    ]
+    ],
+    [45, 45],7
+  );
+
+  return currentY;
+}
+
+private addHistoricoCondominioSection(pdf: any,startX: number,currentY: number,data: any): number {
+  // Configurações iniciais de fonte e título
+  pdf.setFont('Helvetica', 'bold');
+  pdf.setFontSize(14);
+  pdf.text('Condomínio  por mês', startX, currentY);
+  currentY += 5;
+
+  pdf.setFontSize(10);
+  pdf.setFont('Helvetica', 'normal');
+  pdf.text('Histórico de seus condomínios por mês: .', startX, currentY);
+
+  // Acessa os valores de condomínio no array
+  const valores = data.rateiosPorApartamentoId || []; // Garante que `valores` exista
+  let totalValue = 0;
+
+  // Adiciona os dados de valor, mês e ano
+  const rows = valores.map((item: { valor: string; mes: number; ano: number }) => {
+    const valorNumerico = parseFloat(item.valor);
+    totalValue += valorNumerico;
+    return [
+      { content: `${item.mes}/${item.ano}`, styles: { fontStyle: 'normal' } },
+      { content: `R$ ${valorNumerico.toFixed(2)}`, styles: { fontStyle: 'normal' } },
+    ];
+  });
+
+  // Adiciona a linha do total
+  rows.push([
+    { content: 'Total', styles: { fontStyle: 'bold' } },
+    { content: `R$ ${totalValue.toFixed(2)}`, styles: { fontStyle: 'bold' } },
+  ]);
+
+  // Cria a tabela
+  currentY = this.generateTable(
+    pdf,
+    startX,
+    currentY,
+    ['Data', 'Valor'],
+    rows,
+    [45, 45], // Largura das colunas
+    7 // Espaçamento entre as linhas
+  );
+
+  return currentY;
+}
+
 
 private generateTable(pdf: any, startX: number, currentY: number, head: string[], body: any[], columnWidths: number[], fontSize: number): number {
   pdf.setFont('Helvetica', 'normal');
@@ -307,7 +427,7 @@ private generateTable(pdf: any, startX: number, currentY: number, head: string[]
         const chartInstance = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: data.map((item) => item.data_gasto), // Labels com o número do mês
+                labels: data.map((item) => this.getMonthTwoDigits(item.data_gasto)), // Labels com o número do mês
                 datasets: [
                     {
                         label: title,
@@ -350,7 +470,6 @@ private generateTable(pdf: any, startX: number, currentY: number, head: string[]
                     y: {
                         title: {
                             display: true,
-                            text: `Consumo ${title}`, // Ajustar dinamicamente o texto do eixo Y
                             font: {
                                 size: 14 * scale, // Tamanho do título do eixo Y
                             },
@@ -444,6 +563,16 @@ private generateDonutChart(data: any[]): Promise<string> {
   });
 }
 
-  
+ getMonthTwoDigits(dateString:string) :string{
+  // Converte a string em um objeto Date
+  const date = new Date(dateString);
+
+  // Extrai o mês (adiciona 1 porque os meses começam em 0)
+  const month = date.getUTCMonth() + 1;
+
+  // Retorna o mês com dois dígitos
+  return month.toString().padStart(2, '0');
+}
+
   
 }
