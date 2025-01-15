@@ -1,0 +1,38 @@
+<div class="table-wrapper">
+    <table class="table mt-4">
+      <thead>
+        <tr>
+          <th scope="col" style="width: 30%;">Detalhe</th>
+          <th scope="col" style="width: 10%;">Data</th>
+          <th scope="col" style="width: 10%;">Valor</th>
+          <th scope="col" style="width: 10%;">Tipo</th>
+          <th scope="col" style="width: 10%;">Parcela</th>
+          <th scope="col" style="width: 10%;">Total de parcelas</th>
+          <th scope="col" style="width: 10%;">Nota Fiscal</th>  
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Aqui você pode iterar sobre os dados das contas e preencher as linhas da tabela -->
+        <tr *ngFor="let expense of commonExepenses">
+          <ng-container *ngIf="!expense.tipoGasto_id">
+            <td>{{ expense.tipo_Gasto_Extra }}</td>
+          </ng-container>
+          <ng-container *ngIf="expense.tipoGasto_id">
+            <td>{{ getExpenseDetalhes(expense) }}</td>
+          </ng-container>
+          <td>{{ formatarData(expense.data_gasto)}}</td>
+          <td>R$ {{ expense.valor }}</td>
+          <td>{{ expense.tipo }}</td>
+          <td>{{ expense.parcela }}</td>
+          <td>{{ expense.total_parcelas }}</td>
+          <td *ngIf="!expense.nota_id">
+            <input type="file" accept=".pdf" (change)="criarNotaGastoComumSelected($event, expense)" *ngIf="!expense.documento" />
+          </td>
+          <td *ngIf="expense.nota_id">
+            <button class="btn btn-success" (click)="downloadNotaFiscal(expense)"><i class="fas fa-download"></i></button>
+            <button class="btn btn-danger btn-xs" (click)="deleteNotaFiscal(expense)"><i class="fas fa-trash"></i></button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>

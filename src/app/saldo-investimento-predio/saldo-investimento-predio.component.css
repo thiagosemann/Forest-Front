@@ -1,16 +1,13 @@
 .container {
-    font-family: Arial, sans-serif;
-    margin-top: 20px;
-    padding: 10px; /* Ajuste o preenchimento conforme necessário */
-    height: 85vh;
-    
-  }
-  
-  h2 {
-    color: #198754;
-  }
-  
- /* Estilos para a tabela e cabeçalho sticky */
+  font-family: Arial, sans-serif;
+  margin-top: 15px;
+}
+
+h2 {
+  color: #198754;
+}
+
+/* Estilos para a tabela e cabeçalho sticky */
 .table-wrapper {
   max-height: 500px;
   overflow-y: auto;
@@ -55,7 +52,8 @@
 .table tr:hover {
   background-color: #ddd;
 }
-  
+
+/* Botões gerais */
 .btn {
   padding: 8px 12px;
   border: none;
@@ -63,23 +61,51 @@
   cursor: pointer;
 }
 
+.add-btn,
+.edit-btn,
+.delete-btn {
+  color: white;
+  margin-left: 5px;
+}
+
+/* Botões específicos */
 .add-btn {
   background-color: #198754;
-  color: white;
 }
 
 .edit-btn {
-  background-color: #198754;
-  color: white;
-  margin-left: 5px;
+  background-color: #28a745;
+}
+
+.edit-btn:hover {
+  background-color: #218838;
 }
 
 .delete-btn {
-  background-color: #f44336;
-  color: white;
-  margin-left: 5px;
+  background-color: #dc3545;
 }
 
+.delete-btn:hover {
+  background-color: #c82333;
+}
+
+/* Botão adicionar pequeno */
+.add-btn-small {
+  background-color: #28a745;
+  color: white;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-left: 10px;
+}
+
+.add-btn-small:hover {
+  background-color: #218838;
+}
+
+/* Modal */
 .modal {
   position: fixed;
   top: 0;
@@ -156,12 +182,28 @@
 .save-btn {
   background-color: #198754;
   color: white;
-  margin-left: 5px;
 }
 
 .cancel-btn {
   background-color: #757575;
   color: white;
-  margin-left: 5px;
+}
+/* Classe para a seta */
+.step-arrow {
+  cursor: pointer;
+  font-size: 24px;
+  transition: transform 0.3s ease;
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 5px;
 }
 
+/* Seta aberta (aponta para baixo quando a tabela é exibida) */
+.step-arrow.open {
+  transform: rotate(90deg); /* Rotaciona a seta para baixo */
+}
+.step-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin-left: 10px;
+}

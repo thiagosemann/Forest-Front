@@ -586,48 +586,6 @@ export class BuildingsReviewComponent implements OnInit {
   }
   
   
-  // Função para validar se o array representa um PDF
-  private isValidPDF(byteArray: any): boolean {
-    try {
-      // Verificar se o byteArray tem pelo menos os primeiros e últimos 5 bytes necessários
-      if (!byteArray || byteArray.length < 10) {
-        console.warn('Array de bytes muito curto para ser um PDF.');
-        return false;
-      }
-  
-      // Comparar os primeiros bytes com a assinatura do PDF (%PDF-)
-      const startSignature = new Uint8Array(byteArray.slice(0, 5));
-      const expectedStartSignature = [0x25, 0x50, 0x44, 0x46, 0x2D]; // %PDF-
-  
-      for (let i = 0; i < expectedStartSignature.length; i++) {
-        if (startSignature[i] !== expectedStartSignature[i]) {
-          console.warn(`Assinatura inicial inválida no byte ${i}: esperado ${expectedStartSignature[i]}, encontrado ${startSignature[i]}`);
-          return false;
-        }
-      }
-  
-      console.log('Assinatura inicial do PDF válida detectada.');
-  
-      // Comparar os últimos bytes com a assinatura do PDF (%%EOF)
-      const endSignature = new Uint8Array(byteArray.slice(-5));
-      const expectedEndSignature = [0x25, 0x25, 0x45, 0x4F, 0x46]; // %%EOF
-  
-      for (let i = 0; i < expectedEndSignature.length; i++) {
-        if (endSignature[i] !== expectedEndSignature[i]) {
-          console.warn(`Assinatura final inválida no byte ${i}: esperado ${expectedEndSignature[i]}, encontrado ${endSignature[i]}`);
-          return false;
-        }
-      }
-  
-      console.log('Assinatura final do PDF válida detectada.');
-      return true;
-    } catch (error) {
-      console.error('Erro ao validar o array de bytes como PDF:', error);
-      return false;
-    }
-  }
-  
-  
   
     deleteNotaFiscal(expense: CommonExpense): void {
     if (expense && expense.nota_id) {

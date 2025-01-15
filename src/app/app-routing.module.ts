@@ -23,6 +23,7 @@ import { CalendarioAirbnbComponent } from './calendario-airbnb/calendario-airbnb
 import { CameraAppComponent } from './camera-app/camera-app.component';
 import { ExpenseTypeControllComponent } from './expense-type-controll/expense-type-controll.component';
 import { SaldoInvestimentoPredioComponent } from './saldo-investimento-predio/saldo-investimento-predio.component';
+import { PrestacaoContasComponent } from './prestacao_de_contas/prestacao-contas/prestacao-contas.component';
 
 
 const routes: Routes = [
@@ -45,6 +46,7 @@ const routes: Routes = [
   { path: 'provisao', component: ProvisoesComponent, canActivate: [AuthGuardService] },
   { path: 'fundos', component: FundosComponent, canActivate: [AuthGuardService] },
   { path: 'saldos', component: SaldoInvestimentoPredioComponent, canActivate: [AuthGuardService] },
+  { path: 'prestacao', component: PrestacaoContasComponent, canActivate: [AuthGuardService] },
 
   { path: 'Airbnb', component: CalendarioAirbnbComponent},
 

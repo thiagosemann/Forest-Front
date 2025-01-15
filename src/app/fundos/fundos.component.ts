@@ -1,13 +1,12 @@
 import { Component } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
 import { Building } from '../shared/utilitarios/building';
 import { Fundo } from '../shared/utilitarios/fundo'; 
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { BuildingService } from '../shared/service/Banco_de_Dados/buildings_service';
 import { FundoService } from '../shared/service/Banco_de_Dados/fundo_service'; 
 import { SaldoFundoService } from '../shared/service/Banco_de_Dados/saldoFundos_service';
 import { SaldoFundo } from '../shared/utilitarios/saldoFundo';
 import { ToastrService } from 'ngx-toastr';
+import { SelectionService } from '../shared/service/selectionService';
 
 @Component({
   selector: 'app-fundos',
@@ -16,44 +15,35 @@ import { ToastrService } from 'ngx-toastr';
 })
 
 export class FundosComponent {
-  buildings: Building[] = [];
   fundos: Fundo[] = []; 
   myForm!: FormGroup;
   saldoFundo: SaldoFundo[] = [];
-  
+  selectedBuildingId:number=0;
+
   constructor(
-    private route: ActivatedRoute,
-    private router: Router,
     private formBuilder: FormBuilder,
-    private buildingService: BuildingService,
     private fundoService: FundoService,
     private saldoFundoService: SaldoFundoService,
-    private toastr: ToastrService
-
+    private toastr: ToastrService,
+    private selectionService: SelectionService
   ) {}
 
   ngOnInit(): void {
-    this.getAllBuildings();
     this.myForm = this.formBuilder.group({
       building_id: [0, Validators.required],
       tipo_fundo: ['', Validators.required],
       porcentagem: [0, [Validators.required, Validators.min(0)]]
     });
+
+    this.selectionService.selecao$.subscribe(selecao => {
+      this.selectedBuildingId = selecao.predioID;
+      this.loadFundos();
+    });
   }
 
-  getAllBuildings(): void {
-    this.buildingService.getAllBuildings().subscribe(
-      (buildings: Building[]) => {
-        this.buildings = buildings;
-      },
-      (error) => {
-        console.error('Error fetching buildings:', error);
-      }
-    );
-  }
 
   loadFundos(): void {
-    const buildingId = this.myForm.get('building_id')?.value;
+    const buildingId = this.selectedBuildingId;
     if (buildingId && buildingId !== 0) {
       this.fundoService.getFundosByBuildingId(buildingId).subscribe(
         (fundos: Fundo[]) => {
@@ -67,6 +57,9 @@ export class FundosComponent {
           console.error('Error fetching fundos:', error);
         }
       );
+    }else{
+      this.toastr.warning("Selecione um prédio!")
+
     }
   }
 

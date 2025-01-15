@@ -34,6 +34,8 @@ import { CalendarioAirbnbComponent } from './calendario-airbnb/calendario-airbnb
 import { CameraAppComponent } from './camera-app/camera-app.component';
 import { ExpenseTypeControllComponent } from './expense-type-controll/expense-type-controll.component';
 import { SaldoInvestimentoPredioComponent } from './saldo-investimento-predio/saldo-investimento-predio.component';
+import { PrestacaoContasComponent } from './prestacao_de_contas/prestacao-contas/prestacao-contas.component';
+import { NotaFiscalGastosComunsComponent } from './prestacao_de_contas/nota-fiscal-gastos-comuns/nota-fiscal-gastos-comuns.component';
 
 @NgModule({
   declarations: [
@@ -58,7 +60,9 @@ import { SaldoInvestimentoPredioComponent } from './saldo-investimento-predio/sa
     CalendarioAirbnbComponent,
     CameraAppComponent,
     ExpenseTypeControllComponent,
-    SaldoInvestimentoPredioComponent
+    SaldoInvestimentoPredioComponent,
+    PrestacaoContasComponent,
+    NotaFiscalGastosComunsComponent
   ],
   imports: [
     BrowserModule,

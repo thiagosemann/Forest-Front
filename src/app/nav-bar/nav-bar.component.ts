@@ -139,6 +139,9 @@ export class NavBarComponent implements OnInit {
   saldos(): void {
     this.router.navigate(['/saldos']);
   }
+  prestacao(): void {
+    this.router.navigate(['/prestacao']);
+  }
     
   toggleMenu(): void {
     this.isMenuOpen = !this.isMenuOpen;

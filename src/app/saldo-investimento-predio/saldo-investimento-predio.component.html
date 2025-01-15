@@ -1,119 +1,144 @@
 <div class="container">
-  <h2>Gerenciar Saldos</h2>
-  <div [formGroup]="myGroup">
-    <select id="building_id" name="building_id" class="form-control" formControlName="building_id" required (change)="onBuildingSelect($event)" style="margin-bottom: 10px;">
-      <option value="" disabled selected>Selecione o prédio</option>
-      <option *ngFor="let building of buildings" [value]="building.id">{{ building.nome }}</option>
-    </select>
-  </div>
-
-  <div class="actions">
-    <button class="btn add-btn" (click)="addBuildingBalance()">Adicionar Saldo de Prédio</button>
-  </div>
-
   <div class="row mt-4">
     <div class="col-md-6">
       <div class="table-wrapper">
-        <h3>Saldos da Conta Corrente</h3>
-        <table class="table mt-4">
-          <thead>
-            <tr>
-              <th>Valor</th>
-              <th>Data</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            <ng-container *ngFor="let balance of saldoPredios">
-              <tr *ngIf="balance.type == 'conta'">
-                <td>{{ formatReal(balance.valor) }}</td>
-                <td>{{ balance.data }}</td>
-                <td>
-                  <button class="btn edit-btn" (click)="editBuildingBalance(balance)">
-                    <i class="fas fa-edit"></i>
-                  </button>
-                  <button class="btn delete-btn" (click)="deleteBuildingBalance(balance.id!)">
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </td>
-              </tr>
-            </ng-container>
-            
-          </tbody>
-        </table>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h3>Saldo da Conta Corrente</h3>
+        </div>
+        <div>
+          <div class="input-group">
+            <span class="input-group-text">R$</span>
+            <input type="number" [(ngModel)]="saldoAtualizado" class="form-control" [disabled]="!saldoAtualizadoisEditing" placeholder="0,00"/>
+            <ng-container *ngIf="!saldoAtualizadoisEditing"><button class="btn add-btn-small" (click)="editSaldoAtualizado()">Editar</button></ng-container>
+            <ng-container *ngIf="saldoAtualizadoisEditing"><button class="btn add-btn-small" (click)="addBuildingBalance('conta')">Salvar</button></ng-container>
+          </div>
+        </div>
+        <ng-container *ngIf="saldoPredios.length>0">
+          <span class="step-arrow" [class.open]="showHistoryConta" (click)="toggleHistoryConta()">
+            ▶ 
+          </span>
+          <span class="step-title">Histórico da conta corrente</span> 
+          <ng-container *ngIf="showHistoryConta">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Valor</th>
+                  <th>Data</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <ng-container *ngFor="let balance of saldoPredios">
+                  <tr *ngIf="balance.type == 'conta'">
+                    <td>{{ formatReal(balance.valor) }}</td>
+                    <td>{{ balance.data }}</td>
+                    <td>
+                      <button class="btn edit-btn" (click)="editBuildingBalance(balance)">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <button class="btn delete-btn" (click)="deleteBuildingBalance(balance.id!)">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
+          </ng-container>
+        </ng-container>
       </div>
     </div>
 
     <div class="col-md-6">
       <div class="table-wrapper">
-        <h3>Saldos de Investimento</h3>
-        <table class="table mt-4">
-          <thead>
-            <tr>
-              <th>Valor</th>
-              <th>Data</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            <ng-container *ngFor="let balance of saldoPredios">
-              <tr *ngIf="balance.type == 'investimento'">
-                <td>{{ formatReal(balance.valor) }}</td>
-                <td>{{ balance.data }}</td>
-                <td>
-                  <button class="btn edit-btn" (click)="editBuildingBalance(balance)">
-                    <i class="fas fa-edit"></i>
-                  </button>
-                  <button class="btn delete-btn" (click)="deleteBuildingBalance(balance.id!)">
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </td>
-              </tr>
-            </ng-container>
-          </tbody>
-        </table>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h3>Saldos de Investimento </h3>
+        </div>
+        <div>
+          <div class="input-group">
+            <span class="input-group-text">R$</span>
+            <input type="number" [(ngModel)]="investimentoAtualizado" class="form-control" [disabled]="!investimentoAtualizadoisEditing" placeholder="0,00"/>
+            <ng-container *ngIf="!investimentoAtualizadoisEditing"><button class="btn add-btn-small" (click)="editInvestimentoAtualizado()">Editar</button></ng-container>
+            <ng-container *ngIf="investimentoAtualizadoisEditing"><button class="btn add-btn-small" (click)="addBuildingBalance('investimento')">Salvar</button></ng-container>
+          </div>
+        </div>
+        <ng-container *ngIf="saldoPredios.length>0">
+          <span class="step-arrow" [class.open]="showHistoryInvestimento" (click)="toggleHistoryInvestimento()">
+            ▶ 
+          </span>
+          <span class="step-title">Histórico de investimentos</span> 
+          <ng-container *ngIf="showHistoryInvestimento">
+            <table class="table ">
+              <thead>
+                <tr>
+                  <th>Valor</th>
+                  <th>Data</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <ng-container *ngFor="let balance of saldoPredios">
+                  <tr *ngIf="balance.type == 'investimento'">
+                    <td>{{ formatReal(balance.valor) }}</td>
+                    <td>{{ balance.data }}</td>
+                    <td>
+                      <button class="btn edit-btn" (click)="editBuildingBalance(balance)">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <button class="btn delete-btn" (click)="deleteBuildingBalance(balance.id!)">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
+          </ng-container>
+        </ng-container>  
       </div>
     </div>
   </div>
 
   <!-- Modal -->
-<div class="modal" *ngIf="showModal">
-  <div class="modal-content">
-    <div class="modal-header ">
-        <h4>{{ editingBalance ? 'Editar' : 'Adicionar' }} {{ isBuildingBalance ? 'saldo' : 'investimento' }} para o {{selectedBuildingName}}</h4>
+  <div class="modal" *ngIf="showModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4>
+          Editar
+          {{ isBuildingBalance ? 'saldo' : 'investimento' }}
+        </h4>
         <button class="close-btn" (click)="closeModal()">×</button>
-    </div>
-    <div class="modal-body">
+      </div>
+      <div class="modal-body">
         <div class="row">
-            <div class="col-md-6">
-                <label for="amount" class="input-label">Valor</label>
-                <input
-                  id="amount"
-                  class="input-field"
-                  type="number"
-                  placeholder="Digite o valor"
-                  [(ngModel)]="currentBalance.valor"
-                />
-            </div>
-            <div class="col-md-6">
-                <label for="date" class="input-label">Data</label>
-                <input
-                  id="date"
-                  class="input-field"
-                  type="date"
-                  [(ngModel)]="currentBalance.data"
-                />
-            </div>
+          <div class="col-md-6">
+            <label for="amount" class="input-label">Valor</label>
+            <input
+              id="amount"
+              class="input-field"
+              type="number"
+              placeholder="Digite o valor"
+              [(ngModel)]="currentBalance.valor"
+            />
+          </div>
+          <div class="col-md-6">
+            <label for="date" class="input-label">Data</label>
+            <input
+              id="date"
+              class="input-field"
+              type="date"
+              [(ngModel)]="currentBalance.data"
+            />
+          </div>
         </div>
-    </div>
-      
-    <div class="modal-footer">
-      <button class="btn save-btn" (click)="editingBalance ? updateBalance() : saveBalance()">
-        {{ editingBalance ? 'Editar' : 'Adicionar' }}
-      </button>
-      <button class="btn cancel-btn" (click)="closeModal()">Cancelar</button>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn save-btn" (click)="updateBalance()">
+          Editar
+        </button>
+        <button class="btn cancel-btn" (click)="closeModal()">Cancelar</button>
+      </div>
     </div>
   </div>
-</div>
-
 </div>
