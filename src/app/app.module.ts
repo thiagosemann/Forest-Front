@@ -36,6 +36,7 @@ import { ExpenseTypeControllComponent } from './expense-type-controll/expense-ty
 import { SaldoInvestimentoPredioComponent } from './saldo-investimento-predio/saldo-investimento-predio.component';
 import { PrestacaoContasComponent } from './prestacao_de_contas/prestacao-contas/prestacao-contas.component';
 import { NotaFiscalGastosComunsComponent } from './prestacao_de_contas/nota-fiscal-gastos-comuns/nota-fiscal-gastos-comuns.component';
+import { PdfPrestacaoComponent } from './prestacao_de_contas/pdf-prestacao/pdf-prestacao.component';
 
 @NgModule({
   declarations: [
@@ -62,7 +63,8 @@ import { NotaFiscalGastosComunsComponent } from './prestacao_de_contas/nota-fisc
     ExpenseTypeControllComponent,
     SaldoInvestimentoPredioComponent,
     PrestacaoContasComponent,
-    NotaFiscalGastosComunsComponent
+    NotaFiscalGastosComunsComponent,
+    PdfPrestacaoComponent
   ],
   imports: [
     BrowserModule,

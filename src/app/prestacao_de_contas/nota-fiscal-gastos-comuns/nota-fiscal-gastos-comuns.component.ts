@@ -58,6 +58,8 @@ export class NotaFiscalGastosComunsComponent {
           this.commonExepenses = [];
         }
       );
+    }else{
+      this.toastr.warning("Selecione o prédio, o mês e o ano!")
     }
   }
   getAllExpenses(): void {
@@ -146,7 +148,6 @@ export class NotaFiscalGastosComunsComponent {
           }
   
           const base64Data = response.document; // A string Base64 recebida no campo 'document'
-  
           // Verificar se 'base64Data' é uma string válida e não está truncada
           if (!base64Data || typeof base64Data !== 'string' || base64Data.length < 100) {
             console.error('O campo "document" não contém dados Base64 válidos. Valor:', base64Data);

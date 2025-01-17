@@ -1,0 +1,8 @@
+<!-- Exibe um loading enquanto o PDF não for carregado -->
+<div *ngIf="isLoading" class="loading-spinner">
+  <p>Carregando...</p>
+  <!-- Você pode substituir o texto "Loading..." por um spinner se preferir -->
+</div>
+
+<!-- Exibe o iframe apenas quando o PDF estiver carregado -->
+<iframe *ngIf="pdfSrc" [src]="pdfSrc" width="100%" height="600px"></iframe>

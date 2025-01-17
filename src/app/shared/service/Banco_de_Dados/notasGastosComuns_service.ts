@@ -44,4 +44,9 @@ export class NotaGastoComumService {
     const url = `${this.apiUrl}/${id}`;
     return this.http.delete<void>(url, { headers: this.getHeaders() });
   }
+
+  getNotasByBuildingAndMonth(predio_id: number, month: number, year: number): Observable<NotaGastoComum[]> {
+    const url = `${this.apiUrl}/building/${predio_id}/month/${month}/year/${year}`;
+    return this.http.get<NotaGastoComum[]>(url, { headers: this.getHeaders() });
+  }
 }
