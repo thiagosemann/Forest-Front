@@ -37,6 +37,7 @@ import { SaldoInvestimentoPredioComponent } from './saldo-investimento-predio/sa
 import { PrestacaoContasComponent } from './prestacao_de_contas/prestacao-contas/prestacao-contas.component';
 import { NotaFiscalGastosComunsComponent } from './prestacao_de_contas/nota-fiscal-gastos-comuns/nota-fiscal-gastos-comuns.component';
 import { PdfPrestacaoComponent } from './prestacao_de_contas/pdf-prestacao/pdf-prestacao.component';
+import { CobrancaPrestacaoComponent } from './prestacao_de_contas/cobranca-prestacao/cobranca-prestacao.component';
 
 @NgModule({
   declarations: [
@@ -64,7 +65,8 @@ import { PdfPrestacaoComponent } from './prestacao_de_contas/pdf-prestacao/pdf-p
     SaldoInvestimentoPredioComponent,
     PrestacaoContasComponent,
     NotaFiscalGastosComunsComponent,
-    PdfPrestacaoComponent
+    PdfPrestacaoComponent,
+    CobrancaPrestacaoComponent
   ],
   imports: [
     BrowserModule,

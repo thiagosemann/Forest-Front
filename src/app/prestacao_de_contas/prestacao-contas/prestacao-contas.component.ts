@@ -15,8 +15,11 @@ export class PrestacaoContasComponent {
   ];
 
   toggleStep(index: number): void {
-    this.steps[index].open = !this.steps[index].open;
+    this.steps.forEach((step, i) => {
+      step.open = i === index ? !step.open : false; // Fecha todos os outros e alterna o atual
+    });
   }
+  
 
   markAsCompleted(index: number): void {
     this.steps[index].completed = true;
@@ -24,11 +27,3 @@ export class PrestacaoContasComponent {
   }
 }
 
-/*
-    { label: '1 - Inserir Gastos Comuns', open: false, completed: false },
-    { label: '2 - Inserir Gastos Individuais', open: false, completed: false },
-    { label: '3 - Saldos Conta Corrente e Investimentos', open: false, completed: false },
-    { label: '4 - Saldo Fundos', open: false, completed: false },
-    { label: '5 - Rateio', open: false, completed: false },
-    { label: '6 - Envio Rateio', open: false, completed: false },
-*/

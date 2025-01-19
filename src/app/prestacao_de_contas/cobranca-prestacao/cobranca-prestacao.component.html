@@ -1,0 +1,72 @@
+<div class="container mt-4">
+    <div class="row">
+      <div class="col-md-12">
+        <button class="btn btn-primary mb-3" (click)="uploadFile()">Upload Extrato XLS</button>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-4">
+        <h5>Pagamentos Atrasados</h5>
+        <div class="table-wrapper">
+          <table class="table ">
+            <thead>
+              <tr>
+                <th scope="col">Apartamento</th>
+                <th scope="col">Data</th>
+                <th scope="col">Valor</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let pagamento of pagamentosEmAtraso">
+                <td>{{ pagamento.apartamento }}</td>
+                <td>{{ pagamento.data }}</td>
+                <td>{{ pagamento.valor }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <h5>Pagamentos Atrasados Inseridos</h5>
+        <div class="table-wrapper">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Apartamento</th>
+                <th scope="col">Data</th>
+                <th scope="col">Valor</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let pagamento of pagamentosAtrasadosPagos">
+                <td>{{ pagamento.apartamento }}</td>
+                <td>{{ pagamento.data }}</td>
+                <td>{{ pagamento.valor }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <h5>Pagamentos do mês inseridos</h5>
+        <div class="table-wrapper">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Apartamento</th>
+                <th scope="col">Data</th>
+                <th scope="col">Valor</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let condominio of condominiosPagos">
+                <td>{{ condominio.apartamento }}</td>
+                <td>{{ condominio.data }}</td>
+                <td>{{ condominio.valor }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>

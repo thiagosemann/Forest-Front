@@ -31,8 +31,6 @@ export class NotaFiscalGastosComunsComponent {
 
   ngOnInit(): void {
     this.getAllExpenses();
-    this.loadExpenses();
-
     this.selectionService.selecao$.subscribe(selecao => {
       this.selectedBuildingId = selecao.predioID;
       this.selectedMonth = selecao.month;
