@@ -1,12 +1,18 @@
-<div class="container mt-4">
-    <div class="row">
-      <div class="col-md-12">
-        <button class="btn btn-primary mb-3" (click)="uploadFile()">Upload Extrato XLS</button>
-      </div>
+<div class="container ">
+  <div class="row">
+    <div class="col-md-8" *ngIf="predioSelecionado">
+      <label class="btn btn-success" >
+        <i class="fas fa-upload"></i> Inserir
+        <input type="file" style="display: none;" (change)="uploadFile($event)">
+        <span *ngIf="uploading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+      </label>
     </div>
-    <div class="row">
+    <div class="col-md-3">
+    <h5>CNPJ: {{cnpj}}</h5>
+    </div>
+    <div class="row mt-4">
       <div class="col-md-4">
-        <h5>Pagamentos Atrasados</h5>
+        <h5>Inadimplentes</h5>
         <div class="table-wrapper">
           <table class="table ">
             <thead>
@@ -27,7 +33,7 @@
         </div>
       </div>
       <div class="col-md-4">
-        <h5>Pagamentos Atrasados Inseridos</h5>
+        <h5>Inadimplentes Pagos</h5>
         <div class="table-wrapper">
           <table class="table">
             <thead>
@@ -48,7 +54,7 @@
         </div>
       </div>
       <div class="col-md-4">
-        <h5>Pagamentos do mês inseridos</h5>
+        <h5>Pagos no Mês</h5>
         <div class="table-wrapper">
           <table class="table">
             <thead>
