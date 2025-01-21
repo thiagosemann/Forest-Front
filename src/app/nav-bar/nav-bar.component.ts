@@ -88,7 +88,7 @@ export class NavBarComponent implements OnInit {
   }
 
   showSelects(): boolean {
-    const hiddenRoutes = ["/provisao", "/fundos", "/users", "/vagas", "/predios", "/apartamentos"];
+    const hiddenRoutes = ["/provisao", "/users", "/vagas", "/predios", "/apartamentos"];
     return !hiddenRoutes.includes(this.currentRoute);
   }
   
