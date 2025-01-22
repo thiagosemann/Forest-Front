@@ -30,7 +30,6 @@ export class FundosComponent {
 
   ngOnInit(): void {
     this.myForm = this.formBuilder.group({
-      building_id: [0, Validators.required],
       tipo_fundo: ['', Validators.required],
       porcentagem: [0, [Validators.required, Validators.min(0)]]
     });
@@ -68,10 +67,10 @@ export class FundosComponent {
     if (this.myForm.valid) {
       const novoFundo: Fundo = {
         tipo_fundo: this.myForm.get('tipo_fundo')?.value,
-        predio_id: this.myForm.get('building_id')?.value,
+        predio_id: this.selectedBuildingId,
         porcentagem: this.myForm.get('porcentagem')?.value / 100 // Converte para decimal
       };
-
+      console.log(novoFundo)
       this.fundoService.createFundo(novoFundo).subscribe(
         (response) => {
           this.toastr.success('Fundo cadastrado com sucesso!')

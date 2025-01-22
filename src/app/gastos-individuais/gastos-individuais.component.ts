@@ -101,9 +101,6 @@ export class GastosIndividuaisComponent implements OnInit {
 
   }
   
-  
-  
-
   getAllApartamentosByBuildingId(buildingId:number,createGastos:boolean): void {
     this.apartamentos=[];
     this.apartamentoService.getApartamentosByBuildingId(buildingId).subscribe({
@@ -313,12 +310,12 @@ export class GastosIndividuaisComponent implements OnInit {
     this.gastosIndividuaisInsert.forEach(expense=>{
       expense.aguaValor= taxaAgua;
       expense.valorTotal = Number(expense.aguaValor) + 
-                          Number(expense.gasValor) + 
-                          Number(expense.lazer) + 
-                          Number(expense.lavanderia) + 
-                          Number(expense.multa);
+                           Number(expense.gasValor) + 
+                           Number(expense.lazer) + 
+                           Number(expense.lavanderia) + 
+                           Number(expense.multa);
     })
-    if(taxaAgua*this.gastosIndividuaisInsert.length> this.valorAguaGastoComum ){
+    if(this.valorAguaGastoComum>taxaAgua*this.gastosIndividuaisInsert.length ){
         // Filtrar os gastos com água que ultrapassam 5m³
         const aguaExpenses = this.gastosIndividuaisInsert.filter(gasto => gasto.aguaM3 >= 5);
 
