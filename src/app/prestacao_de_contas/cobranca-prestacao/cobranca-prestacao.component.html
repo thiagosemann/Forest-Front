@@ -1,17 +1,20 @@
-<div class="container ">
+<div class="container">
   <div class="row">
     <div class="col-md-8" *ngIf="predioSelecionado">
-      <label class="btn btn-success" >
+      <label class="btn btn-success" *ngIf="!isPlanilhaInserida && selectedBuildingId!=0">
         <i class="fas fa-upload"></i> Inserir
         <input type="file" style="display: none;" (change)="uploadFile($event)">
         <span *ngIf="uploading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
       </label>
+      <button *ngIf="isPlanilhaInserida" class="btn btn-warning ml-2" (click)="salvarDados()">
+        <i class="fas fa-save"></i> Salvar Dados
+      </button>
     </div>
     <div class="col-md-3">
-    <h5>CNPJ: {{cnpj}}</h5>
+      <h5>CNPJ: {{ cnpj }}</h5>
     </div>
     <div class="row mt-4">
-      <div class="col-md-4">
+      <div class="col-md-3">
         <h5>Inadimplentes</h5>
         <div class="table-wrapper">
           <table class="table ">
@@ -24,15 +27,15 @@
             </thead>
             <tbody>
               <tr *ngFor="let pagamento of pagamentosEmAtraso">
-                <td>{{ pagamento.apartamento }}</td>
-                <td>{{ pagamento.data }}</td>
-                <td>{{ pagamento.valor }}</td>
+                <td>{{ pagamento.apt_name }}</td>
+                <td>{{ pagamento.data_vencimento }}</td>
+                <td>{{ formatCurrencyPTBR(pagamento.valor) }}</td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
-      <div class="col-md-4">
+      <div class="col-md-3">
         <h5>Inadimplentes Pagos</h5>
         <div class="table-wrapper">
           <table class="table">
@@ -45,15 +48,15 @@
             </thead>
             <tbody>
               <tr *ngFor="let pagamento of pagamentosAtrasadosPagos">
-                <td>{{ pagamento.apartamento }}</td>
-                <td>{{ pagamento.data }}</td>
-                <td>{{ pagamento.valor }}</td>
+                <td>{{ pagamento.apt_name }}</td>
+                <td>{{ pagamento.data_vencimento }}</td>
+                <td>{{ formatCurrencyPTBR(pagamento.valor) }}</td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
-      <div class="col-md-4">
+      <div class="col-md-3">
         <h5>Pagos no Mês</h5>
         <div class="table-wrapper">
           <table class="table">
@@ -65,10 +68,31 @@
               </tr>
             </thead>
             <tbody>
+              <tr *ngFor="let condominio of pagamentosMesmoMesPagos">
+                <td>{{ condominio.apt_name }}</td>
+                <td>{{ condominio.data_vencimento }}</td>
+                <td>{{formatCurrencyPTBR(condominio.valor)}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <h5>Arquivo XLS</h5>
+        <div class="table-wrapper">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Apartamento</th>
+                <th scope="col">Data</th>
+                <th scope="col">Valor</th>
+              </tr>
+            </thead>
+            <tbody>
               <tr *ngFor="let condominio of condominiosPagos">
-                <td>{{ condominio.apartamento }}</td>
-                <td>{{ condominio.data }}</td>
-                <td>{{ condominio.valor }}</td>
+                <td>{{ condominio.apt_name }}</td>
+                <td>{{ condominio.data_vencimento }}</td>
+                <td>{{formatCurrencyPTBR(condominio.valor)}}</td>
               </tr>
             </tbody>
           </table>

@@ -28,15 +28,22 @@ export class RateioPorApartamentoService {
     const url = `${this.apiUrl}/${id}`;
     return this.http.get<RateioPorApartamento>(url, { headers: this.getHeaders() });
   }
-    // Função para obter um rateio por apartamento pelo ID
-    getRateioPorApartamentoByAptId(apartamento_id: number): Observable<RateioPorApartamento> {
-      const url = `${this.apiUrl}/apartamento/${apartamento_id}`;
-      return this.http.get<RateioPorApartamento>(url, { headers: this.getHeaders() });
-    }
 
-  // Função para obter rateios por apartamento de um prédio específico
+  // Função para obter um rateio por apartamento pelo apartamento_id
+  getRateioPorApartamentoByAptId(apartamento_id: number): Observable<RateioPorApartamento> {
+    const url = `${this.apiUrl}/apartamento/${apartamento_id}`;
+    return this.http.get<RateioPorApartamento>(url, { headers: this.getHeaders() });
+  }
+
+  // Função para obter rateios por apartamento de um rateioId específico
   getRateiosPorApartamentoByRateioId(rateioId: number): Observable<RateioPorApartamento[]> {
     const url = `${this.apiUrl}/rateio/${rateioId}`;
+    return this.http.get<RateioPorApartamento[]>(url, { headers: this.getHeaders() });
+  }
+
+  // Função para obter rateios por prédio (novo método)
+  getRateiosNaoPagosPorPredioId(predioId: number): Observable<RateioPorApartamento[]> {
+    const url = `${this.apiUrl}/inadimplentes/predio/${predioId}`;
     return this.http.get<RateioPorApartamento[]>(url, { headers: this.getHeaders() });
   }
 
@@ -51,9 +58,21 @@ export class RateioPorApartamentoService {
     return this.http.put<RateioPorApartamento>(url, rateio, { headers: this.getHeaders() });
   }
 
+  // Função para atualizar a data de pagamento
+  updateDataPagamento(id: number, dataPagamento: string): Observable<void> {
+    const url = `${this.apiUrl}/${id}/update-data-pagamento`;
+    return this.http.put<void>(url, { data_pagamento: dataPagamento }, { headers: this.getHeaders() });
+  }
+
   // Função para deletar um rateio por apartamento
   deleteRateioPorApartamento(id: number): Observable<void> {
     const url = `${this.apiUrl}/${id}`;
     return this.http.delete<void>(url, { headers: this.getHeaders() });
+  }
+
+  // Nova função para atualizar a data de pagamento com base nos pagamentos consolidados
+  atualizarDataPagamento(pagamentosConsolidados: any[]): Observable<void> {
+    const url = `${this.apiUrl}/atualizar-data-pagamento`;
+    return this.http.post<void>(url, { pagamentosConsolidados }, { headers: this.getHeaders() });
   }
 }

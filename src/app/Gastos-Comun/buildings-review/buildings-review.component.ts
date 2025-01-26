@@ -3,13 +3,11 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms'; // Import V
 import { ToastrService } from 'ngx-toastr';
 import { BuildingService } from 'src/app/shared/service/Banco_de_Dados/buildings_service';
 import { CommonExpenseService } from 'src/app/shared/service/Banco_de_Dados/commonExpense_service';
-import { NotaGastoComumService } from 'src/app/shared/service/Banco_de_Dados/notasGastosComuns_service';
 import { ExpenseTypeService } from 'src/app/shared/service/Banco_de_Dados/tipoGasto_service';
 import { SelectionService } from 'src/app/shared/service/selectionService';
 import { Building } from 'src/app/shared/utilitarios/building';
 import { CommonExpense } from 'src/app/shared/utilitarios/commonExpense';
 import { ExpenseType } from 'src/app/shared/utilitarios/expenseType';
-import { NotaGastoComum } from 'src/app/shared/utilitarios/notasGastosComuns';
 
 @Component({
   selector: 'app-buildings-review',
@@ -19,8 +17,6 @@ import { NotaGastoComum } from 'src/app/shared/utilitarios/notasGastosComuns';
 export class BuildingsReviewComponent implements OnInit {
   buildings: Building[] = [];
   commonExepenses: CommonExpense[] = [];
-  buildingId: number | undefined = 1;
-  buildingIdForCommonExpenses: number | undefined = 0;
   gastosView: string = "inicial";
   selectedFiles: File[] = [];
   contasAdicionar : any[]=[];
@@ -36,6 +32,7 @@ export class BuildingsReviewComponent implements OnInit {
   selectedBuildingId:number=0;
   selectedMonth:number=0;
   selectedYear:number=0;
+  showModal: boolean = false;
 
   constructor(
     private toastr: ToastrService,
@@ -44,7 +41,6 @@ export class BuildingsReviewComponent implements OnInit {
     private commonExepenseService: CommonExpenseService,
     private expenseTypeService: ExpenseTypeService,
     private selectionService: SelectionService,
-    private notaGastoComumService:NotaGastoComumService
   ) {}
 
   ngOnInit(): void {
@@ -52,22 +48,19 @@ export class BuildingsReviewComponent implements OnInit {
     this.getAllExpenses();
     this.manualGastoForm = this.formBuilder.group({
       detalhe: ['Selecione', Validators.required],
-      predioID:['Selecione', Validators.required],
       nome_original: ['', Validators.required],
       tipo: ['Selecione', Validators.required],   
       data: ['', Validators.required],
-      valorTotal: ['', [Validators.required, Validators.min(0.01)]],
+      valorTotal: ['', [Validators.required]],
       parcela:['1', [Validators.required, Validators.min(1)]]      
     });
-    this.loadExpenses();
-
     this.selectionService.selecao$.subscribe(selecao => {
       this.selectedBuildingId = selecao.predioID;
       this.selectedMonth = selecao.month;
       this.selectedYear = selecao.year;
       this.loadExpenses();
     });
-
+ 
   }
   
   getAllBuildings(): void {
@@ -102,12 +95,7 @@ export class BuildingsReviewComponent implements OnInit {
       this.gastosView='inicial'
     }else if(tela=="lote"){
       this.gastosView='lote'
-    }else if(tela=="manual"){
-      this.gastosView='manual'
     }
-
-
-
   }
 
   formatarData(data: string): string {
@@ -123,8 +111,6 @@ export class BuildingsReviewComponent implements OnInit {
   // Método chamado quando um arquivo é selecionado
   onFileSelected(event: any): void {
     const files: FileList = event.target.files;
-
-
     if (files.length > 0) {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
@@ -150,10 +136,8 @@ export class BuildingsReviewComponent implements OnInit {
   }
   readFiles(): void {
     this.contasAdicionar = [];
-  
     for (const selectedFile of this.selectedFiles) {
       const reader = new FileReader();
-  
       reader.onload = (event) => {
         const fileContent = event.target?.result as string;
         const lines = fileContent.split('\n');
@@ -190,10 +174,7 @@ export class BuildingsReviewComponent implements OnInit {
       reader.readAsText(selectedFile);
     }
   }
-  
-  
-  
-
+   
   deleteFile(index: number): void {
     if (index >= 0 && index < this.selectedFiles!.length) {
       this.selectedFiles!.splice(index, 1);
@@ -219,7 +200,6 @@ export class BuildingsReviewComponent implements OnInit {
             this.commonExepenses.push(expense);
             
           })
-          console.log(this.commonExepenses)
           this.calculateValorTotal();
         },
         (error) => {
@@ -227,11 +207,15 @@ export class BuildingsReviewComponent implements OnInit {
           this.commonExepenses = [];
         }
       );
+    }else{
+      this.toastr.warning('Selecione o prédio, o mês e o ano!');
     }
   }
   calculateValorTotal():void{
     this.valorTotal = this.inserido + this.provisao + this.rateio;
-    let building = this.buildings.find(building=>building.id === this.buildingId);
+    let building = this.buildings.find(building=>building.id === this.selectedBuildingId);
+    console.log(building)
+
     if(building && building.qnt_Apartamentos){
       this.valorTotalPorApt = this.valorTotal / building?.qnt_Apartamentos;
     }
@@ -256,7 +240,7 @@ export class BuildingsReviewComponent implements OnInit {
             tipo: conta.tipo,
             parcela: i + 1,
             total_parcelas: parcelas,
-            predio_id: this.buildingId!,
+            predio_id: this.selectedBuildingId,
             tipo_Gasto_Extra:conta.tipo_Gasto_Extra? conta.tipo_Gasto_Extra:""
           };
           if(conta.tipoGasto_id){obj.tipoGasto_id = Number(conta.tipoGasto_id)}
@@ -274,8 +258,6 @@ export class BuildingsReviewComponent implements OnInit {
         }
       
     });
-    console.log(contasAdd)
-    // Verificar se o contasADD em ttodos os valores para serem enviados, caso o 
     // Chamada para enviar o array de despesas comuns para o servidor
     if(verificacao==0){
       this.sendCommonExpenses(contasAdd);
@@ -333,66 +315,9 @@ export class BuildingsReviewComponent implements OnInit {
       );
     }
   }
-  submitProvisao(): void {
-    if (this.manualGastoForm.valid) {
-      // Aqui você pode acessar os valores do formulário
-      const detalheId = this.manualGastoForm.get('detalhe')?.value;
-      const nome_original = this.manualGastoForm.get('nome_original')?.value;
-      const tipo = this.manualGastoForm.get('tipo')?.value;
-      const valorTotal = this.manualGastoForm.get('valorTotal')?.value;
-      const parcela = this.manualGastoForm.get('parcela')?.value;
-      const predioID = this.manualGastoForm.get('predioID')?.value;
-
-      // Obter a data do formulário
-      let data = this.manualGastoForm.get('data')?.value;
-      data = new Date(data); // Converter para objeto Date
-  
-      let commonExpenses: CommonExpense[] = [];
-  
-      if (parcela == 1) {
-        let commonExpenseAux: CommonExpense = {
-          data_gasto: `${data.getFullYear()}-${data.getMonth() + 1}-${data.getDate()}`, // Formatando a data
-          nome_original: nome_original,
-          valor: Number(valorTotal),
-          tipo: tipo,
-          parcela: 1,
-          total_parcelas: 1,
-          predio_id: predioID,
-          tipoGasto_id: detalheId,
-          tipo_Gasto_Extra:"" 
-          
-        };
-        commonExpenses.push(commonExpenseAux);
-      } else {
-        for (let i = 0; i < parcela; i++) {
-          let newDate = new Date(data);
-          newDate.setMonth(newDate.getMonth() + i); // Adicionar um mês para cada parcela
-         
-          let commonExpenseAux: CommonExpense = {
-            data_gasto:  `${newDate.getFullYear()}-${newDate.getMonth() + 1}-${newDate.getDate()}`,
-            nome_original: nome_original,
-            valor: Number(valorTotal) / Number(parcela),
-            tipo: tipo,
-            parcela: i + 1,
-            total_parcelas: parcela,
-            predio_id: predioID,
-            tipoGasto_id: detalheId,
-            tipo_Gasto_Extra: ""
-          };
-          commonExpenses.push(commonExpenseAux);
-        }
-      }
-      console.log(commonExpenses)
-      this.sendCommonExpenses(commonExpenses);
-      this.manualGastoForm.reset();
-      this.valorParcela = 0;
-      this.manualGastoForm.get('parcela')?.setValue(1);
-    } else {
-      this.toastr.error('Por favor, preencha todos os campos corretamente.');
-    }
-  }
 
   submitManualGasto(): void {
+    console.log(this.manualGastoForm)
     if (this.manualGastoForm.valid) {
       // Aqui você pode acessar os valores do formulário
       const detalheId = this.manualGastoForm.get('detalhe')?.value;
@@ -400,10 +325,7 @@ export class BuildingsReviewComponent implements OnInit {
       const tipo = this.manualGastoForm.get('tipo')?.value;
       const valorTotal = this.manualGastoForm.get('valorTotal')?.value;
       const parcela = this.manualGastoForm.get('parcela')?.value;
-      const predioID = this.manualGastoForm.get('predioID')?.value;
-
-
-
+      const predioID = Number(this.selectedBuildingId);
       // Obter a data do formulário
       let data = this.manualGastoForm.get('data')?.value;
       data = new Date(data); // Converter para objeto Date
@@ -447,6 +369,7 @@ export class BuildingsReviewComponent implements OnInit {
       this.manualGastoForm.reset();
       this.valorParcela = 0;
       this.manualGastoForm.get('parcela')?.setValue(1);
+      this.showModal = false;
     } else {
       this.toastr.error('Por favor, preencha todos os campos corretamente.');
     }
@@ -485,126 +408,19 @@ export class BuildingsReviewComponent implements OnInit {
     }
 
   }
-  changeBuildingIdForCommomExpenses():void{
-    this.buildingId = this.buildingIdForCommonExpenses;
-  }
 
-  criarNotaGastoComumSelected(event: any, expense: CommonExpense): void {
-    const files: FileList = event.target.files;
-    if (!expense.id) {
-      return;
-    }
-  
-    if (files.length > 0) {
-      const file = files[0];
-  
-      // Verifica se o arquivo selecionado é um PDF
-      if (file.type === 'application/pdf') {
-        const reader = new FileReader();
-  
-        reader.onload = () => {
-          // Converte o conteúdo do arquivo para Base64
-          const fileContentBase64 = reader.result?.toString().split(',')[1];
-  
-          if (fileContentBase64) {
-            // Cria o objeto NotaGastoComum
-            const newDocumento: NotaGastoComum = {
-              documentBlob: fileContentBase64, // Conteúdo Base64 do arquivo
-              commonExpense_id: expense.id || 0, // ID do gasto comum
-            };
-  
-            console.log(newDocumento);
-  
-            // Envia o FormData com o arquivo para o backend
-            this.notaGastoComumService.createNotaGastoComum(newDocumento).subscribe(
-              (response) => {
-                // Após o sucesso, você pode atualizar o objeto de documento na interface
-                expense.documento = newDocumento;
-                expense.nota_id = response.id;
-  
-                this.toastr.success(`Arquivo "${file.name}" adicionado com sucesso!`);
-              },
-              (error) => {
-                this.toastr.error('Erro ao adicionar o arquivo. Tente novamente.');
-              }
-            );
-          }
-        };
-  
-        // Inicia a leitura do arquivo
-        reader.readAsDataURL(file);
-      } else {
-        this.toastr.warning('Por favor, selecione um arquivo PDF.');
-      }
-    }
+
+  closeModal(): void {
+    this.showModal = false;
   }
   
-  downloadNotaFiscal(expense: CommonExpense): void {
-    if (expense && expense.nota_id) {
-      console.log(`Iniciando download da nota fiscal. Nota ID: ${expense.nota_id}`);
-  
-      this.notaGastoComumService.getNotaGastoComumById(expense.nota_id).subscribe(
-        (response: any) => {
-          console.log('Resposta recebida do backend:', response);
-  
-          // Verificar se a resposta contém o campo 'document' com a string Base64
-          if (!response || !response.document) {
-            console.error('A resposta não contém o campo "document". Resposta:', response);
-            return;
-          }
-  
-          const base64Data = response.document; // A string Base64 recebida no campo 'document'
-  
-          // Verificar se 'base64Data' é uma string válida e não está truncada
-          if (!base64Data || typeof base64Data !== 'string' || base64Data.length < 100) {
-            console.error('O campo "document" não contém dados Base64 válidos. Valor:', base64Data);
-            return;
-          }
-  
-          // Converter a string Base64 para um array de bytes
-          const byteArray = new Uint8Array(atob(base64Data).split('').map(char => char.charCodeAt(0)));
-  
-          // Criar o Blob a partir do array de bytes
-          const blob = new Blob([byteArray], { type: 'application/pdf' });
-          console.log('Blob criado com sucesso.');
-  
-          // Criar o link para download
-          const link = document.createElement('a');
-          link.href = URL.createObjectURL(blob);
-          link.download = `nota_fiscal_${expense.nota_id}.pdf`; // Nome do arquivo
-          link.click();
-  
-          console.log('Download iniciado com sucesso.');
-        },
-        (error) => {
-          console.error('Erro ao solicitar a nota fiscal ao backend:', error);
-        }
-      );
-    } else {
-      console.warn('Parâmetro "expense" inválido ou "nota_id" ausente.', expense);
-    }
+  openModal(): void {
+    this.showModal = true;
   }
   
-  
-  
-    deleteNotaFiscal(expense: CommonExpense): void {
-    if (expense && expense.nota_id) {
-      this.notaGastoComumService.deleteNotaGastoComum(expense.nota_id).subscribe(
-        () => {
-          // Remover a referência da nota fiscal na despesa
-  
-          this.toastr.success('Nota fiscal excluída com sucesso!');
-        },
-        (error) => {
-          this.toastr.error('Erro ao excluir a nota fiscal. Tente novamente.');
-        }
-      );
-    } else {
-      this.toastr.warning('Não há nota fiscal associada a essa despesa.');
-    }
+  saveExpenseType(): void {
+
   }
-  
-  
   
   
 }

@@ -2,7 +2,7 @@
   <div class="row">
     <div class="col-md-5">
       <ng-container *ngIf="gastosView=='inicial'">
-        <button class="btn btn-primary" (click)="toggleAddGastosView('manual')">Gasto Manual</button>
+        <button class="btn btn-primary" (click)="openModal()">Gasto Manual</button>
         <button class="btn btn-primary" (click)="toggleAddGastosView('lote')">Gastos em Lote</button>
       </ng-container>
       <ng-container *ngIf="gastosView!='inicial'">
@@ -39,7 +39,6 @@
             <th scope="col" style="width: 10%;">Tipo</th>
             <th scope="col" style="width: 10%;">Parcela</th>
             <th scope="col" style="width: 10%;">Total de parcelas</th>
-            <th scope="col" style="width: 10%;">Nota Fiscal</th>  
             <th scope="col" style="width: 10%;">Ação</th>      
           </tr>
         </thead>
@@ -57,13 +56,6 @@
             <td>{{ expense.tipo }}</td>
             <td>{{ expense.parcela }}</td>
             <td>{{ expense.total_parcelas }}</td>
-            <td *ngIf="!expense.nota_id">
-              <input type="file" accept=".pdf" (change)="criarNotaGastoComumSelected($event, expense)" *ngIf="!expense.documento" />
-            </td>
-            <td *ngIf="expense.nota_id">
-              <button class="btn btn-success" (click)="downloadNotaFiscal(expense)"><i class="fas fa-download"></i></button>
-              <button class="btn btn-danger btn-xs" (click)="deleteNotaFiscal(expense)"><i class="fas fa-trash"></i></button>
-            </td>
             <td><button class="btn btn-danger btn-xs" (click)="deleteExpense(expense)"><i class="fas fa-trash"></i></button></td>
           </tr>
         </tbody>
@@ -76,13 +68,7 @@
 <div *ngIf="gastosView=='lote'" style="margin-top: 10px;">
     <div class="mb-3">
       <div class="row">
-        <div class="col-md-4">
-          <select id="building_id" name="building_id" class="form-control custom-select"  [(ngModel)]="buildingIdForCommonExpenses" required (change)="changeBuildingIdForCommomExpenses()" >
-            <option value="0" disabled selected>Selecione o prédio</option>
-            <option *ngFor="let building of buildings" [value]="building.id">{{ building.nome }}</option>
-          </select>
-        </div>
-        <div class="col-md-8" *ngIf="buildingId">
+        <div class="col-md-8" *ngIf="selectedBuildingId">
           <div class="file-upload-container">
             <label class="custom-file-upload">
               <input type="file" id="fileInput" class="file-upload-input" (change)="onFileSelected($event)" accept=".csv">
@@ -177,76 +163,71 @@
     <div style="text-align: right; margin-right: 50px;">
       <button class="btn btn-primary" (click)="submitGastos()">Inserir</button>
     </div>
-</div>
-<div *ngIf="gastosView=='manual' " style="margin-top: 30px;">
-    <div class="mb-3">
-      <div class="row">
-        <div class="col-md-4"></div>
-        <div class="col-md-4">
-          <h4>Inserir Gasto Manual</h4>
-          <form [formGroup]="manualGastoForm" (ngSubmit)="submitManualGasto()">
-            <div class="col-md-12 mb-3">
-              <div class="form-group">
-                <select id="predioID" name="predioID" class="form-control custom-select" formControlName="predioID" required>
-                  <option value="Selecione" disabled>Selecione o prédio</option>
-                  <option *ngFor="let building of buildings" [value]="building.id">{{ building.nome }}</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="col-md-12 mb-3">
-                <div class="form-group">
-                  <select id="detalhe" name="detalhe" class="form-control custom-select" formControlName="detalhe" required>
-                    <option value="Selecione" disabled>Selecione o detalhe</option>
-                    <option *ngFor="let expenseType of expenseTypes" [value]="expenseType.id">{{ expenseType.detalhes }}</option>
-                  </select>
-                </div>
-              </div>
-              <div class="col-md-12 mb-3">
-                <div class="form-group">
-                  <select id="tipo" name="tipo" class="form-control custom-select" formControlName="tipo" required>
-                    <option value="Rateio">Rateio</option>
-                    <option value="Não Ratear">Não Ratear</option>
-                    <option value="Provisão Utilizada">Provisão Utilizada</option>
-                    <option value="Fundo de Reserva Utilizado">Fundo de Reserva Utilizado</option>
-                    <option value="Fundo de Obra Utilizado">Fundo de Obra Utilizado</option>
-                    <option value="Agua">Água</option>
-
-                  </select>
-                </div>
-              </div>
-              <div class="col-md-12 mb-3">
-                <div class="form-group">
-                  <input type="text" class="form-control custom-input "  placeholder="Nome do gasto:" id="nome_original" formControlName="nome_original" required>
-                </div>
-              </div>
-              <div class="col-md-12 mb-3">
-                <div class="form-group">
-                  <input type="date" class="form-control custom-input "  placeholder="Data do gasto:" id="data" formControlName="data" required>
-                </div>
-              </div>
-              <div class="col-md-12 mb-3">
-                <div class="form-group">
-                  <input type="number" class="form-control custom-input " placeholder="Valor Total:" id="valorTotal" formControlName="valorTotal" step="0.01" required (change)="changeInputParcela()">
-                </div>
-              </div>
-              <div class="col-md-12 mb-3">
-                <div class="form-group">
-                  <input type="number" class="form-control custom-input " placeholder="Quantidade de parcelas" id="parcela" formControlName="parcela" step="1" min="1"required (change)="changeInputParcela()">
-                </div>
-              </div>
-              <div class="col-md-12 mb-3" *ngIf="valorParcela > 1">
-                <div class="form-group">
-                  <span class="spanValorParcela">Valor da parcela: <span style="color:#198754;">R$ {{valorParcela.toFixed(2)}}</span></span>
-                </div>
-              </div>
-              
-            <button type="submit" class="btn btn-primary">Inserir Gasto</button>
-          </form>
-        </div>
-      </div>
-    </div>
   </div>
 
 </div>
 
+<div class="modal" *ngIf="showModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Adicionar</h3>
+      <button class="close-btn" (click)="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <form [formGroup]="manualGastoForm">
+        <div class="col-md-12 mb-3">
+            <div class="form-group">
+              <select id="detalhe" name="detalhe" class="form-control custom-select" formControlName="detalhe" required>
+                <option value="Selecione" disabled>Selecione o detalhe</option>
+                <option *ngFor="let expenseType of expenseTypes" [value]="expenseType.id">{{ expenseType.detalhes }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-md-12 mb-3">
+            <div class="form-group">
+              <select id="tipo" name="tipo" class="form-control custom-select" formControlName="tipo" required>
+                <option value="Selecione" disabled>Selecione o tipo</option>
+                <option value="Rateio">Rateio</option>
+                <option value="Não Ratear">Não Ratear</option>
+                <option value="Provisão Utilizada">Provisão Utilizada</option>
+                <option value="Fundo de Reserva Utilizado">Fundo de Reserva Utilizado</option>
+                <option value="Fundo de Obra Utilizado">Fundo de Obra Utilizado</option>
+                <option value="Agua">Água</option>
+
+              </select>
+            </div>
+          </div>
+          <div class="col-md-12 mb-3">
+            <div class="form-group">
+              <input type="text" class="form-control custom-input "  placeholder="Nome do gasto:" id="nome_original" formControlName="nome_original" required>
+            </div>
+          </div>
+          <div class="col-md-12 mb-3">
+            <div class="form-group">
+              <input type="date" class="form-control custom-input "  placeholder="Data do gasto:" id="data" formControlName="data" required>
+            </div>
+          </div>
+          <div class="col-md-12 mb-3">
+            <div class="form-group">
+              <input type="number" class="form-control custom-input " placeholder="Valor Total:" id="valorTotal" formControlName="valorTotal" step="0.01" required (change)="changeInputParcela()">
+            </div>
+          </div>
+          <div class="col-md-12 mb-3">
+            <div class="form-group">
+              <input type="number" class="form-control custom-input " placeholder="Quantidade de parcelas" id="parcela" formControlName="parcela" step="1" min="1"required (change)="changeInputParcela()">
+            </div>
+          </div>
+          <div class="col-md-12 mb-3" *ngIf="valorParcela > 1">
+            <div class="form-group">
+              <span class="spanValorParcela">Valor da parcela: <span style="color:#198754;">R$ {{valorParcela.toFixed(2)}}</span></span>
+            </div>
+          </div>
+          
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn save-btn" (click)="submitManualGasto()">Inserir Gasto</button>
+      <button class="btn cancel-btn" (click)="closeModal()">Cancelar</button>
+    </div>
+  </div>
+</div>

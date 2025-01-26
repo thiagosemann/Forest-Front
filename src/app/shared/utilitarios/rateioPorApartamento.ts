@@ -11,5 +11,7 @@ export interface RateioPorApartamento {
     apartamento_id: number;
     vagas:Vaga[];
     fracao_total:number;
+    data_pagamento?:string;
+    data_vencimento?:string;
 }
   

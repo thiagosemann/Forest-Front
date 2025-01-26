@@ -189,18 +189,18 @@ export class RateioComponent implements OnInit {
         totalCondo = valorComum + valorFundos + valorProvisoes + valorIndividual;
       }
        
-      let vagas_fracao ="0.0";
+      let vagas_fracao = 0.0; // Defina como número
       // Calcular a fração total das vagas
-      if(vagas && vagas.length>0){
+      if (vagas && vagas.length > 0) {
         vagas_fracao = vagas.reduce((sum: number, { fracao }: { fracao: any }) => sum + Number(fracao), 0);
-      }else{
-        if(fracao_vagas){
-          vagas_fracao = fracao_vagas
-
-        }else{
-          vagas_fracao = "0.0"
+      } else {
+        if (fracao_vagas) {
+          vagas_fracao = Number(fracao_vagas); // Assegure-se de que é convertido para número
+        } else {
+          vagas_fracao = 0.0;
         }
       }
+      console.log(vagas_fracao)
   
       let rateiosPorApartamentoId = await this.rateioPorApartamento.getRateioPorApartamentoByAptId(apartamento_id).toPromise();
       
