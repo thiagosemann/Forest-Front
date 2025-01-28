@@ -38,6 +38,7 @@ import { PrestacaoContasComponent } from './prestacao_de_contas/prestacao-contas
 import { NotaFiscalGastosComunsComponent } from './prestacao_de_contas/nota-fiscal-gastos-comuns/nota-fiscal-gastos-comuns.component';
 import { PdfPrestacaoComponent } from './prestacao_de_contas/pdf-prestacao/pdf-prestacao.component';
 import { CobrancaPrestacaoComponent } from './prestacao_de_contas/cobranca-prestacao/cobranca-prestacao.component';
+import { GeradorRateioComponent } from './gerar_rateio/gerador-rateio/gerador-rateio.component';
 
 @NgModule({
   declarations: [
@@ -66,7 +67,8 @@ import { CobrancaPrestacaoComponent } from './prestacao_de_contas/cobranca-prest
     PrestacaoContasComponent,
     NotaFiscalGastosComunsComponent,
     PdfPrestacaoComponent,
-    CobrancaPrestacaoComponent
+    CobrancaPrestacaoComponent,
+    GeradorRateioComponent
   ],
   imports: [
     BrowserModule,

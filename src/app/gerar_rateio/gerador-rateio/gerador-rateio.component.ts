@@ -3,17 +3,17 @@ import { ToastrService } from 'ngx-toastr';
 import { SelectionService } from 'src/app/shared/service/selectionService';
 
 @Component({
-  selector: 'app-prestacao-contas',
-  templateUrl: './prestacao-contas.component.html',
-  styleUrls: ['./prestacao-contas.component.css']
+  selector: 'app-gerador-rateio',
+  templateUrl: './gerador-rateio.component.html',
+  styleUrls: ['./gerador-rateio.component.css']
 })
-export class PrestacaoContasComponent implements OnInit {
+export class GeradorRateioComponent  implements OnInit {
   steps = [
-    { label: '1 - Saldos', open: false, completed: false },
-    { label: '2 - Fundos', open: false, completed: false },
-    { label: '3 - Comprovantes', open: false, completed: false },
-    { label: '4 - Cobrança', open: false, completed: false },
-    { label: '5 - PDF Prestação', open: false, completed: false },
+    { label: '1 - Gastos Comuns', open: false, completed: false },
+    { label: '2 - Gastos Individuais', open: false, completed: false },
+    { label: '3 - Fundos', open: false, completed: false },
+    { label: '4 - Provisões', open: false, completed: false },
+    { label: '5 - Rateio', open: false, completed: false },
   ];
   selectedBuildingId:number=0;
   selectedMonth:number=0;
@@ -25,12 +25,12 @@ export class PrestacaoContasComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.selectionService.selecao$.subscribe(selecao => {
-        this.selectedBuildingId = selecao.predioID;
-        this.selectedMonth = selecao.month;
-        this.selectedYear = selecao.year;
-      });
-    }
+  this.selectionService.selecao$.subscribe(selecao => {
+      this.selectedBuildingId = selecao.predioID;
+      this.selectedMonth = selecao.month;
+      this.selectedYear = selecao.year;
+    });
+  }
 
   toggleStep(index: number): void {
     if ( this.selectedBuildingId && this.selectedMonth && this.selectedYear) {
@@ -43,10 +43,9 @@ export class PrestacaoContasComponent implements OnInit {
     }
 
   }
-
+  
   markAsCompleted(index: number): void {
     this.steps[index].completed = true;
     this.steps[index].open = false;
   }
 }
-

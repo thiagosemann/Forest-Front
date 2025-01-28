@@ -24,6 +24,7 @@ import { CameraAppComponent } from './camera-app/camera-app.component';
 import { ExpenseTypeControllComponent } from './expense-type-controll/expense-type-controll.component';
 import { SaldoInvestimentoPredioComponent } from './saldo-investimento-predio/saldo-investimento-predio.component';
 import { PrestacaoContasComponent } from './prestacao_de_contas/prestacao-contas/prestacao-contas.component';
+import { GeradorRateioComponent } from './gerar_rateio/gerador-rateio/gerador-rateio.component';
 
 
 const routes: Routes = [
@@ -47,6 +48,7 @@ const routes: Routes = [
   { path: 'fundos', component: FundosComponent, canActivate: [AuthGuardService] },
   { path: 'saldos', component: SaldoInvestimentoPredioComponent, canActivate: [AuthGuardService] },
   { path: 'prestacao', component: PrestacaoContasComponent, canActivate: [AuthGuardService] },
+  { path: 'geradorRateio', component: GeradorRateioComponent, canActivate: [AuthGuardService] },
 
   { path: 'Airbnb', component: CalendarioAirbnbComponent},
 

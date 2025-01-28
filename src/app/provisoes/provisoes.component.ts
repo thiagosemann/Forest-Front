@@ -9,6 +9,7 @@ import { CommonExpense } from '../shared/utilitarios/commonExpense';
 import { ExpenseType } from '../shared/utilitarios/expenseType';
 import { ExpenseTypeService } from '../shared/service/Banco_de_Dados/tipoGasto_service';
 import { ToastrService } from 'ngx-toastr';
+import { SelectionService } from '../shared/service/selectionService';
 
 @Component({
   selector: 'app-provisoes',
@@ -17,7 +18,6 @@ import { ToastrService } from 'ngx-toastr';
 })
 export class ProvisoesComponent implements OnInit {
   rotaAtual: string = '';
-  myForm!: FormGroup; // Initialize myForm as a FormGroup
   manualProvisaoForm!: FormGroup;
   buildings: Building[] = [];
   loading: boolean = true;
@@ -25,39 +25,43 @@ export class ProvisoesComponent implements OnInit {
   provisoesUtilizadas: CommonExpense[] = [];
   expenseTypes: ExpenseType[] = [];
   isManualInsertVisible: boolean = false; // Controla a exibição do formulário de inserção manual
-
+  selectedBuildingId:number=0;
+  showModal:boolean= false;
   constructor(
     private formBuilder: FormBuilder,
     private buildingService: BuildingService,
     private commonExepenseService: CommonExpenseService,
     private provisaoService: ProvisaoService, // Injeta o novo service
     private expenseTypeService: ExpenseTypeService,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private selectionService: SelectionService
+
   ) {}
 
   ngOnInit(): void {
     this.getAllBuildings();
     this.getAllExpenses();
-    const currentDate = new Date();
-    const currentMonth = currentDate.getMonth() + 1; // Os meses são indexados de 0 a 11, então somamos 1 para obter o mês atual
-    const currentYear = currentDate.getFullYear().toString(); // Obter o ano atual como uma string
-    this.myForm = this.formBuilder.group({
-      building_id: [0, Validators.required], // Defina o prédio com id=1 como selecionado por padrão
-      months: [currentMonth, Validators.required], // Defina o mês atual como selecionado por padrão
-      years: [currentYear, Validators.required] // Defina o ano atual como selecionado por padrão
-      // Adicione outros controles de formulário conforme necessário
-    });
+
     this.manualProvisaoForm = this.formBuilder.group({
       predio_id: ['0', Validators.required],
       detalhe: ['', Validators.required],
       valor: [null, Validators.required],
       frequencia: ['', Validators.required],
     });
+    this.selectionService.selecao$.subscribe(selecao => {
+      this.selectedBuildingId = selecao.predioID;
+      this.getProvisoes();
+    });
   }
 
-  getAllProvisoes(): void {
-    let buildingId = this.myForm.get('building_id')?.value;
-    this.provisaoService.getProvisoesByBuildingId(buildingId).subscribe(
+  getProvisoes(): void {
+    this.getAllProvisoesByBuildingId();
+    this.getAllProvisoesUtilizadasByBuildingId();
+    this.loading = false;
+  }
+
+  getAllProvisoesByBuildingId(): void {
+    this.provisaoService.getProvisoesByBuildingId(this.selectedBuildingId).subscribe(
       (provisoes: Provisao[]) => {
         this.provisoes = provisoes;
       },
@@ -67,14 +71,16 @@ export class ProvisoesComponent implements OnInit {
     );
   }
 
-  getAllProvisoesUtilizadas(): void {
-    let buildingId = this.myForm.get('building_id')?.value;
-    this.commonExepenseService.getProvisoesByBuilding(buildingId).subscribe(
+  getAllProvisoesUtilizadasByBuildingId(): void {
+    this.provisoesUtilizadas = [];
+    this.commonExepenseService.getProvisoesByBuilding(this.selectedBuildingId).subscribe(
       (expenses: CommonExpense[]) => {
         this.provisoesUtilizadas = expenses;
+        console.log(this.provisoesUtilizadas)
       },
       (error) => {
         console.error('Error fetching expenses:', error);
+
       }
     );
   }
@@ -99,12 +105,6 @@ export class ProvisoesComponent implements OnInit {
         console.error('Error fetching expense types:', error);
       }
     );
-  }
-
-  loadFundos(): void {
-    this.getAllProvisoesUtilizadas();
-    this.getAllProvisoes();
-    this.loading = false;
   }
 
 
@@ -144,10 +144,6 @@ export class ProvisoesComponent implements OnInit {
     }
   }
 
-  // Exibir formulário de inserção manual
-  showManualInsertForm(): void {
-    this.isManualInsertVisible = true;
-  }
   // Submeter a nova provisão
   submitManualProvisao(): void {
     if (this.manualProvisaoForm.invalid) {
@@ -162,7 +158,7 @@ export class ProvisoesComponent implements OnInit {
         this.toastr.success('Provisão inserida com sucesso.');
         this.manualProvisaoForm.reset(); // Limpar o formulário
         this.isManualInsertVisible = false; // Ocultar o formulário após o envio
-        this.getAllProvisoes(); // Atualizar a lista de provisões
+        this.getAllProvisoesByBuildingId(); // Atualizar a lista de provisões
       },
       (error) => {
         console.error('Erro ao inserir provisão:', error);
@@ -192,4 +188,11 @@ export class ProvisoesComponent implements OnInit {
     }
   }
     
+  // Exibir formulário de inserção manual
+  openModal(): void {
+    this.showModal = true;
+  }
+  closeModal(): void {
+    this.showModal = false;
+  }
 }

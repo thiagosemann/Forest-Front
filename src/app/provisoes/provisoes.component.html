@@ -5,24 +5,12 @@
         <h3>Gerencia de Provisões</h3>
       </div>
       <div class="col-md-3">
-        <button class="btn btn-primary" style="margin-left: -25px;" (click)="showManualInsertForm()">
+        <button class="btn btn-primary" style="margin-left: -25px;" (click)="openModal()">
           <i class="fas fa-add"></i> Cadastrar
         </button>
       </div>
     </div>
-
-    <form [formGroup]="myForm"> <!-- Wrap your form controls within a formGroup directive -->
-      <div class="row">
-        <div class="col-md-4">
-          <select id="building_id" name="building_id" class="form-control custom-select" formControlName="building_id" required (change)="loadFundos()">
-            <option value="0" disabled selected>Selecione o prédio</option>
-            <option *ngFor="let building of buildings" [value]="building.id">{{ building.nome }}</option>
-          </select>
-        </div>
-      </div>
-      <!-- Add other form controls within the formGroup -->
-    </form>
-    <div *ngIf="!loading">
+   <div *ngIf="!loading">
       <div class="row" style="margin-top: 15px;">
         <div class="col-md-6">
             <span class="tableTitle">Provisões cadastradas</span>
@@ -80,51 +68,56 @@
         </div>
       </div>
     </div>
-
   </div>
-
-
-<!-- Formulário de Inserção Manual -->
-<div *ngIf="isManualInsertVisible" style="margin-top: 30px;">
-  <div class="mb-3">
-    <h4>Inserir Provisão Manual</h4>
-    <form [formGroup]="manualProvisaoForm" (ngSubmit)="submitManualProvisao()">
-      <div class="row">
-        <div class="col-md-6 mb-3">
-          <div class="form-group">
-            <select id="predioID" name="predioID" class="form-control custom-select" formControlName="predio_id" required>
-              <option value="0" disabled selected>Selecione o prédio</option>
-              <option *ngFor="let building of buildings" [value]="building.id">{{ building.nome }}</option>
-            </select>
+<div class="modal" *ngIf="showModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Adicionar Provisão</h3>
+      <button class="close-btn" (click)="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="mb-3">
+        <h4>Inserir Provisão Manual</h4>
+        <form [formGroup]="manualProvisaoForm">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <div class="form-group">
+                <select id="predioID" name="predioID" class="form-control custom-select" formControlName="predio_id" required>
+                  <option value="0" disabled selected>Selecione o prédio</option>
+                  <option *ngFor="let building of buildings" [value]="building.id">{{ building.nome }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <div class="form-group">
+                <input type="text" class="form-control custom-input" placeholder="Detalhe da Provisão" id="detalhe" formControlName="detalhe" required>
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <div class="form-group">
+                <input type="number" class="form-control custom-input" placeholder="Valor" id="valor" formControlName="valor" required>
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <div class="form-group">
+                <select id="frequencia" name="frequencia" class="form-control custom-select" formControlName="frequencia" required>
+                  <option value="" disabled selected>Selecione a frequência</option>
+                  <option value="1">Mensal</option>
+                  <option value="2">Bimensal</option>
+                  <option value="3">Trimestral</option>
+                  <option value="6">Semestral</option>
+                  <option value="12">Anual</option>
+                </select>
+              </div>
+            </div>
           </div>
-        </div>
-        <div class="col-md-6 mb-3">
-          <div class="form-group">
-            <input type="text" class="form-control custom-input" placeholder="Detalhe da Provisão" id="detalhe" formControlName="detalhe" required>
-          </div>
-        </div>
-        <div class="col-md-6 mb-3">
-          <div class="form-group">
-            <input type="number" class="form-control custom-input" placeholder="Valor" id="valor" formControlName="valor" required>
-          </div>
-        </div>
-        <div class="col-md-6 mb-3">
-          <div class="form-group">
-            <select id="frequencia" name="frequencia" class="form-control custom-select" formControlName="frequencia" required>
-              <option value="" disabled selected>Selecione a frequência</option>
-              <option value="1">Mensal</option>
-              <option value="2">Bimensal</option>
-              <option value="3">Trimestral</option>
-              <option value="6">Semestral</option>
-              <option value="12">Anual</option>
-            </select>
-          </div>
-        </div>
+        </form>
       </div>
-      <button type="button" class="btn btn-secondary ml-2" (click)="voltar()" >Voltar</button>
-      <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Inserir Provisão</button>      
-    </form>
-  </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn save-btn" (click)="submitManualProvisao()">Salvar</button>
+        <button class="btn cancel-btn" (click)="closeModal()">Cancelar</button>
+    </div>
+    </div>
 </div>
-   
 </div>

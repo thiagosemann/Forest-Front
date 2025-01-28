@@ -88,7 +88,7 @@ export class NavBarComponent implements OnInit {
   }
 
   showSelects(): boolean {
-    const hiddenRoutes = ["/provisao", "/users", "/vagas", "/predios", "/apartamentos"];
+    const hiddenRoutes = ["/users", "/vagas", "/predios", "/apartamentos"];
     return !hiddenRoutes.includes(this.currentRoute);
   }
   
@@ -103,8 +103,8 @@ export class NavBarComponent implements OnInit {
   gastosIndividuais(): void {
     this.router.navigate(['/gastosIndividuais']);
   }
-  content(): void {
-    this.router.navigate(['/content']);
+  geradorRateio(): void {
+    this.router.navigate(['/geradorRateio']);
   }
   profile(): void {
     this.router.navigate(['/profile']);

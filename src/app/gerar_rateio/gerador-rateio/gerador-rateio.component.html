@@ -1,0 +1,25 @@
+<div class="container">
+    <h2>Rateio</h2>
+    <ul>
+      <li *ngFor="let step of steps; let i = index" class="step-item">
+        <div class="step-line" (click)="toggleStep(i)">
+          <div class="step-label">
+            <span class="step-arrow" [class.open]="step.open">▶</span>
+            <span class="step-title">{{ step.label }}</span>
+            <span *ngIf="step.completed" class="completed">✔️</span>
+          </div>
+        </div>
+        <div *ngIf="step.open" class="step-content mt-4">
+          <ng-container *ngIf="!step.completed">
+            <div *ngIf="i === 0"><app-buildings-review></app-buildings-review></div>
+            <div *ngIf="i === 1"><app-gastos-individuais></app-gastos-individuais></div>
+            <div *ngIf="i === 2"><app-fundos></app-fundos></div>
+            <div *ngIf="i === 3"><app-provisoes></app-provisoes></div>
+            <div *ngIf="i === 4"><app-rateio></app-rateio></div>
+
+          </ng-container>
+        </div>
+      </li>
+    </ul>
+  </div>
+  
