@@ -214,7 +214,7 @@ export class RateioComponent implements OnInit {
       if (!expenses || !individualExpenses || !provisoes || ! fundos ) return null;
   
       // Filtrar apenas as despesas do tipo 'Rateio'
-      const collectiveExpenses = expenses.filter((expense) => expense.tipo === 'Rateio');
+      const collectiveExpenses = expenses;
   
       // Encontrar o gasto individual relevante
       const gastoIndividual = individualExpenses.find((gasto) => {
