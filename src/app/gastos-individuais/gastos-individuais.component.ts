@@ -133,7 +133,7 @@ export class GastosIndividuaisComponent implements OnInit {
     this.getAguaGastoComun()
     this.loading = true;
     if (this.selectedBuildingId && this.selectedMonth && this.selectedYear) {
-      this.gastosIndividuaisService.getIndividualExpensesByAptMonthAndYear(this.selectedBuildingId, this.selectedMonth, this.selectedYear).subscribe(
+      this.gastosIndividuaisService.getIndividualExpensesByPredioMonthAndYear(this.selectedBuildingId, this.selectedMonth, this.selectedYear).subscribe(
         (gastosIndividuais: GastoIndividual[]) => {
           this.gastosIndividuais = gastosIndividuais;
           this.gastosIndividuais.forEach(gasto=>{

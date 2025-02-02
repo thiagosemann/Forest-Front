@@ -136,7 +136,7 @@ export class PdfPrestacaoComponent implements OnInit {
         this.provisaoService.getProvisoesByBuildingId(this.selectedBuildingId).toPromise(),
         this.fundoService.getFundosByBuildingId(this.selectedBuildingId).toPromise(),
         this.saldoPorPredioService.getSaldosByBuildingId(this.selectedBuildingId).toPromise(),
-        this.gastosIndividuaisService.getIndividualExpensesByAptMonthAndYear(this.selectedBuildingId, this.selectedMonth, this.selectedYear).toPromise(),
+        this.gastosIndividuaisService.getIndividualExpensesByPredioMonthAndYear(this.selectedBuildingId, this.selectedMonth, this.selectedYear).toPromise(),
       ]);
   
       return { expenses, provisoes, fundos, saldos, gastosIndividuais };

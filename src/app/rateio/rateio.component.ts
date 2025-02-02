@@ -206,27 +206,37 @@ export class RateioComponent implements OnInit {
       
       // Obter despesas individuais de forma simples
       let individualExpenses = await this.gastosIndividuaisService.getGastosIndividuaisByApartment(apartamento_id).toPromise();
-      if(individualExpenses){
-        individualExpenses.sort((a, b) => new Date(a.data_gasto).getTime() - new Date(b.data_gasto).getTime());
-      }
-
-  
-      if (!expenses || !individualExpenses || !provisoes || ! fundos ) return null;
-  
+     
+      if (!expenses || !provisoes || ! fundos ) return null;
+    
       // Filtrar apenas as despesas do tipo 'Rateio'
       const collectiveExpenses = expenses;
   
-      // Encontrar o gasto individual relevante
-      const gastoIndividual = individualExpenses.find((gasto) => {
-        const dataGasto = new Date(gasto.data_gasto);
-        return (
-          dataGasto.getMonth() + 1 === Number(this.selectedMonth) &&
-          dataGasto.getFullYear() === Number(this.selectedYear)
-        );
-      });
-  
-      if (!gastoIndividual) return null;
 
+      let gastoIndividual :any ={}
+      if(individualExpenses && individualExpenses.length>0){
+        if(individualExpenses){
+          individualExpenses.sort((a, b) => new Date(a.data_gasto).getTime() - new Date(b.data_gasto).getTime());
+        }
+          // Encontrar o gasto individual relevante
+        gastoIndividual = individualExpenses.find((gasto) => {
+          const dataGasto = new Date(gasto.data_gasto);
+          return (
+            dataGasto.getMonth() + 1 === Number(this.selectedMonth) &&
+            dataGasto.getFullYear() === Number(this.selectedYear)
+          );
+        });
+    
+        if (!gastoIndividual) return null;
+  
+      }else{
+        gastoIndividual.aguaValor = 0;
+        gastoIndividual.gasValor = 0;
+        gastoIndividual.lavanderia = 0;
+        gastoIndividual.lazer = 0;
+        gastoIndividual.multa = 0;
+      }
+    
       // Estruturar os dados para o PDF
       const rateioData = {
         month: this.selectedMonth,
@@ -397,8 +407,11 @@ export class RateioComponent implements OnInit {
   }
 
   returnValorTotal(rateio:RateioPorApartamento): string {
-    if(rateio && rateio.valorComum && rateio.valorFundos && rateio.valorProvisoes && rateio.valorIndividual){
-      return this.formatCurrency(rateio.valorComum + rateio.valorFundos + rateio.valorProvisoes + rateio.valorIndividual )
+    if(rateio && rateio.valorComum){
+      let valorFundos =  rateio.valorFundos|| 0;
+      let valorProvisoes =  rateio.valorProvisoes|| 0;
+      let valorIndividual =  rateio.valorIndividual|| 0;
+      return this.formatCurrency(rateio.valorComum + valorFundos + valorProvisoes + valorIndividual )
     }
     return "R$ 0,00"
   }

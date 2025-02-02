@@ -45,10 +45,15 @@ export class GastosIndividuaisService {
     return this.http.get<GastoIndividual[]>(url, { headers: this.getHeaders() });
   }
 
-  getIndividualExpensesByAptMonthAndYear(predio_id: number, month: number, year: number): Observable<GastoIndividual[]> {
+  getIndividualExpensesByPredioMonthAndYear(predio_id: number, month: number, year: number): Observable<GastoIndividual[]> {
     const url = `${this.apiUrl}/predios/${predio_id}/month/${month}/year/${year}`;
     return this.http.get<GastoIndividual[]>(url, { headers: this.getHeaders() });
   }
+  getIndividualExpensesByAptIDMonthAndYear(predio_id: number, month: number, year: number): Observable<GastoIndividual> {
+    const url = `${this.apiUrl}/apartmentByMonth/${predio_id}/month/${month}/year/${year}`;
+    return this.http.get<GastoIndividual>(url, { headers: this.getHeaders() });
+  }
+
 
   // Método para exclusão em lote de gastos individuais
   deleteIndividualExpensesInBatch(ids: number[]): Observable<void> {
