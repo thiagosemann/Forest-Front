@@ -57,17 +57,17 @@
         <div>
           <div class="input-group">
             <span class="input-group-text">R$</span>
-            <input type="number" [(ngModel)]="investimentoAtualizado" class="form-control" [disabled]="!investimentoAtualizadoisEditing" placeholder="0,00"/>
-            <ng-container *ngIf="!investimentoAtualizadoisEditing"><button class="btn add-btn-small" (click)="editInvestimentoAtualizado()">Editar</button></ng-container>
-            <ng-container *ngIf="investimentoAtualizadoisEditing"><button class="btn add-btn-small" (click)="addBuildingBalance('investimento')">Salvar</button></ng-container>
+            <input type="number" [(ngModel)]="investimento1Atualizado" class="form-control" [disabled]="!investimento1AtualizadoisEditing" placeholder="0,00"/>
+            <ng-container *ngIf="!investimento1AtualizadoisEditing"><button class="btn add-btn-small" (click)="editInvestimento1Atualizado()">Editar</button></ng-container>
+            <ng-container *ngIf="investimento1AtualizadoisEditing"><button class="btn add-btn-small" (click)="addBuildingBalance('investimento1')">Salvar</button></ng-container>
           </div>
         </div>
         <ng-container *ngIf="saldoPredios.length>0">
-          <span class="step-arrow" [class.open]="showHistoryInvestimento" (click)="toggleHistoryInvestimento()">
+          <span class="step-arrow" [class.open]="showHistoryInvestimento1" (click)="toggleHistoryInvestimento1()">
             ▶ 
           </span>
           <span class="step-title">Histórico de investimentos 1</span> 
-          <ng-container *ngIf="showHistoryInvestimento">
+          <ng-container *ngIf="showHistoryInvestimento1">
             <table class="table ">
               <thead>
                 <tr>
@@ -78,7 +78,7 @@
               </thead>
               <tbody>
                 <ng-container *ngFor="let balance of saldoPredios">
-                  <tr *ngIf="balance.type == 'investimento'">
+                  <tr *ngIf="balance.type == 'investimento1'">
                     <td>{{ formatReal(balance.valor) }}</td>
                     <td>{{ balance.data }}</td>
                     <td>
@@ -105,17 +105,17 @@
         <div>
           <div class="input-group">
             <span class="input-group-text">R$</span>
-            <input type="number" [(ngModel)]="investimentoAtualizado" class="form-control" [disabled]="!investimentoAtualizadoisEditing" placeholder="0,00"/>
-            <ng-container *ngIf="!investimentoAtualizadoisEditing"><button class="btn add-btn-small" (click)="editInvestimentoAtualizado()">Editar</button></ng-container>
-            <ng-container *ngIf="investimentoAtualizadoisEditing"><button class="btn add-btn-small" (click)="addBuildingBalance('investimento')">Salvar</button></ng-container>
+            <input type="number" [(ngModel)]="investimento2Atualizado" class="form-control" [disabled]="!investimento2AtualizadoisEditing" placeholder="0,00"/>
+            <ng-container *ngIf="!investimento2AtualizadoisEditing"><button class="btn add-btn-small" (click)="editInvestimento2Atualizado()">Editar</button></ng-container>
+            <ng-container *ngIf="investimento2AtualizadoisEditing"><button class="btn add-btn-small" (click)="addBuildingBalance('investimento2')">Salvar</button></ng-container>
           </div>
         </div>
         <ng-container *ngIf="saldoPredios.length>0">
-          <span class="step-arrow" [class.open]="showHistoryInvestimento" (click)="toggleHistoryInvestimento()">
+          <span class="step-arrow" [class.open]="showHistoryInvestimento2" (click)="toggleHistoryInvestimento2()">
             ▶ 
           </span>
           <span class="step-title">Histórico de investimentos 2</span> 
-          <ng-container *ngIf="showHistoryInvestimento">
+          <ng-container *ngIf="showHistoryInvestimento2">
             <table class="table ">
               <thead>
                 <tr>
@@ -126,7 +126,7 @@
               </thead>
               <tbody>
                 <ng-container *ngFor="let balance of saldoPredios">
-                  <tr *ngIf="balance.type == 'investimento'">
+                  <tr *ngIf="balance.type == 'investimento2'">
                     <td>{{ formatReal(balance.valor) }}</td>
                     <td>{{ balance.data }}</td>
                     <td>

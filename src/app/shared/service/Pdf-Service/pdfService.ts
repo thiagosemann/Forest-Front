@@ -110,6 +110,13 @@ async pdfCompleto(data: any): Promise<Blob>{
   pdf.addPage();
   this.addHeaderPage2(pdf, logoPath, logoWidth, logoHeight, data);
 
+  pdf.setFont('Helvetica', 'bold');
+  pdf.setFontSize(10);
+  pdf.text(`A Forest está com um sistema novo, por isso nos próximos meses não serão incluídos os gráficos.`, 105, 45, { align: 'center' });
+  pdf.text(`Estamos empenhados em melhorar o processo de prestação de contas e rateio. `, 105, 55, { align: 'center' });
+  pdf.text(`Agradecemos a compreensão e colaboração de todos`, 105, 65, { align: 'center' });
+
+  /*
 
 
   // Substituir a geração sequencial por Promise.all
@@ -139,6 +146,7 @@ async pdfCompleto(data: any): Promise<Blob>{
 
 
   // Retorna o PDF como Blob
+  */
   const pdfBlob = pdf.output('blob');
   return pdfBlob;
 }
@@ -158,11 +166,11 @@ private addHeaderPage2(pdf: any, logoPath: string, logoWidth: number, logoHeight
   pdf.addImage(logoPath, 'PNG', 82.5, -5, logoWidth, logoHeight);
   pdf.setFontSize(20);
   pdf.setFont('Helvetica', 'bold');
-  pdf.setFontSize(14);
-  pdf.text(`Demonstrativo dos seus gastos individuais para o mês  ${data.month}`, 105, 35, { align: 'center' });
-  pdf.setDrawColor(0, 128, 0);
-  pdf.setLineWidth(0.5);
-  pdf.line(105, 50, 105, 290);
+ // pdf.setFontSize(14);
+ // pdf.text(`Demonstrativo dos seus gastos individuais para o mês  ${data.month}`, 105, 35, { align: 'center' });
+  //pdf.setDrawColor(0, 128, 0);
+ // pdf.setLineWidth(0.5);
+  //pdf.line(105, 50, 105, 290);
 }
 
 private addSummarySection(pdf: any, startX: number, data: any,fontSize:number): number {

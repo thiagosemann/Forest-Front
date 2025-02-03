@@ -23,10 +23,13 @@ export class SaldoInvestimentoPredioComponent {
   selectedBuildingId:number=0;
   saldoAtualizado:number=0;
   saldoAtualizadoisEditing:boolean=false;
-  investimentoAtualizado:number=0;
-  investimentoAtualizadoisEditing:boolean=false;
+  investimento1Atualizado:number=0;
+  investimento1AtualizadoisEditing:boolean=false;
+  investimento2Atualizado:number=0;
+  investimento2AtualizadoisEditing:boolean=false;
   showHistoryConta:boolean=false;
-  showHistoryInvestimento:boolean=false;
+  showHistoryInvestimento1:boolean=false;
+  showHistoryInvestimento2:boolean=false;
 
   constructor(
     private saldoPorPredioService: SaldoPorPredioService,
@@ -59,10 +62,15 @@ export class SaldoInvestimentoPredioComponent {
       this.saldoPorPredioService.getSaldosByBuildingId(this.selectedBuildingId).subscribe(
         (data) => {
           // Inverta o array
+          console.log(data)
           this.saldoPredios = data.reverse();
-          let ultimoInvestimento = this.saldoPredios.find(item => item.type === 'investimento');
-          if(ultimoInvestimento){
-            this.investimentoAtualizado = Number(ultimoInvestimento.valor) 
+          let ultimoInvestimento1 = this.saldoPredios.find(item => item.type === 'investimento1');
+          if(ultimoInvestimento1){
+            this.investimento1Atualizado = Number(ultimoInvestimento1.valor) 
+          }
+          let ultimoInvestimento2 = this.saldoPredios.find(item => item.type === 'investimento2');
+          if(ultimoInvestimento2){
+            this.investimento2Atualizado = Number(ultimoInvestimento2.valor) 
           }
           let ultimaConta = this.saldoPredios.find(item => item.type === 'conta');
           if(ultimaConta){
@@ -81,18 +89,24 @@ export class SaldoInvestimentoPredioComponent {
   editSaldoAtualizado():void{
     this.saldoAtualizadoisEditing = !this.saldoAtualizadoisEditing;
   }
-  editInvestimentoAtualizado():void{
-    this.investimentoAtualizadoisEditing = !this.investimentoAtualizadoisEditing;
+  editInvestimento1Atualizado():void{
+    this.investimento1AtualizadoisEditing = !this.investimento1AtualizadoisEditing;
+  }
+  editInvestimento2Atualizado():void{
+    this.investimento2AtualizadoisEditing = !this.investimento2AtualizadoisEditing;
   }
 
-  toggleHistoryInvestimento():void{
-    this.showHistoryInvestimento = !this.showHistoryInvestimento;
+  toggleHistoryInvestimento1():void{
+    this.showHistoryInvestimento1 = !this.showHistoryInvestimento1;
+  }
+  toggleHistoryInvestimento2():void{
+    this.showHistoryInvestimento2 = !this.showHistoryInvestimento2;
   }
   toggleHistoryConta():void{
     this.showHistoryConta = !this.showHistoryConta;
   }
 
-  addBuildingBalance(type: 'conta' | 'investimento'): void {
+  addBuildingBalance(type: string): void {
     // Define a flag de edição com base no tipo
     // Verifica se o prédio foi selecionado
     if (!this.selectedBuildingId) {
@@ -115,16 +129,25 @@ export class SaldoInvestimentoPredioComponent {
     }
     
     // Lógica para lidar com o tipo 'investimento'
-    if (type === 'investimento') {
-      this.investimentoAtualizadoisEditing = !this.investimentoAtualizadoisEditing;
-      contaValor = this.investimentoAtualizado;
+    if (type === 'investimento1') {
+      this.investimento1AtualizadoisEditing = !this.investimento1AtualizadoisEditing;
+      contaValor = this.investimento1Atualizado;
       // Encontrar o último valor com o tipo 'investimento'
-      let ultimaConta = this.saldoPredios.find(item => item.type === 'investimento');
+      let ultimaConta = this.saldoPredios.find(item => item.type === 'investimento1');
       if (ultimaConta && Number(ultimaConta.valor) == contaValor) {
         return
       }
     }
-  
+    // Lógica para lidar com o tipo 'investimento'
+    if (type === 'investimento2') {
+      this.investimento2AtualizadoisEditing = !this.investimento2AtualizadoisEditing;
+      contaValor = this.investimento2Atualizado;
+      // Encontrar o último valor com o tipo 'investimento'
+      let ultimaConta = this.saldoPredios.find(item => item.type === 'investimento2');
+      if (ultimaConta && Number(ultimaConta.valor) == contaValor) {
+        return
+      }
+    }
 
     
     // Criação da data formatada
