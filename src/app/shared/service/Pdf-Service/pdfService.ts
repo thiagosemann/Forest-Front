@@ -10,84 +10,137 @@ export class PdfService {
   // Configuração global para qualidade de imagens
 CHART_SCALE = 1; // Reduz escala dos gráficos
 
-  constructor() {
-    Chart.register(...registerables); // Registrar componentes do Chart.js
-  }
+constructor() {
+  Chart.register(...registerables); // Registrar componentes do Chart.js
+}
 
 async generateCondoStatement(data: any): Promise<Blob> {
-    console.log(data)
-    const pdf = new jsPDF({
-      unit: 'mm',
-      format: 'a4',
-      compress: true // Ativar compressão interna
-     });
-    const startX = 5;
-    const logoPath = '../../../assets/images/logo-com-frase-V2.png';
-    const logoWidth = 45;
-    const logoHeight = 40;
-    const canvasWidth = 90 * 1.1;
-    const canvasHeight = 70 * 1.1;
-
-    // Adiciona cabeçalho com logo e informações
-    this.addHeader(pdf, logoPath, logoWidth, logoHeight, data);
-
-    // Adiciona Resumo
-    let currentY = this.addSummarySection(pdf, startX, data);
-
-    // Adiciona Despesas Individuais
-    currentY = this.addIndividualExpensesSection(pdf, startX, currentY, data);
-
-    // Adiciona Despesas Coletivas
-    let totalValue=0;
-
-    [currentY,totalValue] = this.addCollectiveExpensesSection(pdf, startX, currentY, data);
-
-    // Reinicia o Y
-    currentY = 45;
-    // Adiciona Provisões.
-    currentY = this.addProvisionsSection(pdf, 110, currentY, data);
-    // Adiciona Fundos .
-    currentY = this.addFundosSection(pdf, 110, currentY, data,totalValue);
-    // Adiciona Saldos .
-    currentY = this.addSaldosSection(pdf, 110, currentY, data,totalValue);
-  
+  let pdfBlob:any;
+  if (data.summary.individualExpenses > 0){
+     pdfBlob = this.pdfCompleto(data);
+  }else{
+    pdfBlob = this.pdfResumido1(data);
     
+  }
 
-    // Adiciona nova página para os gráficos
-    pdf.addPage();
-    this.addHeaderPage2(pdf, logoPath, logoWidth, logoHeight, data);
+  return pdfBlob;
+}
+async pdfResumido1(data: any): Promise<Blob>{
+  console.log(data)
+  const pdf = new jsPDF({
+    unit: 'mm',
+    format: 'a4',
+    compress: true // Ativar compressão interna
+   });
+  const startX = 5;
+  const logoPath = '../../../assets/images/logo-com-frase-V2.png';
+  const logoWidth = 45;
+  const logoHeight = 40;
+
+  // Adiciona cabeçalho com logo e informações
+  this.addHeader(pdf, logoPath, logoWidth, logoHeight, data);
+
+  // Adiciona Resumo
+  let currentY = this.addSummarySection(pdf, startX, data,14);
+  let scale2 = [100, 100];
+  currentY = this.addResumoMes(pdf, startX, currentY, data,scale2,20);
+  // Adiciona Despesas Coletivas
+  let totalValue = 0;
+  let scale = [70, 25, 35, 35,35];
+  [currentY,totalValue] = this.addCollectiveExpensesSection(pdf, startX, currentY, data,scale,20);
+  
+  let scale1 = [66, 66, 67];
+  // Adiciona Fundos .
+  currentY = this.addFundosSection(pdf, startX, currentY, data,totalValue,scale1,20);
+  // Retorna o PDF como Blob
+
+  const pdfBlob = pdf.output('blob');
+  return pdfBlob;
+}
+
+
+async pdfCompleto(data: any): Promise<Blob>{
+  console.log(data)
+  const pdf = new jsPDF({
+    unit: 'mm',
+    format: 'a4',
+    compress: true // Ativar compressão interna
+   });
+  const startX = 5;
+  const logoPath = '../../../assets/images/logo-com-frase-V2.png';
+  const logoWidth = 45;
+  const logoHeight = 40;
+  const canvasWidth = 90 * 1.1;
+  const canvasHeight = 70 * 1.1;
+
+  // Adiciona cabeçalho com logo e informações
+  this.addHeader(pdf, logoPath, logoWidth, logoHeight, data);
+
+  // Adiciona a linha verde
+  pdf.setDrawColor(0, 128, 0);
+  pdf.setLineWidth(0.5);
+  pdf.line(105, 45, 105, 290);
+
+  // Adiciona Resumo
+  let currentY = this.addSummarySection(pdf, startX, data,10);
+  let scale2 = [45, 45];
+  currentY = this.addResumoMes(pdf, startX, currentY, data,scale2,14);
+  // Adiciona Despesas Individuais
+  currentY = this.addIndividualExpensesSection(pdf, startX, currentY, data);
+
+  // Adiciona Despesas Coletivas
+  let totalValue=0;
+  let scale = [30, 15, 15, 15,15];
+  [currentY,totalValue] = this.addCollectiveExpensesSection(pdf, startX, currentY, data,scale,14);
+
+  // Reinicia o Y
+  currentY = 45;
+  // Adiciona Provisões.
+  currentY = this.addProvisionsSection(pdf, 110, currentY, data);
+
+  // Adiciona Fundos .
+  let scale1 = [66, 66, 67];
+  currentY = this.addFundosSection(pdf, 110, currentY, data,totalValue,scale1,14);
+  // Adiciona Saldos .
+  currentY = this.addSaldosSection(pdf, 110, currentY, data,totalValue);
 
   
 
-    // Substituir a geração sequencial por Promise.all
-    const [chart1, chart2, chart3, chart4] = await Promise.all([
-      this.generateDonutChart(data.individualExpenses),
-      this.generateChartAguaGas(data.individualExpensesHistory, 'Água (m³)'),
-      this.generateChartAguaGas(data.individualExpensesHistory, 'Gás (m³)'),
-      this.generateCondominioHistoryChart(data.rateiosPorApartamentoId)
-    ]);
-    // Adiciona os gráficos na nova página
-    pdf.setFontSize(12);
-    
-    // Gráfico de Despesas Individuais (Donut)
-    pdf.text('Despesas Individuais', 5, 50);
-    pdf.addImage(chart1, 'JPEG', 5, 55, canvasWidth, canvasHeight, undefined, 'FAST');
-
-    // Gráfico Histórico de Condomínios (abaixo do Donut)
-    pdf.text('Histórico de Condomínio por Mês', 5, 140);
-    pdf.addImage(chart4, 'JPEG', 5, 145, canvasWidth, canvasHeight, undefined, 'FAST');
-
-    // Gráficos de Água e Gás (direita)
-    pdf.text('Consumo de água (m3)', 110, 50);
-    pdf.addImage(chart2, 'JPEG', 105, 55, canvasWidth, canvasHeight, undefined, 'FAST');
-
-    pdf.text('Consumo de gás (m3)', 110, 140);
-    pdf.addImage(chart3, 'JPEG', 105, 145, canvasWidth, canvasHeight, undefined, 'FAST');
+  // Adiciona nova página para os gráficos
+  pdf.addPage();
+  this.addHeaderPage2(pdf, logoPath, logoWidth, logoHeight, data);
 
 
-    // Retorna o PDF como Blob
-    const pdfBlob = pdf.output('blob');
-    return pdfBlob;
+
+  // Substituir a geração sequencial por Promise.all
+  const [chart1, chart2, chart3, chart4] = await Promise.all([
+    this.generateDonutChart(data.individualExpenses),
+    this.generateChartAguaGas(data.individualExpensesHistory, 'Água (m³)'),
+    this.generateChartAguaGas(data.individualExpensesHistory, 'Gás (m³)'),
+    this.generateCondominioHistoryChart(data.rateiosPorApartamentoId)
+  ]);
+  // Adiciona os gráficos na nova página
+  pdf.setFontSize(12);
+  
+  // Gráfico de Despesas Individuais (Donut)
+  pdf.text('Despesas Individuais', 5, 50);
+  pdf.addImage(chart1, 'JPEG', 5, 55, canvasWidth, canvasHeight, undefined, 'FAST');
+
+  // Gráfico Histórico de Condomínios (abaixo do Donut)
+  pdf.text('Histórico de Condomínio por Mês', 5, 140);
+  pdf.addImage(chart4, 'JPEG', 5, 145, canvasWidth, canvasHeight, undefined, 'FAST');
+
+  // Gráficos de Água e Gás (direita)
+  pdf.text('Consumo de água (m3)', 110, 50);
+  pdf.addImage(chart2, 'JPEG', 105, 55, canvasWidth, canvasHeight, undefined, 'FAST');
+
+  pdf.text('Consumo de gás (m3)', 110, 140);
+  pdf.addImage(chart3, 'JPEG', 105, 145, canvasWidth, canvasHeight, undefined, 'FAST');
+
+
+  // Retorna o PDF como Blob
+  const pdfBlob = pdf.output('blob');
+  return pdfBlob;
 }
 
 
@@ -97,10 +150,8 @@ private addHeader(pdf: any, logoPath: string, logoWidth: number, logoHeight: num
     pdf.setFont('Helvetica', 'bold');
     pdf.setFontSize(14);
     pdf.text(`Nome do Prédio`, 105, 30, { align: 'center' });
-    pdf.text(`Mês: ${data.month} | Apt: ${data.apartment} | Total: R$ ${data.condoTotal.toFixed(2)}`, 105, 35, { align: 'center' });
-    pdf.setDrawColor(0, 128, 0);
-    pdf.setLineWidth(0.5);
-    pdf.line(105, 45, 105, 290);
+    pdf.text(`Mês: ${data.month} | Apartamento: ${data.apartment} | Total: R$ ${data.condoTotal.toFixed(2)}`, 105, 35, { align: 'center' });
+
 }
 
 private addHeaderPage2(pdf: any, logoPath: string, logoWidth: number, logoHeight: number, data: any): void {
@@ -114,42 +165,61 @@ private addHeaderPage2(pdf: any, logoPath: string, logoWidth: number, logoHeight
   pdf.line(105, 50, 105, 290);
 }
 
-private addSummarySection(pdf: any, startX: number, data: any): number {
+private addSummarySection(pdf: any, startX: number, data: any,fontSize:number): number {
   let currentY = 45;
   // Adiciona os textos estáticos
   pdf.setFont('Helvetica', 'normal');
-  pdf.setFontSize(10);
+  pdf.setFontSize(fontSize);
   pdf.text('Sua Fração ideal:', startX, currentY);
   pdf.text('Fração garagem:', 60, currentY);
   currentY += 5;
   pdf.text(data.apt_fracao, startX, currentY);
   pdf.text(data.vagas_fracao, 60, currentY);
   currentY += 10;
+  
+  return currentY
 
+}
+
+private addResumoMes(pdf: any, startX: number, currentY: number, data: any,scale:number[],fontSize:number): number {
   // Adiciona o título "Resumo"
   pdf.setFont('Helvetica', 'bold');
-  pdf.setFontSize(14);
+  pdf.setFontSize(fontSize);
   pdf.text('Resumo', startX, currentY);
-  currentY += 5;
+  currentY += 2;
+
+
+  // Cria as linhas da tabela condicionalmente
+  const tableRows = [];
   
-  // Texto explicativo
-  pdf.setFontSize(10);
-  pdf.setFont('Helvetica', 'normal');
-  pdf.text('Aqui você confere o resumo do Mês', startX, currentY);
+  // Adiciona Despesas Individuais apenas se o valor for maior que zero
+  if (data.summary.individualExpenses > 0) {
+    tableRows.push(
+      ['Despesas Individuais', `R$ ${data.summary.individualExpenses.toFixed(2)}`],
+      ['Despesas Coletivas', `R$ ${data.summary.collectiveExpenses.toFixed(2)}`],
+      ['Seu Condomínio', `R$ ${data.summary.totalCondo.toFixed(2)}`]
+    );
+  }else{
+    tableRows.push(
+      ['Seu Condomínio', `R$ ${data.summary.totalCondo.toFixed(2)}`]
+    );
+  }
+
+
 
   // Cria a tabela utilizando a função auxiliar
-  currentY = this.generateTable(pdf, startX, currentY, 
-      ['Categoria', 'Valor'], 
-      [
-          ['Despesas Individuais', `R$ ${data.summary.individualExpenses.toFixed(2)}`],
-          ['Despesas Coletivas', `R$ ${data.summary.collectiveExpenses.toFixed(2)}`],
-          ['Seu Condomínio', `R$ ${data.summary.totalCondo.toFixed(2)}`]
-      ], 
-      [45, 45], 6);
+  currentY = this.generateTable(
+    pdf,
+    startX,
+    currentY,
+    ['Categoria', 'Valor'],
+    tableRows,
+    [scale[0], scale[1]],
+    fontSize-8
+  );
 
   return currentY;
 }
-
 
 
 private addIndividualExpensesSection(pdf: any, startX: number, currentY: number, data: any): number {
@@ -184,12 +254,12 @@ private addIndividualExpensesSection(pdf: any, startX: number, currentY: number,
 }
 
 
-private addCollectiveExpensesSection(pdf: any, startX: number, currentY: number, data: any): [number, number] {
+private addCollectiveExpensesSection(pdf: any, startX: number, currentY: number, data: any, scale:number[],fontSize:number): [number, number] {
   pdf.setFont('Helvetica', 'bold');
-  pdf.setFontSize(14);
+  pdf.setFontSize(fontSize);
   pdf.text('Despesas Coletivas', startX, currentY);
   currentY += 2;
-  pdf.setFontSize(10);
+  pdf.setFontSize(fontSize-4);
   pdf.setFont('Helvetica', 'normal');
 
 
@@ -239,8 +309,8 @@ private addCollectiveExpensesSection(pdf: any, startX: number, currentY: number,
         { content: `R$ ${(totalValueRateado * data.fracao_total).toFixed(2)}`, styles: { fontStyle: 'bold' } },
       ]
     ],
-    [30, 15, 15, 15,15], // Largura das colunas
-    6
+    [scale[0], scale[1], scale[2], scale[3],scale[4]], // Largura das colunas
+    fontSize-8
   );
 
   return [currentY, totalValue];
@@ -284,14 +354,13 @@ private addProvisionsSection(pdf: any, startX: number, currentY: number, data: a
   return currentY;
 }
 
-private addFundosSection(pdf: any, startX: number, currentY: number, data: any, totalValue:number): number {
+private addFundosSection(pdf: any, startX: number, currentY: number, data: any, totalValue:number,scale:number[],fontSize:number): number {
   pdf.setFont('Helvetica', 'bold');
-  pdf.setFontSize(14);
+  pdf.setFontSize(fontSize);
   pdf.text('Fundos ', startX, currentY);
-  currentY += 5;
-  pdf.setFontSize(10);
+  currentY += 2;
+  pdf.setFontSize(fontSize-4);
   pdf.setFont('Helvetica', 'normal');
-  pdf.text('Resumo dos fundos do condomínio.', startX, currentY);
 
   // Calcula o total das provisoes
   const totalFundos = data.fundos.reduce((sum: number, item: any) => {
@@ -315,7 +384,7 @@ private addFundosSection(pdf: any, startX: number, currentY: number, data: any, 
 
           ]
       ], 
-      [30, 30, 30], 6);
+      [scale[0], scale[1], scale[2]], fontSize-8);
 
   return currentY;
 }

@@ -1,9 +1,9 @@
 <div class="container">
   <div class="row mt-4">
-    <div class="col-md-6">
+    <div class="col-md-4">
       <div class="table-wrapper">
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <h3>Saldo da Conta Corrente</h3>
+          <h4>Conta Corrente</h4>
         </div>
         <div>
           <div class="input-group">
@@ -49,10 +49,10 @@
       </div>
     </div>
 
-    <div class="col-md-6">
+    <div class="col-md-4">
       <div class="table-wrapper">
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <h3>Saldos de Investimento </h3>
+          <h4>Investimento 1 </h4>
         </div>
         <div>
           <div class="input-group">
@@ -66,7 +66,55 @@
           <span class="step-arrow" [class.open]="showHistoryInvestimento" (click)="toggleHistoryInvestimento()">
             ▶ 
           </span>
-          <span class="step-title">Histórico de investimentos</span> 
+          <span class="step-title">Histórico de investimentos 1</span> 
+          <ng-container *ngIf="showHistoryInvestimento">
+            <table class="table ">
+              <thead>
+                <tr>
+                  <th>Valor</th>
+                  <th>Data</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <ng-container *ngFor="let balance of saldoPredios">
+                  <tr *ngIf="balance.type == 'investimento'">
+                    <td>{{ formatReal(balance.valor) }}</td>
+                    <td>{{ balance.data }}</td>
+                    <td>
+                      <button class="btn edit-btn" (click)="editBuildingBalance(balance)">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <button class="btn delete-btn" (click)="deleteBuildingBalance(balance.id!)">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
+          </ng-container>
+        </ng-container>  
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="table-wrapper">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h4>Investimento 2</h4>
+        </div>
+        <div>
+          <div class="input-group">
+            <span class="input-group-text">R$</span>
+            <input type="number" [(ngModel)]="investimentoAtualizado" class="form-control" [disabled]="!investimentoAtualizadoisEditing" placeholder="0,00"/>
+            <ng-container *ngIf="!investimentoAtualizadoisEditing"><button class="btn add-btn-small" (click)="editInvestimentoAtualizado()">Editar</button></ng-container>
+            <ng-container *ngIf="investimentoAtualizadoisEditing"><button class="btn add-btn-small" (click)="addBuildingBalance('investimento')">Salvar</button></ng-container>
+          </div>
+        </div>
+        <ng-container *ngIf="saldoPredios.length>0">
+          <span class="step-arrow" [class.open]="showHistoryInvestimento" (click)="toggleHistoryInvestimento()">
+            ▶ 
+          </span>
+          <span class="step-title">Histórico de investimentos 2</span> 
           <ng-container *ngIf="showHistoryInvestimento">
             <table class="table ">
               <thead>
