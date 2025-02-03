@@ -43,7 +43,7 @@ async generateCondoStatement(data: any): Promise<Blob> {
     [currentY,totalValue] = this.addCollectiveExpensesSection(pdf, startX, currentY, data);
 
     // Reinicia o Y
-    currentY = 60;
+    currentY = 45;
     // Adiciona Provisões.
     currentY = this.addProvisionsSection(pdf, 110, currentY, data);
     // Adiciona Fundos .
@@ -96,11 +96,11 @@ private addHeader(pdf: any, logoPath: string, logoWidth: number, logoHeight: num
     pdf.setFontSize(20);
     pdf.setFont('Helvetica', 'bold');
     pdf.setFontSize(14);
-    pdf.text('Demonstrativo de Rateio de Condomínio', 105, 35, { align: 'center' });
-    pdf.text(`Mês: ${data.month} | ${data.apartment} | Total: R$ ${data.condoTotal.toFixed(2)}`, 105, 45, { align: 'center' });
+    pdf.text(`Nome do Prédio`, 105, 30, { align: 'center' });
+    pdf.text(`Mês: ${data.month} | Apt: ${data.apartment} | Total: R$ ${data.condoTotal.toFixed(2)}`, 105, 35, { align: 'center' });
     pdf.setDrawColor(0, 128, 0);
     pdf.setLineWidth(0.5);
-    pdf.line(105, 60, 105, 290);
+    pdf.line(105, 45, 105, 290);
 }
 
 private addHeaderPage2(pdf: any, logoPath: string, logoWidth: number, logoHeight: number, data: any): void {
@@ -115,7 +115,7 @@ private addHeaderPage2(pdf: any, logoPath: string, logoWidth: number, logoHeight
 }
 
 private addSummarySection(pdf: any, startX: number, data: any): number {
-  let currentY = 60;
+  let currentY = 45;
   // Adiciona os textos estáticos
   pdf.setFont('Helvetica', 'normal');
   pdf.setFontSize(10);
@@ -156,11 +156,9 @@ private addIndividualExpensesSection(pdf: any, startX: number, currentY: number,
   pdf.setFont('Helvetica', 'bold');
   pdf.setFontSize(14);
   pdf.text('Despesas Individuais', startX, currentY);
-  currentY += 5;
+  currentY += 2;
   pdf.setFontSize(10);
   pdf.setFont('Helvetica', 'normal');
-  pdf.text('Aqui você confere em detalhe as despesas de sua unidade.', startX, currentY);
-
   // Calcula o total das despesas individuais
   const totalIndividualExpenses = data.individualExpenses.reduce((sum: number, item: any) => {
       return sum + (parseFloat(item.value) || 0);
@@ -190,12 +188,10 @@ private addCollectiveExpensesSection(pdf: any, startX: number, currentY: number,
   pdf.setFont('Helvetica', 'bold');
   pdf.setFontSize(14);
   pdf.text('Despesas Coletivas', startX, currentY);
-  currentY += 5;
+  currentY += 2;
   pdf.setFontSize(10);
   pdf.setFont('Helvetica', 'normal');
-  pdf.text('Esta é a listagem de todas as contas pagas pelo seu ', startX, currentY);
-  currentY += 5;
-  pdf.text('condomínio, e a sua respectiva fração.', startX, currentY);
+
 
   // Agrupar e somar os valores pelo mesmo tipo_Gasto_Extra
   const groupedExpenses = data.collectiveExpenses.reduce((acc: any, item: any) => {
