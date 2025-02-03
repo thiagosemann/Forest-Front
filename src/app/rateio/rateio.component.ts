@@ -47,7 +47,6 @@ export class RateioComponent implements OnInit {
   downloading: boolean = false;
   rateioGerado: boolean = false;
   saldoPredios: SaldoPredio[] = [];
-
   constructor(
     private toastr: ToastrService,
     private buildingService: BuildingService,
@@ -428,6 +427,17 @@ export class RateioComponent implements OnInit {
     return numberValue.toFixed(7);
   }
   
+  somaRateios(): string {
+    let soma=0;
 
+    this.usersRateio.forEach(user=>{
+      let valorFundos =  user.valorFundos|| 0;
+      let valorProvisoes =  user.valorProvisoes|| 0;
+      let valorIndividual =  user.valorIndividual|| 0;
+      let valorComum =  user.valorComum|| 0;
+      soma+=valorComum + valorFundos + valorProvisoes + valorIndividual
+    })
+    return this.formatCurrency(soma)
+  }
 
 }
