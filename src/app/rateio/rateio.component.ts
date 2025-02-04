@@ -320,7 +320,7 @@ export class RateioComponent implements OnInit {
   
       const pdfBlob = await this.generateRateio(user,expenses,provisoes,fundos);
       if (pdfBlob) {
-        zip.file(`Rateio_${user.apt_name || 'User'}_${index}.pdf`, pdfBlob);
+        zip.file(`${user.apt_name}.pdf`, pdfBlob);
         index++;
       }
 
@@ -376,7 +376,7 @@ export class RateioComponent implements OnInit {
       
       if (pdfBlob) {
         // Nome do arquivo PDF
-        const fileName = `Rateio_${user.apt_name}.pdf`;
+        const fileName = `${user.apt_name}.pdf`;
 
         // Salva o PDF gerado
         saveAs(pdfBlob, fileName);
