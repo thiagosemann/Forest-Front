@@ -402,7 +402,7 @@ private addSaldosSection(pdf: any, startX: number, currentY: number, data: any, 
   // Configurações iniciais de fonte e título
   pdf.setFont('Helvetica', 'bold');
   pdf.setFontSize(fontSize);
-  pdf.text('Saldo ', startX, currentY);
+  pdf.text('Saldos Bancários', startX, currentY);
   currentY += 2;
 
 
