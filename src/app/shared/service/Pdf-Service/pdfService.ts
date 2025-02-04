@@ -105,7 +105,7 @@ async pdfCompleto(data: any): Promise<Blob>{
   currentY = this.addFundosSection(pdf, 110, currentY, data,totalValue,scale1,14);
   // Adiciona Saldos .
   let scale3 = [45, 45];
-  currentY = this.addSaldosSection(pdf, startX, currentY, data,totalValue,scale3,14);
+  currentY = this.addSaldosSection(pdf, 110, currentY, data,totalValue,scale3,14);
 
   // Adiciona nova página para os gráficos
   pdf.addPage();
