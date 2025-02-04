@@ -53,7 +53,9 @@ async pdfResumido1(data: any): Promise<Blob>{
   // Adiciona Fundos .
   currentY = this.addFundosSection(pdf, startX, currentY, data,totalValue,scale1,20);
   // Retorna o PDF como Blob
-
+  let scale3 = [100, 100];
+  currentY = this.addSaldosSection(pdf, startX, currentY, data,totalValue,scale3,20);
+  // Retorna o PDF como Blob
   const pdfBlob = pdf.output('blob');
   return pdfBlob;
 }
@@ -102,9 +104,8 @@ async pdfCompleto(data: any): Promise<Blob>{
   let scale1 = [66, 66, 67];
   currentY = this.addFundosSection(pdf, 110, currentY, data,totalValue,scale1,14);
   // Adiciona Saldos .
-  currentY = this.addSaldosSection(pdf, 110, currentY, data,totalValue);
-
-  
+  let scale3 = [45, 45];
+  currentY = this.addSaldosSection(pdf, startX, currentY, data,totalValue,scale3,14);
 
   // Adiciona nova página para os gráficos
   pdf.addPage();
@@ -397,15 +398,13 @@ private addFundosSection(pdf: any, startX: number, currentY: number, data: any, 
   return currentY;
 }
 
-private addSaldosSection(pdf: any, startX: number, currentY: number, data: any, totalValue: number): number {
+private addSaldosSection(pdf: any, startX: number, currentY: number, data: any, totalValue: number,scale:number[],fontSize:number): number {
   // Configurações iniciais de fonte e título
   pdf.setFont('Helvetica', 'bold');
-  pdf.setFontSize(14);
+  pdf.setFontSize(fontSize);
   pdf.text('Saldo ', startX, currentY);
-  currentY += 5;
-  pdf.setFontSize(10);
-  pdf.setFont('Helvetica', 'normal');
-  pdf.text('Resumo do saldo do condomínio.', startX, currentY);
+  currentY += 2;
+
 
   // Acessa os saldos em data.saldosPredios
   const sortedSaldos = [...data.saldosPredios].sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime());
@@ -442,7 +441,7 @@ private addSaldosSection(pdf: any, startX: number, currentY: number, data: any, 
 
     ]
     ],
-    [45, 45],6
+    [scale[0], scale[1]],fontSize-8
   );
 
   return currentY;
