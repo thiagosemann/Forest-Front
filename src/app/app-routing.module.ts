@@ -3,28 +3,28 @@ import { RouterModule, Routes } from '@angular/router';
 import { AuthGuardService } from './shared/service/authGuard';
 
 
-import { LoginComponent } from './login/login.component';
-import { LandingComponent } from './landing/landing.component';
-import { ContentComponent } from './content/content.component';
-import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
-import { ProfileComponent } from './profile/profile.component';
-import { RegisterComponent } from './register/register.component';
-import { UsersControlComponent } from './users-control/users-control.component';
-import { BuildingsControlComponent } from './buildings-control/buildings-control.component';
-import { BuildingsReviewComponent } from './Gastos-Comun/buildings-review/buildings-review.component';
-import { GastosIndividuaisComponent } from './gastos-individuais/gastos-individuais.component';
-import { RateioComponent } from './rateio/rateio.component';
-import { VagasComponent } from './vagas/vagas.component';
-import { FundosComponent } from './fundos/fundos.component';
-import { ProvisoesComponent } from './provisoes/provisoes.component';
-import { ApartamentosControlComponent } from './apartamentos-control/apartamentos-control.component';
-import { AirbnbCalendarService } from './shared/service/Banco_de_Dados/calendarioAirBnb_service';
-import { CalendarioAirbnbComponent } from './calendario-airbnb/calendario-airbnb.component';
-import { CameraAppComponent } from './camera-app/camera-app.component';
-import { ExpenseTypeControllComponent } from './expense-type-controll/expense-type-controll.component';
-import { SaldoInvestimentoPredioComponent } from './saldo-investimento-predio/saldo-investimento-predio.component';
-import { PrestacaoContasComponent } from './prestacao_de_contas/prestacao-contas/prestacao-contas.component';
-import { GeradorRateioComponent } from './gerar_rateio/gerador-rateio/gerador-rateio.component';
+import { LandingComponent } from './Compartilhados/landing/landing.component';
+import { ForgotPasswordComponent } from './Compartilhados/forgot-password/forgot-password.component';
+import { UsersControlComponent } from './Gerencia-Predios/users-control/users-control.component';
+import { BuildingsControlComponent } from './Gerencia-Predios/buildings-control/buildings-control.component';
+import { BuildingsReviewComponent } from './Gerencia-Predios/Gastos-Comun/buildings-review/buildings-review.component';
+import { GastosIndividuaisComponent } from './Gerencia-Predios/gastos-individuais/gastos-individuais.component';
+import { RateioComponent } from './Gerencia-Predios/rateio/rateio.component';
+import { VagasComponent } from './Gerencia-Predios/vagas/vagas.component';
+import { FundosComponent } from './Gerencia-Predios/fundos/fundos.component';
+import { ApartamentosControlComponent } from './Gerencia-Predios/apartamentos-control/apartamentos-control.component';
+
+import { ExpenseTypeControllComponent } from './Gerencia-Predios/expense-type-controll/expense-type-controll.component';
+import { SaldoInvestimentoPredioComponent } from './Gerencia-Predios/saldo-investimento-predio/saldo-investimento-predio.component';
+import { PrestacaoContasComponent } from './Gerencia-Predios/prestacao_de_contas/prestacao-contas/prestacao-contas.component';
+import { GeradorRateioComponent } from './Gerencia-Predios/gerador-rateio/gerador-rateio.component';
+import { CalendarioAirbnbComponent } from './AIRBNB/calendario-airbnb/calendario-airbnb.component';
+import { CameraAppComponent } from './AIRBNB/camera-app/camera-app.component';
+import { ContentComponent } from './Compartilhados/content/content.component';
+import { LoginComponent } from './Compartilhados/login/login.component';
+import { RegisterComponent } from './Compartilhados/register/register.component';
+import { ProfileComponent } from './Compartilhados/profile/profile.component';
+import { ProvisoesComponent } from './Gerencia-Predios/provisoes/provisoes.component';
 
 
 const routes: Routes = [
