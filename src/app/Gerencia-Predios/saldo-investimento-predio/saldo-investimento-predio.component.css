@@ -1,3 +1,4 @@
+/* Container e Tipografia */
 .container {
   font-family: Arial, sans-serif;
   margin-top: 15px;
@@ -7,7 +8,7 @@ h2 {
   color: #198754;
 }
 
-/* Estilos para a tabela e cabeçalho sticky */
+/* Estilos da Tabela */
 .table-wrapper {
   max-height: 500px;
   overflow-y: auto;
@@ -35,7 +36,7 @@ h2 {
 .table td {
   border: 1px solid #dddddd;
   text-align: center;
-  padding: 1px;
+  padding: 8px;
 }
 
 .table th {
@@ -53,7 +54,7 @@ h2 {
   background-color: #ddd;
 }
 
-/* Botões gerais */
+/* Botões Gerais */
 .btn {
   padding: 8px 12px;
   border: none;
@@ -68,7 +69,7 @@ h2 {
   margin-left: 5px;
 }
 
-/* Botões específicos */
+/* Botões Específicos */
 .add-btn {
   background-color: #198754;
 }
@@ -89,7 +90,7 @@ h2 {
   background-color: #c82333;
 }
 
-/* Botão adicionar pequeno */
+/* Botão Adicionar Pequeno */
 .add-btn-small {
   background-color: #28a745;
   color: white;
@@ -188,7 +189,8 @@ h2 {
   background-color: #757575;
   color: white;
 }
-/* Classe para a seta */
+
+/* Setas do Histórico */
 .step-arrow {
   cursor: pointer;
   font-size: 24px;
@@ -198,12 +200,82 @@ h2 {
   padding: 5px;
 }
 
-/* Seta aberta (aponta para baixo quando a tabela é exibida) */
 .step-arrow.open {
-  transform: rotate(90deg); /* Rotaciona a seta para baixo */
+  transform: rotate(90deg);
 }
+
 .step-title {
   font-size: 16px;
   font-weight: bold;
   margin-left: 10px;
+}
+
+/* Estilos do Componente de Upload */
+
+/* Wrapper com borda tracejada */
+.file-upload-wrapper {
+  border: 2px dashed #198754;
+  padding: 15px;
+  text-align: center;
+  border-radius: 5px;
+  margin-bottom: 15px;
+  transition: background-color 0.3s ease;
+}
+
+.file-upload-wrapper:hover {
+  background-color: #f9f9f9;
+}
+
+/* Rótulo de upload */
+.file-upload-label {
+  display: inline-block;
+  cursor: pointer;
+  color: #198754;
+  font-weight: bold;
+}
+
+.file-upload-label span {
+  padding: 10px 20px;
+  border: 1px solid #198754;
+  border-radius: 5px;
+}
+
+/* Informações do arquivo enviado */
+.file-upload-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #f8f8f8;
+}
+
+.file-name {
+  font-weight: bold;
+}
+
+.file-actions button {
+  margin-left: 5px;
+}
+
+/* Botão de Download */
+.download-btn {
+  background-color: #198754;
+  color: #fff;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.download-btn:hover {
+  background-color: #157347;
+}
+.loading-indicator {
+  text-align: center;
+  font-size: 16px;
+  padding: 15px;
+  color: #198754;
 }

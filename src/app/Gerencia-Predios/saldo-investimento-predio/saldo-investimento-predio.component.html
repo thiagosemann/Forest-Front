@@ -1,23 +1,55 @@
 <div class="container">
   <div class="row mt-4">
+    <!-- Conta Corrente -->
     <div class="col-md-4">
       <div class="table-wrapper">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h4>Conta Corrente</h4>
         </div>
-        <div>
-          <div class="input-group">
-            <span class="input-group-text">R$</span>
-            <input type="number" [(ngModel)]="saldoAtualizado" class="form-control" [disabled]="!saldoAtualizadoisEditing" placeholder="0,00"/>
-            <ng-container *ngIf="!saldoAtualizadoisEditing"><button class="btn add-btn-small" (click)="editSaldoAtualizado()">Editar</button></ng-container>
-            <ng-container *ngIf="saldoAtualizadoisEditing"><button class="btn add-btn-small" (click)="addBuildingBalance('conta')">Salvar</button></ng-container>
-          </div>
+        <!-- Componente de Upload para Conta Corrente -->
+        <div class="file-upload-wrapper">
+          <ng-container *ngIf="isLoadingExtratos; else loadedContentConta">
+            <div class="loading-indicator">
+              <i class="fas fa-spinner fa-spin"></i> Carregando arquivos...
+            </div>
+          </ng-container>
+          <ng-template #loadedContentConta>
+            <ng-container *ngIf="!uploadedFileConta; else fileUploadedConta">
+              <label class="file-upload-label">
+                <input type="file" accept=".pdf" (change)="uploadPdf($event, 'conta')" hidden>
+                <span><i class="fas fa-upload"></i> Upload Arquivo</span>
+              </label>
+            </ng-container>
+            <ng-template #fileUploadedConta>
+              <div class="file-upload-info">
+                <span class="file-name">{{ uploadedFileConta.name }}</span>
+                <div class="file-actions">
+                  <button class="btn download-btn" (click)="downloadFile(uploadedFileConta)">
+                    <i class="fas fa-download"></i> Download
+                  </button>
+                  <button class="btn delete-btn" (click)="deleteFile(uploadedFileConta)">
+                    <i class="fas fa-trash"></i> Excluir
+                  </button>
+                </div>
+              </div>
+            </ng-template>
+          </ng-template>
         </div>
-        <ng-container *ngIf="saldoPredios.length>0">
-          <span class="step-arrow" [class.open]="showHistoryConta" (click)="toggleHistoryConta()">
-            ▶ 
-          </span>
-          <span class="step-title">Histórico da conta corrente</span> 
+        
+        <!-- Input de valor e histórico -->
+        <div class="input-group">
+          <span class="input-group-text">R$</span>
+          <input type="number" [(ngModel)]="saldoAtualizado" class="form-control" [disabled]="!saldoAtualizadoisEditing" placeholder="0,00"/>
+          <ng-container *ngIf="!saldoAtualizadoisEditing">
+            <button class="btn add-btn-small" (click)="editSaldoAtualizado()">Editar</button>
+          </ng-container>
+          <ng-container *ngIf="saldoAtualizadoisEditing">
+            <button class="btn add-btn-small" (click)="addBuildingBalance('conta')">Salvar</button>
+          </ng-container>
+        </div>
+        <ng-container *ngIf="saldoPredios.length > 0">
+          <span class="step-arrow" [class.open]="showHistoryConta" (click)="toggleHistoryConta()">▶</span>
+          <span class="step-title">Histórico da conta corrente</span>
           <ng-container *ngIf="showHistoryConta">
             <table class="table">
               <thead>
@@ -49,26 +81,58 @@
       </div>
     </div>
 
+    <!-- Investimento 1 -->
     <div class="col-md-4">
       <div class="table-wrapper">
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <h4>Investimento 1 </h4>
+          <h4>Investimento 1</h4>
         </div>
-        <div>
-          <div class="input-group">
-            <span class="input-group-text">R$</span>
-            <input type="number" [(ngModel)]="investimento1Atualizado" class="form-control" [disabled]="!investimento1AtualizadoisEditing" placeholder="0,00"/>
-            <ng-container *ngIf="!investimento1AtualizadoisEditing"><button class="btn add-btn-small" (click)="editInvestimento1Atualizado()">Editar</button></ng-container>
-            <ng-container *ngIf="investimento1AtualizadoisEditing"><button class="btn add-btn-small" (click)="addBuildingBalance('investimento1')">Salvar</button></ng-container>
-          </div>
+        <!-- Componente de Upload para Investimento 1 -->
+        <div class="file-upload-wrapper">
+          <ng-container *ngIf="isLoadingExtratos; else loadedContentInvestimento1">
+            <div class="loading-indicator">
+              <i class="fas fa-spinner fa-spin"></i> Carregando arquivos...
+            </div>
+          </ng-container>
+          <ng-template #loadedContentInvestimento1>
+            <ng-container *ngIf="!uploadedFileInvestimento1; else fileUploadedInvestimento1">
+              <label class="file-upload-label">
+                <input type="file" accept=".pdf" (change)="uploadPdf($event, 'investimento1')" hidden>
+                <span><i class="fas fa-upload"></i> Upload Arquivo</span>
+              </label>
+            </ng-container>
+            <ng-template #fileUploadedInvestimento1>
+              <div class="file-upload-info">
+                <span class="file-name">{{ uploadedFileInvestimento1.name }}</span>
+                <div class="file-actions">
+                  <button class="btn download-btn" (click)="downloadFile(uploadedFileInvestimento1)">
+                    <i class="fas fa-download"></i> Download
+                  </button>
+                  <button class="btn delete-btn" (click)="deleteFile(uploadedFileInvestimento1)">
+                    <i class="fas fa-trash"></i> Excluir
+                  </button>
+                </div>
+              </div>
+            </ng-template>
+          </ng-template>
         </div>
-        <ng-container *ngIf="saldoPredios.length>0">
-          <span class="step-arrow" [class.open]="showHistoryInvestimento1" (click)="toggleHistoryInvestimento1()">
-            ▶ 
-          </span>
-          <span class="step-title">Histórico de investimentos 1</span> 
+
+        <!-- Input de valor e histórico -->
+        <div class="input-group">
+          <span class="input-group-text">R$</span>
+          <input type="number" [(ngModel)]="investimento1Atualizado" class="form-control" [disabled]="!investimento1AtualizadoisEditing" placeholder="0,00"/>
+          <ng-container *ngIf="!investimento1AtualizadoisEditing">
+            <button class="btn add-btn-small" (click)="editInvestimento1Atualizado()">Editar</button>
+          </ng-container>
+          <ng-container *ngIf="investimento1AtualizadoisEditing">
+            <button class="btn add-btn-small" (click)="addBuildingBalance('investimento1')">Salvar</button>
+          </ng-container>
+        </div>
+        <ng-container *ngIf="saldoPredios.length > 0">
+          <span class="step-arrow" [class.open]="showHistoryInvestimento1" (click)="toggleHistoryInvestimento1()">▶</span>
+          <span class="step-title">Histórico de investimentos 1</span>
           <ng-container *ngIf="showHistoryInvestimento1">
-            <table class="table ">
+            <table class="table">
               <thead>
                 <tr>
                   <th>Valor</th>
@@ -94,29 +158,62 @@
               </tbody>
             </table>
           </ng-container>
-        </ng-container>  
+        </ng-container>
       </div>
     </div>
+
+    <!-- Investimento 2 -->
     <div class="col-md-4">
       <div class="table-wrapper">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h4>Investimento 2</h4>
         </div>
-        <div>
-          <div class="input-group">
-            <span class="input-group-text">R$</span>
-            <input type="number" [(ngModel)]="investimento2Atualizado" class="form-control" [disabled]="!investimento2AtualizadoisEditing" placeholder="0,00"/>
-            <ng-container *ngIf="!investimento2AtualizadoisEditing"><button class="btn add-btn-small" (click)="editInvestimento2Atualizado()">Editar</button></ng-container>
-            <ng-container *ngIf="investimento2AtualizadoisEditing"><button class="btn add-btn-small" (click)="addBuildingBalance('investimento2')">Salvar</button></ng-container>
-          </div>
+        <!-- Componente de Upload para Investimento 2 -->
+        <div class="file-upload-wrapper">
+          <ng-container *ngIf="isLoadingExtratos; else loadedContentInvestimento2">
+            <div class="loading-indicator">
+              <i class="fas fa-spinner fa-spin"></i> Carregando arquivos...
+            </div>
+          </ng-container>
+          <ng-template #loadedContentInvestimento2>
+            <ng-container *ngIf="!uploadedFileInvestimento2; else fileUploadedInvestimento2">
+              <label class="file-upload-label">
+                <input type="file" accept=".pdf" (change)="uploadPdf($event, 'investimento2')" hidden>
+                <span><i class="fas fa-upload"></i> Upload Arquivo</span>
+              </label>
+            </ng-container>
+            <ng-template #fileUploadedInvestimento2>
+              <div class="file-upload-info">
+                <span class="file-name">{{ uploadedFileInvestimento2.name }}</span>
+                <div class="file-actions">
+                  <button class="btn download-btn" (click)="downloadFile(uploadedFileInvestimento2)">
+                    <i class="fas fa-download"></i> Download
+                  </button>
+                  <button class="btn delete-btn" (click)="deleteFile(uploadedFileInvestimento2)">
+                    <i class="fas fa-trash"></i> Excluir
+                  </button>
+                </div>
+              </div>
+            </ng-template>
+          </ng-template>
         </div>
-        <ng-container *ngIf="saldoPredios.length>0">
-          <span class="step-arrow" [class.open]="showHistoryInvestimento2" (click)="toggleHistoryInvestimento2()">
-            ▶ 
-          </span>
-          <span class="step-title">Histórico de investimentos 2</span> 
+
+        <!-- Input de valor e histórico -->
+        <div class="input-group">
+          <span class="input-group-text">R$</span>
+          <input type="number" [(ngModel)]="investimento2Atualizado" class="form-control" [disabled]="!investimento2AtualizadoisEditing" placeholder="0,00"/>
+          <ng-container *ngIf="!investimento2AtualizadoisEditing">
+            <button class="btn add-btn-small" (click)="editInvestimento2Atualizado()">Editar</button>
+          </ng-container>
+          <ng-container *ngIf="investimento2AtualizadoisEditing">
+            <button class="btn add-btn-small" (click)="addBuildingBalance('investimento2')">Salvar</button>
+          </ng-container>
+        </div>
+        <ng-container *ngIf="saldoPredios.length > 0">
+          <span class="step-arrow" [class.open]="showHistoryInvestimento2" (click)="toggleHistoryInvestimento2()">▶</span>
+          <span class="step-title">Histórico de investimentos 2</span>
           <ng-container *ngIf="showHistoryInvestimento2">
-            <table class="table ">
+            <table class="table">
               <thead>
                 <tr>
                   <th>Valor</th>
@@ -142,18 +239,17 @@
               </tbody>
             </table>
           </ng-container>
-        </ng-container>  
+        </ng-container>
       </div>
     </div>
   </div>
 
-  <!-- Modal -->
+  <!-- Modal permanece inalterado -->
   <div class="modal" *ngIf="showModal">
     <div class="modal-content">
       <div class="modal-header">
         <h4>
-          Editar
-          {{ isBuildingBalance ? 'saldo' : 'investimento' }}
+          Editar {{ isBuildingBalance ? 'saldo' : 'investimento' }}
         </h4>
         <button class="close-btn" (click)="closeModal()">×</button>
       </div>
@@ -161,30 +257,16 @@
         <div class="row">
           <div class="col-md-6">
             <label for="amount" class="input-label">Valor</label>
-            <input
-              id="amount"
-              class="input-field"
-              type="number"
-              placeholder="Digite o valor"
-              [(ngModel)]="currentBalance.valor"
-            />
+            <input id="amount" class="input-field" type="number" placeholder="Digite o valor" [(ngModel)]="currentBalance.valor" />
           </div>
           <div class="col-md-6">
             <label for="date" class="input-label">Data</label>
-            <input
-              id="date"
-              class="input-field"
-              type="date"
-              [(ngModel)]="currentBalance.data"
-            />
+            <input id="date" class="input-field" type="date" [(ngModel)]="currentBalance.data" />
           </div>
         </div>
       </div>
-
       <div class="modal-footer">
-        <button class="btn save-btn" (click)="updateBalance()">
-          Editar
-        </button>
+        <button class="btn save-btn" (click)="updateBalance()">Editar</button>
         <button class="btn cancel-btn" (click)="closeModal()">Cancelar</button>
       </div>
     </div>
