@@ -260,7 +260,7 @@ export class SaldoInvestimentoPredioComponent {
           const formattedDate = `${this.selectedYear}-${this.selectedMonth}-${today.getDate().toString().padStart(2, '0')}`;
 
           const extrato: ExtratoPdf = {
-            documentoBuffer: fileContentBase64,
+            documento: fileContentBase64,
             data_gasto: formattedDate,
             tipo: type,
             predio_id: this.selectedBuildingId
@@ -359,6 +359,7 @@ export class SaldoInvestimentoPredioComponent {
       this.toastr.error('Arquivo inválido!');
       return;
     }
+    console.log(file)
     this.extratoPdfService.deleteExtratoPdf(file.id).subscribe({
       next: () => {
         this.toastr.success('PDF excluído com sucesso!');

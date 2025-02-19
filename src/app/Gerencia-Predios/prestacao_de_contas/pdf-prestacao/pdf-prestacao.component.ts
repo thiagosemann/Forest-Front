@@ -3,7 +3,7 @@ import { PdfPrestacaoService } from 'src/app/shared/service/Pdf-Service/pdfPrest
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { SelectionService } from 'src/app/shared/service/selectionService';
 import { NotaGastoComumService } from 'src/app/shared/service/Banco_de_Dados/notasGastosComuns_service';
-import { PDFDocument } from 'pdf-lib'; // Adicione PDF-lib no seu projeto.
+import { PDFDocument } from 'pdf-lib'; // Certifique-se de ter instalado o pdf-lib
 import { BuildingService } from 'src/app/shared/service/Banco_de_Dados/buildings_service';
 import { Building } from 'src/app/shared/utilitarios/building';
 import { CommonExpenseService } from 'src/app/shared/service/Banco_de_Dados/commonExpense_service';
@@ -13,6 +13,8 @@ import { ProvisaoService } from 'src/app/shared/service/Banco_de_Dados/provisao_
 import { FundoService } from 'src/app/shared/service/Banco_de_Dados/fundo_service';
 import { SaldoPorPredioService } from 'src/app/shared/service/Banco_de_Dados/saldo_por_predio_service';
 import { GastosIndividuaisService } from 'src/app/shared/service/Banco_de_Dados/gastosIndividuais_service';
+import { ExtratoPdfService } from 'src/app/shared/service/Banco_de_Dados/extratopdf_service';
+import { ExtratoPdf } from 'src/app/shared/utilitarios/extratoPdf';
 
 // Definição da interface para tipar a nota fiscal
 interface NotaFiscal {
@@ -45,7 +47,7 @@ export class PdfPrestacaoComponent implements OnInit {
     private fundoService: FundoService,
     private saldoPorPredioService: SaldoPorPredioService,
     private gastosIndividuaisService: GastosIndividuaisService,
-
+    private extratoPdfService: ExtratoPdfService
   ) {}
 
   ngOnInit(): void {
@@ -60,76 +62,78 @@ export class PdfPrestacaoComponent implements OnInit {
   async previewPDF(): Promise<void> {
     try {
       this.isLoading = true;  // Inicia o carregamento
-      if ( this.selectedBuildingId && this.selectedMonth && this.selectedYear) {
-        let data = {
+
+      if (this.selectedBuildingId && this.selectedMonth && this.selectedYear) {
+        let data: any = {
           selectedBuildingId: this.selectedBuildingId,
           selectedMonth: this.selectedMonth,
           selectedYear: this.selectedYear,
-          notaFiscalList: [] as NotaFiscal[], // Tipagem explícita da lista de notas fiscais
-          building:{},
-          commonExpenses:{},
-          gastosIndividuais:{},
-          provisoes:{},
-          fundos:{},
-          saldos:{}
+          notaFiscalList: [] as NotaFiscal[],      // Notas fiscais
+          extratosList: [] as ExtratoPdf[],          // Extratos
+          building: {},
+          commonExpenses: {},
+          gastosIndividuais: {},
+          provisoes: {},
+          fundos: {},
+          saldos: {}
         };
-    
-        if (this.selectedBuildingId !== 0 && this.selectedMonth !== 0 && this.selectedYear !== 0) {
-          // Busca e adiciona notas fiscais
-          await this.addNotasFiscais(data);
-          await this.getBuildingById(data);
-          const { expenses, provisoes, fundos, saldos, gastosIndividuais } =  await this.loadValues();
-          if(expenses){
-            data.commonExpenses = expenses;
-          }
-          if(provisoes){
-            data.provisoes = provisoes;
-          }
-          if(fundos){
-            data.fundos = fundos;
-          }
-          if(saldos){
-            data.saldos = saldos;
-          }
-          if(gastosIndividuais){
-            data.gastosIndividuais = gastosIndividuais;
-          }
-          if (data.notaFiscalList.length > 0) {
-            // Gera o PDF da capa e remove a parte do cabeçalho
-            const capaPdf = await this.pdfPrestacaoService.generatePdfPrestacao(data);
-    
-            // Remove a parte "data:application/pdf;filename=generated.pdf;base64," da string base64
-            const base64Pdf = capaPdf.split(',')[1];
-    
-            // Adiciona o PDF gerado da capa na primeira posição da lista
-            data.notaFiscalList.unshift({ arquivoPdfBase64: base64Pdf }); // Usando unshift para colocar no início
-            
-            console.log(data); // Verifica o conteúdo da variável 'data'
-    
-            // Mescla os blobs em um único PDF
-            const mergedPdfBlob = await this.mergePdfBlobs(data.notaFiscalList);
-    
-            if (mergedPdfBlob) {
-              const url = window.URL.createObjectURL(mergedPdfBlob);
-              this.pdfSrc = this.sanitizer.bypassSecurityTrustResourceUrl(url);
-            }
-          }
+
+        // Busca os PDFs das notas fiscais e dos extratos
+        await this.addNotasFiscais(data);
+        await this.addPdfExtrato(data);
+        await this.getBuildingById(data);
+
+        // Carrega outros valores (despesas, provisões, fundos, saldos e gastos individuais)
+        const { expenses, provisoes, fundos, saldos, gastosIndividuais } = await this.loadValues();
+        if (expenses) {
+          data.commonExpenses = expenses;
         }
-      }else{
-        this.toastr.warning("Selecione o prédio, o mês e o ano!")
+        if (provisoes) {
+          data.provisoes = provisoes;
+        }
+        if (fundos) {
+          data.fundos = fundos;
+        }
+        if (saldos) {
+          data.saldos = saldos;
+        }
+        if (gastosIndividuais) {
+          data.gastosIndividuais = gastosIndividuais;
+        }
+
+        // Gera o PDF da capa (cover)
+        const capaPdf = await this.pdfPrestacaoService.generatePdfPrestacao(data);
+        // Remove a parte "data:application/pdf;filename=generated.pdf;base64," da string base64
+        const base64Capa = capaPdf.split(',')[1];
+
+        // Cria um array que irá armazenar os PDFs na ordem desejada:
+        // 1. Capa
+        // 2. PDFs do Extrato
+        // 3. PDFs das Notas Fiscais
+        const pdfOrder: any[] = [];
+        pdfOrder.push({ arquivoPdfBase64: base64Capa });
+        data.extratosList.forEach((pdf: any) => pdfOrder.push(pdf));
+        data.notaFiscalList.forEach((pdf: any) => pdfOrder.push(pdf));
+
+        // Mescla os PDFs na ordem definida
+        const mergedPdfBlob = await this.mergePdfBlobs(pdfOrder);
+        if (mergedPdfBlob) {
+          const url = window.URL.createObjectURL(mergedPdfBlob);
+          this.pdfSrc = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+        }
+      } else {
+        this.toastr.warning("Selecione o prédio, o mês e o ano!");
       }
-     
     } catch (error) {
       console.error('Error generating PDF:', error);
     } finally {
       this.isLoading = false;  // Finaliza o carregamento
     }
   }
-  
-  
-  async loadValues(): Promise<{expenses: any[] | undefined; provisoes: any[] | undefined; fundos: any[] | undefined;saldos: any[] | undefined; gastosIndividuais: any[] | undefined;}> {
+
+  async loadValues(): Promise<{ expenses: any[] | undefined; provisoes: any[] | undefined; fundos: any[] | undefined; saldos: any[] | undefined; gastosIndividuais: any[] | undefined; }> {
     try {
-      const [expenses, provisoes, fundos, saldos,gastosIndividuais] = await Promise.all([
+      const [expenses, provisoes, fundos, saldos, gastosIndividuais] = await Promise.all([
         this.commonExepenseService
           .getExpensesByBuildingAndMonth(this.selectedBuildingId, this.selectedMonth, this.selectedYear)
           .toPromise(),
@@ -138,32 +142,28 @@ export class PdfPrestacaoComponent implements OnInit {
         this.saldoPorPredioService.getSaldosByBuildingId(this.selectedBuildingId).toPromise(),
         this.gastosIndividuaisService.getIndividualExpensesByPredioMonthAndYear(this.selectedBuildingId, this.selectedMonth, this.selectedYear).toPromise(),
       ]);
-  
+
       return { expenses, provisoes, fundos, saldos, gastosIndividuais };
     } catch (error) {
       console.error("Erro ao carregar valores:", error);
-      // Retorne valores padrão ou propague o erro, conforme necessário
       return { expenses: [], provisoes: [], fundos: [], saldos: [], gastosIndividuais: [] };
     }
   }
-  
-  
 
   getBuildingById(data: any): Promise<void> {
     return new Promise((resolve, reject) => {
       this.buildingService.getBuildingById(this.selectedBuildingId).subscribe(
         (building: Building) => {
           data.building = building;
-          resolve(); // Resolve a Promise quando a requisição é bem-sucedida
+          resolve();
         },
         (error) => {
           console.error('Error fetching buildings:', error);
-          reject(error); // Rejeita a Promise em caso de erro
+          reject(error);
         }
       );
     });
   }
-  
 
   // Método para buscar e adicionar as notas fiscais
   async addNotasFiscais(data: any): Promise<void> {
@@ -172,7 +172,7 @@ export class PdfPrestacaoComponent implements OnInit {
         data.selectedBuildingId,
         data.selectedMonth,
         data.selectedYear
-      ).toPromise(); // Converte para Promise usando toPromise()
+      ).toPromise();
 
       if (notas) {
         notas.forEach(nota => {
@@ -184,22 +184,54 @@ export class PdfPrestacaoComponent implements OnInit {
         });
       }
     } catch (error) {
-      console.error('Error fetching expenses:', error);
+      console.error('Error fetching notas fiscais:', error);
     }
   }
 
-  // Método para mesclar blobs de PDF
-  async mergePdfBlobs(notaFiscalList: NotaFiscal[]): Promise<Blob | null> {
+  // Método para buscar e adicionar os PDFs de extrato
+  async addPdfExtrato(data: any): Promise<void> {
+    try {
+      const extratos = await this.extratoPdfService.getExtratosPdfByBuildingMonthYear(
+        data.selectedBuildingId,
+        data.selectedMonth,
+        data.selectedYear
+      ).toPromise();
+      if (extratos && extratos.length > 0) {
+        // Ordena os extratos para que os do tipo 'conta' fiquem por último
+        extratos.sort((a, b) => {
+          if (a.tipo === 'conta' && b.tipo !== 'conta') {
+            return 1;
+          }
+          if (b.tipo === 'conta' && a.tipo !== 'conta') {
+            return -1;
+          }
+          return 0;
+        });
+
+        extratos.forEach(extrato => {
+          if (extrato) {
+            data.extratosList.push({
+              arquivoPdfBase64: extrato.documento
+            });
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching extratos:', error);
+    }
+  }
+
+
+  // Método para mesclar blobs de PDF usando PDF-lib
+  async mergePdfBlobs(pdfs: any[]): Promise<Blob | null> {
     try {
       const mergedPdf = await PDFDocument.create();
 
-      for (const nota of notaFiscalList) {
-        if (nota.arquivoPdfBase64 && typeof nota.arquivoPdfBase64 === 'string') {
-          // Decodifica Base64 para Uint8Array
-          const pdfBytes = new Uint8Array(atob(nota.arquivoPdfBase64).split('').map(c => c.charCodeAt(0)));
-
-          const pdfDoc = await PDFDocument.load(pdfBytes); // Passa o Uint8Array para o PDF-lib
-
+      for (const item of pdfs) {
+        if (item.arquivoPdfBase64 && typeof item.arquivoPdfBase64 === 'string') {
+          // Converte Base64 para Uint8Array
+          const pdfBytes = new Uint8Array(atob(item.arquivoPdfBase64).split('').map(c => c.charCodeAt(0)));
+          const pdfDoc = await PDFDocument.load(pdfBytes);
           const copiedPages = await mergedPdf.copyPages(pdfDoc, pdfDoc.getPageIndices());
           copiedPages.forEach(page => mergedPdf.addPage(page));
         }

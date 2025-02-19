@@ -1,6 +1,6 @@
 export interface ExtratoPdf {
     id?: number;
-    documentoBuffer: any;       // Buffer/Base64 do PDF
+    documento: any;       // Buffer/Base64 do PDF
     data_gasto: string;         // Data no formato YYYY-MM-DD
     tipo:string;
     predio_id:number;
