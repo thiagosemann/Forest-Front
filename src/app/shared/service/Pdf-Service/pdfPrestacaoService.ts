@@ -251,11 +251,13 @@ async generatePdfPrestacao(data: any): Promise<string> {
     // Acessa os saldos em data.saldosPredios
     const sortedSaldos = [...data.saldos].sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime());
     const latestConta = sortedSaldos.find((item) => item.type === 'conta');
-    const latestInvestimento = sortedSaldos.find((item) => item.type === 'investimento');
-  
+    const latestInvestimento1 = sortedSaldos.find((item) => item.type === 'investimento1');
+    const latestInvestimento2 = sortedSaldos.find((item) => item.type === 'investimento2');
+
     const contaValue = latestConta ? parseFloat(latestConta.valor) : 0;
-    const investimentoValue = latestInvestimento ? parseFloat(latestInvestimento.valor) : 0;
-  
+    const investimento1Value = latestInvestimento1 ? parseFloat(latestInvestimento1.valor) : 0;
+    const investimento2Value = latestInvestimento2 ? parseFloat(latestInvestimento2.valor) : 0;
+
     // Cria a tabela utilizando a função auxiliar
     currentY = this.generateTable(
       pdf,
@@ -268,12 +270,16 @@ async generatePdfPrestacao(data: any): Promise<string> {
           { content: `R$ ${contaValue.toFixed(2)}` },
         ],
         [
-          { content: 'Investimento' },
-          { content: `R$ ${investimentoValue.toFixed(2)}` },
+          { content: 'Tipo de Investimento 1' },
+          { content: `R$ ${investimento1Value.toFixed(2)}` },
+        ],
+        [
+          { content: 'Tipo de Investimento 2' },
+          { content: `R$ ${investimento2Value.toFixed(2)}`},
         ],
         [
           { content: 'Total', styles: { fontStyle: 'bold' } },
-          { content: `R$ ${(Number(contaValue)+Number(investimentoValue)).toFixed(2)}`, styles: { fontStyle: 'bold' } },
+          { content: `R$ ${(Number(contaValue)+Number(investimento1Value)+Number(investimento2Value)).toFixed(2)}`, styles: { fontStyle: 'bold' } },
   
       ]
       ],
