@@ -55,24 +55,34 @@ export class CobrancaPrestacaoComponent {
     });
   }
 
-  getInadimplentesByBuildingId():void{
-    this.rateioPorApartamentoService.getRateiosNaoPagosPorPredioId(this.selectedBuildingId).subscribe(
-      (rateiosNaoPagos: any) => {
-        rateiosNaoPagos.forEach((rateio:any)=>{
+getInadimplentesByBuildingId(): void {
+  this.pagamentosEmAtraso = [];
+  this.rateioPorApartamentoService.getRateiosNaoPagosPorPredioId(this.selectedBuildingId).subscribe(
+    (rateiosNaoPagos: any) => {
+      console.log(rateiosNaoPagos)
+      rateiosNaoPagos.forEach((rateio: any) => {
+        // Split the due date into day, month, and year
+        const [mes, ano] = rateio.data_vencimento.split('/');
+        const rateioMonth = parseInt(mes, 10);
+        const rateioYear = parseInt(ano, 10);
+
+        
+        // Check if the due date is not after the selected month/year
+        if (Number(rateioYear) < Number(this.selectedYear) || (Number(rateioYear) === Number(this.selectedYear) && Number(rateioMonth) < Number(this.selectedMonth))
+        ) {
           this.pagamentosEmAtraso.push({
             apt_name: rateio.apt_name,
             data_vencimento: rateio.data_vencimento,
             valor: rateio.valor
           });
-        })
-
-
-      },
-      (error) => {
-        console.error('Error fetching buildings:', error);
-      }
-    );
-  }
+        }
+      });
+    },
+    (error) => {
+      console.error('Error fetching buildings:', error);
+    }
+  );
+}
 
   getBuildingById(): Promise<void> {
     return new Promise((resolve, reject) => {
