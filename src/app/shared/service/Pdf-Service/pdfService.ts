@@ -117,7 +117,7 @@ async pdfCompleto(data: any): Promise<Blob>{
   pdf.text(`Estamos empenhados em melhorar o processo de prestação de contas e rateio. `, 105, 55, { align: 'center' });
   pdf.text(`Agradecemos a compreensão e colaboração de todos`, 105, 65, { align: 'center' });
 
-  /*
+  
 
 
   // Substituir a geração sequencial por Promise.all
@@ -147,7 +147,7 @@ async pdfCompleto(data: any): Promise<Blob>{
 
 
   // Retorna o PDF como Blob
-  */
+  
   const pdfBlob = pdf.output('blob');
   return pdfBlob;
 }

@@ -41,7 +41,7 @@ export class RateioPorApartamentoService {
     return this.http.get<RateioPorApartamento[]>(url, { headers: this.getHeaders() });
   }
 
-  // Função para obter rateios por prédio (novo método)
+  // Função para obter rateios por prédio (inadimplentes)
   getRateiosNaoPagosPorPredioId(predioId: number): Observable<RateioPorApartamento[]> {
     const url = `${this.apiUrl}/inadimplentes/predio/${predioId}`;
     return this.http.get<RateioPorApartamento[]>(url, { headers: this.getHeaders() });
@@ -74,5 +74,17 @@ export class RateioPorApartamentoService {
   atualizarDataPagamento(pagamentosConsolidados: any[]): Observable<void> {
     const url = `${this.apiUrl}/atualizar-data-pagamento`;
     return this.http.post<void>(url, { pagamentosConsolidados }, { headers: this.getHeaders() });
+  }
+
+  // Nova função: Rateios Gerados e Pagos no Mês Correto
+  getRateiosGeradosEPagosNoMesCorreto(predioId: number, mes: number, ano: number): Observable<RateioPorApartamento[]> {
+    const url = `${this.apiUrl}/gerados-pagos/${predioId}/${mes}/${ano}`;
+    return this.http.get<RateioPorApartamento[]>(url, { headers: this.getHeaders() });
+  }
+
+  // Nova função: Rateios Pagos com Geração em Meses Diferentes
+  getRateiosPagosGeradosEmMesesDiferentes(predioId: number, mes: number, ano: number): Observable<RateioPorApartamento[]> {
+    const url = `${this.apiUrl}/pagos-diferentes/${predioId}/${mes}/${ano}`;
+    return this.http.get<RateioPorApartamento[]>(url, { headers: this.getHeaders() });
   }
 }

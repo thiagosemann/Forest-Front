@@ -100,7 +100,7 @@ export class PdfPrestacaoComponent implements OnInit {
         if (gastosIndividuais) {
           data.gastosIndividuais = gastosIndividuais;
         }
-
+        console.log(data)
         // Gera o PDF da capa (cover)
         const capaPdf = await this.pdfPrestacaoService.generatePdfPrestacao(data);
         // Remove a parte "data:application/pdf;filename=generated.pdf;base64," da string base64
