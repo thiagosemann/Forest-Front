@@ -48,7 +48,7 @@ export class BuildingsReviewComponent implements OnInit {
     this.getAllExpenses();
     this.manualGastoForm = this.formBuilder.group({
       detalhe: ['Selecione', Validators.required],
-      nome_original: ['', Validators.required],
+      nome_original: [''],
       tipo: ['Selecione', Validators.required],   
       data: ['', Validators.required],
       valorTotal: ['', [Validators.required]],
@@ -285,7 +285,6 @@ export class BuildingsReviewComponent implements OnInit {
   }
   
   selectContaAddChange(conta:any):void{
-    console.log(this.contasAdicionar)
     this.inserido = 0;
     this.contasAdicionar.forEach(conta=>{
       this.inserido+=conta.valor/conta.parcelas;  
@@ -295,8 +294,7 @@ export class BuildingsReviewComponent implements OnInit {
   }
 
   deleteExpense(expense: CommonExpense): void {
-    console.log(expense)
-    
+   
     if (confirm("Tem certeza que deseja excluir esta despesa comum?") && expense.id ) {
       this.commonExepenseService.deleteCommonExpense(expense.id).subscribe(
         () => {
@@ -318,6 +316,7 @@ export class BuildingsReviewComponent implements OnInit {
 
   submitManualGasto(): void {
     console.log(this.manualGastoForm)
+
     if (this.manualGastoForm.valid) {
       // Aqui você pode acessar os valores do formulário
       const detalheId = this.manualGastoForm.get('detalhe')?.value;
@@ -333,23 +332,38 @@ export class BuildingsReviewComponent implements OnInit {
       let commonExpenses: CommonExpense[] = [];
   
       if (parcela == 1) {
-        let commonExpenseAux: CommonExpense = {
-          data_gasto: `${data.getFullYear()}-${data.getMonth() + 1}-${data.getDate()}`, // Formatando a data
-          nome_original: nome_original,
-          valor: Number(valorTotal),
-          tipo: tipo,
-          parcela: 1,
-          total_parcelas: 1,
-          predio_id: predioID,
-          tipoGasto_id: detalheId,
-          tipo_Gasto_Extra:""
-        };
-        commonExpenses.push(commonExpenseAux);
+        if(detalheId=="Selecione"){
+          let commonExpenseAux: CommonExpense = {
+            data_gasto: `${data.getFullYear()}-${data.getMonth() + 1}-${data.getDate()}`, // Formatando a data
+            nome_original: nome_original,
+            valor: Number(valorTotal),
+            tipo: tipo,
+            parcela: 1,
+            total_parcelas: 1,
+            predio_id: predioID,
+            tipo_Gasto_Extra:nome_original
+          };
+          commonExpenses.push(commonExpenseAux);
+        }else{
+          let expenseType = this.expenseTypes.find(expenseType=>expenseType.id === detalheId);
+          let commonExpenseAux: CommonExpense = {
+            data_gasto: `${data.getFullYear()}-${data.getMonth() + 1}-${data.getDate()}`, // Formatando a data
+            nome_original: expenseType?.detalhes || "Gasto Comun",
+            valor: Number(valorTotal),
+            tipo: tipo,
+            parcela: 1,
+            total_parcelas: 1,
+            predio_id: predioID,
+            tipoGasto_id: detalheId ,
+            tipo_Gasto_Extra:""
+          };
+          commonExpenses.push(commonExpenseAux);
+        }
+
       } else {
         for (let i = 0; i < parcela; i++) {
           let newDate = new Date(data);
           newDate.setMonth(newDate.getMonth() + i); // Adicionar um mês para cada parcela
-         
           let commonExpenseAux: CommonExpense = {
             data_gasto:  `${newDate.getFullYear()}-${newDate.getMonth() + 1}-${newDate.getDate()}`,
             nome_original: nome_original,

@@ -239,7 +239,6 @@ export class GastosIndividuaisComponent implements OnInit {
       // Obter a primeira planilha do arquivo
       const firstSheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[firstSheetName];
-  
       // Converter a planilha para um objeto JSON
       const jsonData: any[] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
       jsonData.forEach((row: any[]) => {
@@ -268,6 +267,10 @@ export class GastosIndividuaisComponent implements OnInit {
           this.gastosIndividuaisInsert.push(apartamentoAux)
         }
       })
+      if(this.apartamentos.length!=this.gastosIndividuaisInsert.length){
+        this.toastr.error("Verifique os apartamentos inseridos no arquivo!")  
+      }
+      console.log(this.gastosIndividuaisInsert)
       this.calculateAguaValue();
       this.calculateGasValue();
   

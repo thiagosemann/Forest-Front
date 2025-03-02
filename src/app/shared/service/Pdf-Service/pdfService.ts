@@ -16,6 +16,7 @@ constructor() {
 
 async generateCondoStatement(data: any): Promise<Blob> {
   let pdfBlob:any;
+  console.log(data)
   if (data.summary.individualExpenses > 0){
      pdfBlob = this.pdfCompleto(data);
   }else{
@@ -98,10 +99,10 @@ async pdfCompleto(data: any): Promise<Blob>{
   // Reinicia o Y
   currentY = 45;
   // Adiciona Provisões.
-  currentY = this.addProvisionsSection(pdf, 110, currentY, data);
+  currentY = this.addProvisionsSection(pdf, 110, currentY, data,14);
 
   // Adiciona Fundos .
-  let scale1 = [66, 66, 67];
+  let scale1 = [30, 30, 30];
   currentY = this.addFundosSection(pdf, 110, currentY, data,totalValue,scale1,14);
   // Adiciona Saldos .
   let scale3 = [45, 45];
@@ -110,14 +111,6 @@ async pdfCompleto(data: any): Promise<Blob>{
   // Adiciona nova página para os gráficos
   pdf.addPage();
   this.addHeaderPage2(pdf, logoPath, logoWidth, logoHeight, data);
-
-  pdf.setFont('Helvetica', 'bold');
-  pdf.setFontSize(10);
-  pdf.text(`A Forest está com um sistema novo, por isso nos próximos meses não serão incluídos os gráficos.`, 105, 45, { align: 'center' });
-  pdf.text(`Estamos empenhados em melhorar o processo de prestação de contas e rateio. `, 105, 55, { align: 'center' });
-  pdf.text(`Agradecemos a compreensão e colaboração de todos`, 105, 65, { align: 'center' });
-
-  
 
 
   // Substituir a geração sequencial por Promise.all
@@ -158,7 +151,7 @@ private addHeader(pdf: any, logoPath: string, logoWidth: number, logoHeight: num
     pdf.setFontSize(20);
     pdf.setFont('Helvetica', 'bold');
     pdf.setFontSize(14);
-    pdf.text(`Nome do Prédio`, 105, 30, { align: 'center' });
+    pdf.text(`${data.building.nome}`, 105, 30, { align: 'center' });
     pdf.text(`Mês: ${data.month} | Apartamento: ${data.apartment} | Total: R$ ${data.condoTotal.toFixed(2)}`, 105, 35, { align: 'center' });
 
 }
@@ -281,7 +274,9 @@ private addCollectiveExpensesSection(pdf: any, startX: number, currentY: number,
       acc.push({ 
         tipo_Gasto_Extra: item.tipo_Gasto_Extra, 
         valor:  Number(item.valor) , // Soma apenas se o tipo for "Rateio"
-        tipo: item.tipo 
+        tipo: item.tipo,
+        parcela: item.parcela,            // Incluindo o número da parcela atual
+        total_parcelas: item.total_parcelas // Incluindo o total de parcelas 
       });
     }
     return acc;
@@ -304,13 +299,12 @@ private addCollectiveExpensesSection(pdf: any, startX: number, currentY: number,
     ['Categoria', 'Tipo', 'Valor','Rateado', 'Sua Fração'],
     [
       ...filteredExpenses.map((item: any) => [
-        item.tipo_Gasto_Extra,
+        Number(item.total_parcelas) > 1 ? `${item.tipo_Gasto_Extra} (${item.parcela}/${item.total_parcelas})`:item.tipo_Gasto_Extra, 
         item.tipo,
         `R$ ${item.valor.toFixed(2)}`,
         item.tipo === "Rateio" ? `R$ ${(item.valor).toFixed(2)}` : `R$ 0,00`,
         item.tipo === "Rateio" ? `R$ ${(item.valor * data.fracao_total).toFixed(2)}` : `R$ 0,00` // Fração zero se não for "Rateio"
       ]),
-      // Adiciona o item "Total" ao final da tabela
       [
         { content: 'Total',colSpan:2, styles: { fontStyle: 'bold', halign: 'center' } }, // Ocupa 2 colunas
         { content: `R$ ${totalValue.toFixed(2)}`, styles: { fontStyle: 'bold' } },
@@ -327,14 +321,14 @@ private addCollectiveExpensesSection(pdf: any, startX: number, currentY: number,
 
 
 
-private addProvisionsSection(pdf: any, startX: number, currentY: number, data: any): number {
+private addProvisionsSection(pdf: any, startX: number, currentY: number, data: any,fontSize:number): number {
   pdf.setFont('Helvetica', 'bold');
-  pdf.setFontSize(14);
+  pdf.setFontSize(fontSize);
   pdf.text('Provisões', startX, currentY);
-  currentY += 5;
-  pdf.setFontSize(10);
+  currentY += 2;
+  pdf.setFontSize(fontSize-4);
   pdf.setFont('Helvetica', 'normal');
-  pdf.text('Resumo das provisões do condomínio.', startX, currentY);
+
 
   // Calcula o total das provisoes
   const totalProvisoes = data.provisoes.reduce((sum: number, item: any) => {

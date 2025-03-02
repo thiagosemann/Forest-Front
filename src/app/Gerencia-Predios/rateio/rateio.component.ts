@@ -235,7 +235,7 @@ export class RateioComponent implements OnInit {
         gastoIndividual.lazer = 0;
         gastoIndividual.multa = 0;
       }
-    
+      let building = this.buildings.find((building) => building.id === this.selectedBuildingId);
       // Estruturar os dados para o PDF
       const rateioData = {
         month: this.selectedMonth,
@@ -244,6 +244,7 @@ export class RateioComponent implements OnInit {
         apt_fracao,
         fracao_total,
         vagas_fracao: vagas_fracao.toString(),
+        building:building,
         summary: {
           individualExpenses: valorIndividual,
           collectiveExpenses: valorComum + valorFundos + valorProvisoes,
