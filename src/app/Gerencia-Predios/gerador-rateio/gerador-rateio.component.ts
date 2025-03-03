@@ -13,7 +13,8 @@ export class GeradorRateioComponent  implements OnInit {
     { label: '2 - Gastos Individuais', open: false, completed: false },
     { label: '3 - Fundos', open: false, completed: false },
     { label: '4 - Provisões', open: false, completed: false },
-    { label: '5 - Rateio', open: false, completed: false },
+    { label: '5 - Saldos', open: false, completed: false },
+    { label: '6 - Rateio', open: false, completed: false },
   ];
   selectedBuildingId:number=0;
   selectedMonth:number=0;
