@@ -313,7 +313,7 @@ export class PdfService {
       fontSize - 8
     );
 
-    return [currentY, totalValue];
+    return [currentY, totalValueRateado];
   }
 
   private addProvisionsSection(pdf: any, startX: number, currentY: number, data: any, fontSize: number): number {
