@@ -394,7 +394,17 @@ export class PdfService {
     pdf.text('Saldos Bancários', startX, currentY);
     currentY += 2;
 
-    const sortedSaldos = [...data.saldosPredios].sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime());
+    // Função para converter datas no formato DD/MM/YYYY para Date
+    const parseDate = (dateStr: string): Date => {
+      const [day, month, year] = dateStr.split('/');
+      return new Date(Number(year), Number(month) - 1, Number(day));
+    };
+
+    // Ordenar corretamente considerando o formato DD/MM/YYYY
+    const sortedSaldos = [...data.saldosPredios].sort((a, b) => {
+      return parseDate(b.data).getTime() - parseDate(a.data).getTime();
+    });
+
     const latestConta = sortedSaldos.find((item) => item.type === 'conta');
     const latestInvestimento1 = sortedSaldos.find((item) => item.type === 'investimento1');
     const latestInvestimento2 = sortedSaldos.find((item) => item.type === 'investimento2');
