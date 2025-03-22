@@ -30,6 +30,11 @@
       <button class="btn btn-secondary" (click)="downloadAllRateios('preview')">
         <i class="fas fa-download"></i> Prévia
       </button>
+        <!-- Novo botão para CNAB400 -->
+      <button class="btn btn-info" style="margin-left: 15px;" (click)="downloadCNAB400()">
+        <i class="fas fa-file-alt"></i> CNAB400
+      </button>
+      
       <div *ngIf="!rateioGerado">
         <button class="btn btn-primary"  style="margin-left: 15px;" (click)="downloadAllRateios('gerar')">
           <i class="fas fa-download"></i> Gerar Rateios

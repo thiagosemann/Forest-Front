@@ -440,5 +440,140 @@ export class RateioComponent implements OnInit {
     })
     return this.formatCurrency(soma)
   }
-
+  async downloadCNAB400(): Promise<void> {
+    this.loading = true;
+    this.downloading = true;
+    this.textoLoading = "Gerando arquivo CNAB400...";
+    
+    try {
+      // 1. Gerar conteúdo do CNAB400
+      const cnabContent = this.generateCNAB400Content();
+      
+      // 2. Nome do arquivo conforme padrão do Inter
+      const numeroSequencial = this.getSequencialRemessa(); // Implemente essa função
+      const nomeArquivo = `C1400_001_${numeroSequencial}.REM`;
+  
+      // 3. Criar Blob e fazer download
+      const blob = new Blob([cnabContent], { type: 'text/plain;charset=iso-8859-1' });
+      saveAs(blob, nomeArquivo);
+      
+      this.toastr.success('Arquivo CNAB400 gerado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao gerar CNAB400:', error);
+      this.toastr.error('Erro ao gerar arquivo CNAB400');
+    } finally {
+      this.loading = false;
+      this.downloading = false;
+    }
+  }
+  private generateCNAB400Content(): string {
+    const header = this.createCNABHeader();
+    const detalhes = this.createCNABDetails();
+    const trailer = this.createCNABTrailer(detalhes.length);
+    return header + '\r\n' + detalhes.join('\r\n') + '\r\n' + trailer;
+  }
+  
+  // HEADER (Posições 1-400)
+  private createCNABHeader(): string {
+    const dataAtual = new Date();
+    const formattedDate = this.formatCNABDate(dataAtual); // Formato DDMMAA
+    const numeroSequencial = this.getSequencialRemessa().padStart(7, '0'); // Ex: "0000769"
+  
+    return [
+      '0', // Identificação do Registro (1)
+      '1', // Identificação do Arquivo Remessa (2)
+      'REMESSA'.padEnd(7, ' '), // Literal Remessa (3-9)
+      '01'.padStart(2, '0'), // Código de Serviço (10-11)
+      'COBRANCA'.padEnd(15, ' '), // Literal Serviço (12-26)
+      ''.padEnd(20, ' '), // Brancos (27-46)
+      'Forest'.padEnd(30, ' '), // Nome da Empresa (47-76)
+      '077', // Código do Banco (77-79)
+      'INTER'.padEnd(15, ' '), // Nome do Banco (80-94)
+      formattedDate, // Data de Gravação (95-100)
+      ''.padEnd(10, ' '), // Brancos (101-110)
+      numeroSequencial, // Número Sequencial da Remessa (111-117)
+      ''.padEnd(277, ' '), // Brancos (118-394)
+      '000001' // Sequencial do Registro (395-400)
+    ].join('');
+  }
+  
+  // DETALHES (Registro Tipo 1 - Posições 1-400)
+  private createCNABDetails(): string[] {
+    return this.usersRateio.map((user, index) => {
+      const valorTotal = (user.valorComum || 0) + (user.valorFundos || 0) + (user.valorProvisoes || 0) + (user.valorIndividual || 0);
+      const valorEmCentavos = Math.round(valorTotal * 100).toString().padStart(13, '0');
+      // Gerar "Seu número" (user.apt_name + mês com 2 dígitos)
+      const mesFormatado = this.selectedMonth.toString().padStart(2, '0'); // Ex: "03" para março
+      const codigoBoleto = (user.apt_name.slice(0, 8) + mesFormatado) // Limita a 10 caracteres
+        .toUpperCase() // Remove acentos e mantém maiúsculas
+        .replace(/[^A-Z0-9]/g, '') // Remove caracteres especiais
+        .padEnd(10, ' '); // Completa com espaços se necessário
+      return [
+        '1', // Identificação do Registro (1)
+        ''.padEnd(19, ' '), // Brancos (2-20)
+        '112', // Carteira (21-23) (112 = padrão Inter)
+        '0001', // Agência (24-27)
+        '123456789'.padStart(9, '0'), // Conta Corrente (28-36) (Ajustar para sua conta)
+        '0', // DV da Conta (37) (Ajustar)
+        user.apt_name.padEnd(25, ' '), // Número Controle (38-62)
+        ''.padEnd(3, ' '), // Brancos (63-65)
+        '0', // Campo de Multa (66)
+        '0000000000000', // Valor Multa (67-79)
+        '0000', // Percentual Multa (80-83)
+        '000000', // Data Multa (84-89)
+        '00000000000', // Nosso Número (90-100) (Preencher conforme faixa reservada)
+        ''.padEnd(8, ' '), // Brancos (101-108)
+        '01', // Identificação da Ocorrência (109-110) (01 = Remessa)
+        codigoBoleto, // Seu Número (111-120)
+        this.formatCNABDate(new Date()), // Data Vencimento (121-126)
+        valorEmCentavos, // Valor do Título (127-139)
+        '60', // Data Limite Pagamento (140-141) (60 dias após vencimento)
+        ''.padEnd(6, ' '), // Brancos (142-147)
+        '01', // Espécie do Título (148-149)
+        'N', // Identificação (150)
+        ''.padEnd(6, ' '), // Data Emissão (151-156)
+        ''.padEnd(3, ' '), // Brancos (157-159)
+        '0', // Juros/Mora (160)
+        '0000000000000', // Valor Juros (161-173)
+        '0000', // Taxa Juros (174-177)
+        '000000', // Data Mora (178-183)
+        '0', // Descontos (184)
+        '0000000000000', // Valor Desconto 1 (185-197)
+        '0000', // Percentual Desconto 1 (198-201)
+        '000000', // Data Desconto 1 (202-207)
+        ''.padEnd(13, ' '), // Brancos (208-220)
+        '02', // Tipo Inscrição Pagador (221-222) (02 = CNPJ)
+        '12345678000195'.padStart(14, '0'), // CNPJ Pagador (223-236)
+        user.apt_name.padEnd(40, ' '), // Nome Pagador (237-276)
+        'Endereço Pagador'.padEnd(38, ' '), // Endereço (277-314)
+        'SP', // UF (315-316)
+        '00000000', // CEP (317-324)
+        ''.padEnd(70, ' '), // Mensagem 1 (325-394)
+        (index + 1).toString().padStart(6, '0') // Sequencial (395-400)
+      ].join('');
+    });
+  }
+  
+  // TRAILER (Posições 1-400)
+  private createCNABTrailer(totalRegistros: number): string {
+    return [
+      '9', // Identificação do Registro (1)
+      totalRegistros.toString().padStart(6, '0'), // Quantidade de Boletos (2-7)
+      ''.padEnd(387, ' '), // Brancos (8-394)
+      (totalRegistros + 2).toString().padStart(6, '0') // Sequencial (395-400)
+    ].join('');
+  }
+  
+  // Função auxiliar para data DDMMAA
+  private formatCNABDate(date: Date): string {
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear().toString().slice(-2);
+    return day + month + year;
+  }
+  
+  // Obter número sequencial (exemplo simplificado)
+  private getSequencialRemessa(): string {
+    return '0000001'; // Implemente lógica de incremento
+  }
 }
