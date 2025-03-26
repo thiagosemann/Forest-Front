@@ -16,6 +16,7 @@ async generatePdfPrestacao(data: any): Promise<string> {
   const logoPath = '../../../assets/images/logo-com-frase-V2.png';
   const footerPath = '../../../assets/images/footerPdf.png';
   let months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+  
   let startX = 5;
   console.log(data)
   // Carregar imagens como base64
@@ -26,7 +27,7 @@ async generatePdfPrestacao(data: any): Promise<string> {
   this.addCapa(pdf, logoData, footerData, startX,data,months);
   pdf.addPage();
   // Adiciona A segunda página com as assinaturas
-  this.addParecerConselho(pdf, logoData, startX,data);
+  this.addParecerConselho(pdf, logoData, startX,data,months);
   pdf.addPage();
   // Tabelas de Gastos
   this.addTabelas(pdf, startX, data,months,logoData);
@@ -73,14 +74,15 @@ async generatePdfPrestacao(data: any): Promise<string> {
     pdf.addImage(footerData, 'JPEG', 0, 240, 210, 60, undefined, 'FAST');
   }
 
-  private addParecerConselho(pdf: any, logoData: any, startX: number, data: any): void {
+  private addParecerConselho(pdf: any, logoData: any, startX: number, data: any,months:any): void {
     // Adiciona logo com compactação
     pdf.addImage(logoData, 'JPEG', startX + 10, 0, 30, 30, undefined, 'FAST');
     // Título principal
     this.addTextCentered(pdf, 'Parecer do Conselho', 'bold', 25, startX + 100, 70);
     // Texto auxiliar
+    const month = months[Number(data.selectedMonth)-1];
     const textAux =
-      'Declaramos ter examinado as contas, documentos e papéis que compõem esta prestação de contas ao mês de novembro de 2024, sendo que os documentos estão em ordem e as contas exatas, em conformidade com a Lei 4.591/64 e regimento interno do condomínio.';
+      `Declaramos ter examinado as contas, documentos e papéis que compõem esta prestação de contas ao mês de ${month.toLowerCase()} de 2024, sendo que os documentos estão em ordem e as contas exatas, em conformidade com a Lei 4.591/64 e regimento interno do condomínio.`;
     this.addTextBlock(pdf, 'normal', 14, textAux, startX + 30, 80, 160);
     // Síndico
     this.addSignatureBlock(pdf,'Síndico',data.building.sindico,startX,115,145);
