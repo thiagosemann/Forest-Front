@@ -444,7 +444,7 @@ export class RateioComponent implements OnInit {
     this.loading = true;
     this.downloading = true;
     this.textoLoading = "Gerando arquivo CNAB400...";
-    
+
     try {
       // 1. Gerar conteúdo do CNAB400
       const cnabContent = this.generateCNAB400Content();
@@ -499,6 +499,9 @@ export class RateioComponent implements OnInit {
   
   // DETALHES (Registro Tipo 1 - Posições 1-400)
   private createCNABDetails(): string[] {
+    let building = this.buildings.find((building) => building.id === this.selectedBuildingId);
+    console.log(building)
+
     return this.usersRateio.map((user, index) => {
       const valorTotal = (user.valorComum || 0) + (user.valorFundos || 0) + (user.valorProvisoes || 0) + (user.valorIndividual || 0);
       const valorEmCentavos = Math.round(valorTotal * 100).toString().padStart(13, '0');
@@ -525,7 +528,7 @@ export class RateioComponent implements OnInit {
         ''.padEnd(8, ' '), // Brancos (101-108)
         '01', // Identificação da Ocorrência (109-110) (01 = Remessa)
         codigoBoleto, // Seu Número (111-120)
-        this.formatCNABDate(new Date()), // Data Vencimento (121-126)
+        this.dateVencimentoCNAB(), // Data Vencimento (121-126)
         valorEmCentavos, // Valor do Título (127-139)
         '60', // Data Limite Pagamento (140-141) (60 dias após vencimento)
         ''.padEnd(6, ' '), // Brancos (142-147)
@@ -546,8 +549,8 @@ export class RateioComponent implements OnInit {
         '12345678000195'.padStart(14, '0'), // CNPJ Pagador (223-236)
         user.apt_name.padEnd(40, ' '), // Nome Pagador (237-276)
         'Endereço Pagador'.padEnd(38, ' '), // Endereço (277-314)
-        'SP', // UF (315-316)
-        '00000000', // CEP (317-324)
+        'PR', // UF (315-316)
+        building?.cep, // CEP (317-324)
         ''.padEnd(70, ' '), // Mensagem 1 (325-394)
         (index + 1).toString().padStart(6, '0') // Sequencial (395-400)
       ].join('');
@@ -570,6 +573,21 @@ export class RateioComponent implements OnInit {
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const year = date.getFullYear().toString().slice(-2);
     return day + month + year;
+  }
+
+  private dateVencimentoCNAB(): string {
+    let monthVencimento = Number(this.selectedMonth) + 1;
+    let year = Number(this.selectedYear);
+    console.log(year)
+    if (monthVencimento > 12) {
+      monthVencimento = 1;
+      year += 1; // Incrementa o ano se o mês for maior que 12
+    }
+
+    const month = monthVencimento.toString().padStart(2, '0');
+    const yearShort = year.toString().slice(-2); // Pega os últimos dois dígitos do ano
+    console.log("Vencimento:", '10' + month + yearShort);
+    return '10' + month + yearShort;
   }
   
   // Obter número sequencial (exemplo simplificado)

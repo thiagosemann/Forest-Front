@@ -6,4 +6,5 @@ export interface Building {
     email: string;
     qnt_Apartamentos: number;
     sindico_id: number;
+    cep?:string;
 }
