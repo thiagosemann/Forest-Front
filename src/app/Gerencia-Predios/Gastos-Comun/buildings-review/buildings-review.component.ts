@@ -47,7 +47,7 @@ export class BuildingsReviewComponent implements OnInit {
     this.getAllBuildings();
     this.getAllExpenses();
     this.manualGastoForm = this.formBuilder.group({
-      detalhe: ['Selecione', Validators.required],
+      detalhe: ['Selecione'],
       nome_original: [''],
       tipo: ['Selecione', Validators.required],   
       data: ["", Validators.required],
@@ -319,7 +319,6 @@ export class BuildingsReviewComponent implements OnInit {
   }
 
   submitManualGasto(): void {
-    console.log(this.manualGastoForm)
 
     if (this.manualGastoForm.valid) {
       // Aqui você pode acessar os valores do formulário
@@ -332,7 +331,8 @@ export class BuildingsReviewComponent implements OnInit {
       // Obter a data do formulário
       let data = this.manualGastoForm.get('data')?.value;
       data = new Date(data); // Converter para objeto Date
-  
+      data.setDate(data.getDate() + 1); // Corrigir o problema de menos 1 dia
+
       let commonExpenses: CommonExpense[] = [];
   
       if (parcela == 1) {
