@@ -50,7 +50,7 @@ export class BuildingsReviewComponent implements OnInit {
       detalhe: ['Selecione', Validators.required],
       nome_original: [''],
       tipo: ['Selecione', Validators.required],   
-      data: ['', Validators.required],
+      data: ["", Validators.required],
       valorTotal: ['', [Validators.required]],
       parcela:['1', [Validators.required, Validators.min(1)]]      
     });
@@ -60,6 +60,7 @@ export class BuildingsReviewComponent implements OnInit {
       this.selectedYear = selecao.year;
       this.loadExpenses();
     });
+
  
   }
   
@@ -183,6 +184,9 @@ export class BuildingsReviewComponent implements OnInit {
   }
  
   loadExpenses(): void {
+    let dateAux = this.selectedYear + "-" + this.selectedMonth.toString().padStart(2, '0') + "-01";
+    this.manualGastoForm.get('data')?.setValue(dateAux);
+
     this.rateio = 0;
     this.provisao = 0;
     this.commonExepenses = [];  

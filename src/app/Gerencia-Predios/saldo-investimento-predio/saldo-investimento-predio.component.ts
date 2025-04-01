@@ -265,7 +265,7 @@ export class SaldoInvestimentoPredioComponent {
             tipo: type,
             predio_id: this.selectedBuildingId
           };
-
+          console.log(extrato)
           this.extratoPdfService.createExtratoPdf(extrato).subscribe({
             next: () => {
               this.toastr.success('PDF enviado com sucesso!');
