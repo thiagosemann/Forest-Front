@@ -16,7 +16,7 @@ export class BuildingsControlComponent implements OnInit {
   showEditComponent: boolean = false;
   registerForm!: FormGroup;
   buildingEditing: Building | undefined;
-  botaoForm:string = "Atualizar";
+  botaoForm: string = "Atualizar";
 
   constructor(
     private buildingService: BuildingService,
@@ -29,7 +29,8 @@ export class BuildingsControlComponent implements OnInit {
       sindico: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       qnt_Apartamentos: ['', Validators.required],
-      sindico_id: ['']
+      sindico_id: [''],
+      cep: ['', Validators.required] // Campo CEP adicionado ao form
     });
   }
 
@@ -41,7 +42,7 @@ export class BuildingsControlComponent implements OnInit {
     this.showEditComponent = true;
     this.buildingEditing = undefined; // Resetar o prédio em edição
     this.registerForm.reset(); // Resetar o formulário
-    this.botaoForm="Criar";
+    this.botaoForm = "Criar";
   }
 
   getAllBuildings(): void {
@@ -56,7 +57,7 @@ export class BuildingsControlComponent implements OnInit {
   }
 
   editBuilding(building: Building): void {
-    this.botaoForm="Atualizar";
+    this.botaoForm = "Atualizar";
 
     this.buildingEditing = building;
     this.registerForm.patchValue({
@@ -65,7 +66,8 @@ export class BuildingsControlComponent implements OnInit {
       sindico: building.sindico,
       email: building.email,
       qnt_Apartamentos: building.qnt_Apartamentos,
-      sindico_id: building.sindico_id
+      sindico_id: building.sindico_id,
+      cep: building.cep // Preenche o campo CEP ao editar
     });
     this.showEditComponent = !this.showEditComponent;
   }
@@ -124,8 +126,7 @@ export class BuildingsControlComponent implements OnInit {
         );
       }
     } else {
-      // Tratar erros de validação do formulário
+      // Tratar erros de validação do formulário, se necessário
     }
   }
-  
 }

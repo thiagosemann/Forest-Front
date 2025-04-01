@@ -1,96 +1,106 @@
 <div class="container mt-4">
     <button class="btn btn-primary" (click)="createNewBuilding()">Adicionar Novo Prédio</button>
-</div>
-<div *ngIf="showEditComponent" style="margin-top: 30px;">
+  </div>
+  <div *ngIf="showEditComponent" style="margin-top: 30px;">
     <div class="scrollable-container ">
-        <div class="container">
-            <div class="row d-flex justify-content-center align-items-center">
-                <div class="col-md-8 col-lg-6 col-xl-5">
-                    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()"
-                        class="p-4 p-md-5 border rounded bg-light">
-                        <h4 class="text-center mb-2">Editar</h4>
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label class="form-label" for="nome">Nome do Edifício:</label>
-                                    <input type="text" id="nome" name="nome" class="form-control"
-                                        placeholder="Nome do edifício" formControlName="nome" required />
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label class="form-label" for="CNPJ">CNPJ:</label>
-                                    <input type="text" id="CNPJ" name="CNPJ" class="form-control"
-                                        placeholder="CNPJ" formControlName="CNPJ" required />
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="sindico">Nome do Síndico:</label>
-                            <input type="text" id="sindico" name="sindico" class="form-control"
-                                placeholder="Nome do síndico" formControlName="sindico" required />
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="email">E-mail do Síndico:</label>
-                            <input type="email" id="email" name="email" class="form-control"
-                                placeholder="E-mail do síndico" formControlName="email" required
-                                autocomplete="username" />
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label" for="qnt_Apartamentos">Quantidade de Apartamentos:</label>
-                            <input type="number" id="qnt_Apartamentos" name="qnt_Apartamentos" class="form-control"
-                                placeholder="Quantidade de apartamentos" formControlName="qnt_Apartamentos" required />
-                        </div>
-                        <div class="text-center text-md-start mt-4 pt-2">
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <button type="submit" class="btn btn-success btn-lg px-4">{{botaoForm}}</button>
-                                </div>
-                                <div class="col-md-6">
-                                    <button type="button" class="btn btn-danger btn-lg px-4"
-                                        (click)="cancelarEdit()">Cancelar</button>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
+      <div class="container">
+        <div class="row d-flex justify-content-center align-items-center">
+          <div class="col-md-8 col-lg-6 col-xl-5">
+            <form [formGroup]="registerForm" (ngSubmit)="onSubmit()"
+              class="p-4 p-md-5 border rounded bg-light">
+              <h4 class="text-center mb-2">Editar</h4>
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <div class="form-group mb-3">
+                    <label class="form-label" for="nome">Nome do Edifício:</label>
+                    <input type="text" id="nome" name="nome" class="form-control"
+                      placeholder="Nome do edifício" formControlName="nome" required />
+                  </div>
                 </div>
-            </div>
+                <div class="col-md-6">
+                  <div class="form-group mb-3">
+                    <label class="form-label" for="CNPJ">CNPJ:</label>
+                    <input type="text" id="CNPJ" name="CNPJ" class="form-control"
+                      placeholder="CNPJ" formControlName="CNPJ" required />
+                  </div>
+                </div>
+              </div>
+              <div class="form-group mb-3">
+                <label class="form-label" for="sindico">Nome do Síndico:</label>
+                <input type="text" id="sindico" name="sindico" class="form-control"
+                  placeholder="Nome do síndico" formControlName="sindico" required />
+              </div>
+              <div class="form-group mb-3">
+                <label class="form-label" for="email">E-mail do Síndico:</label>
+                <input type="email" id="email" name="email" class="form-control"
+                  placeholder="E-mail do síndico" formControlName="email" required autocomplete="username" />
+              </div>
+              <div class="form-group mb-3">
+                <label class="form-label" for="qnt_Apartamentos">Quantidade de Apartamentos:</label>
+                <input type="number" id="qnt_Apartamentos" name="qnt_Apartamentos" class="form-control"
+                  placeholder="Quantidade de apartamentos" formControlName="qnt_Apartamentos" required />
+              </div>
+              <!-- Campo CEP adicionado -->
+              <div class="form-group mb-3">
+                <label class="form-label" for="cep">CEP:</label>
+                <input type="text" id="cep" name="cep" class="form-control"
+                  placeholder="CEP" formControlName="cep" required />
+              </div>
+              <div class="text-center text-md-start mt-4 pt-2">
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <button type="submit" class="btn btn-success btn-lg px-4">{{botaoForm}}</button>
+                  </div>
+                  <div class="col-md-6">
+                    <button type="button" class="btn btn-danger btn-lg px-4"
+                      (click)="cancelarEdit()">Cancelar</button>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
         </div>
+      </div>
     </div>
-</div>
-
-<div *ngIf="!showEditComponent" style="margin-top: 30px;">
+  </div>
+  
+  <div *ngIf="!showEditComponent" style="margin-top: 30px;">
     <div class="container">
-        <div class="table-wrapper">
-            <table class="table narrow-table">
-                <thead>
-                    <tr>
-                        <th scope="col" style="width: 20%;">Nome do Edifício</th>
-                        <th scope="col" style="width: 20%;">CNPJ</th>
-                        <th scope="col" style="width: 20%;">Síndico</th>
-                        <th scope="col" style="width: 25%;">E-mail do Síndico</th>
-                        <th scope="col" style="width: 5%;">Editar</th>
-                        <th scope="col" style="width: 5%;">Excluir</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let building of buildings; let i = index"
-                        [ngClass]="{'table-light': i % 2 === 0, 'table-light-gray': i % 2 !== 0}">
-                        <td>{{ building.nome }}</td>
-                        <td>{{ building.CNPJ }}</td>
-                        <td>{{ building.sindico }}</td>
-                        <td>{{ building.email }}</td>
-                        <td>
-                            <button class="btn btn-primary btn-sm" (click)="editBuilding(building)"><i
-                                    class="fas fa-edit"></i></button>
-                        </td>
-                        <td>
-                            <button class="btn btn-danger btn-sm" (click)="deleteBuilding(building)"><i
-                                    class="fas fa-trash"></i></button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+      <div class="table-wrapper">
+        <table class="table narrow-table">
+          <thead>
+            <tr>
+              <th scope="col" style="width: 20%;">Nome do Edifício</th>
+              <th scope="col" style="width: 20%;">CNPJ</th>
+              <th scope="col" style="width: 20%;">Síndico</th>
+              <th scope="col" style="width: 25%;">E-mail do Síndico</th>
+              <th scope="col" style="width: 10%;">CEP</th>
+              <th scope="col" style="width: 5%;">Editar</th>
+              <th scope="col" style="width: 5%;">Excluir</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let building of buildings; let i = index"
+                [ngClass]="{'table-light': i % 2 === 0, 'table-light-gray': i % 2 !== 0}">
+              <td>{{ building.nome }}</td>
+              <td>{{ building.CNPJ }}</td>
+              <td>{{ building.sindico }}</td>
+              <td>{{ building.email }}</td>
+              <td>{{ building.cep }}</td>
+              <td>
+                <button class="btn btn-primary btn-sm" (click)="editBuilding(building)">
+                  <i class="fas fa-edit"></i>
+                </button>
+              </td>
+              <td>
+                <button class="btn btn-danger btn-sm" (click)="deleteBuilding(building)">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-</div>
+  </div>
+  
