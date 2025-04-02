@@ -7,6 +7,9 @@ import { ApartamentoService } from '../../shared/service/Banco_de_Dados/apartame
 import { ToastrService } from 'ngx-toastr';
 import { ExcelService } from '../../shared/service/excelService';
 import * as XLSX from 'xlsx';
+import { UsersApartamentosService } from 'src/app/shared/service/Banco_de_Dados/userApartamento_service';
+import { UserService } from 'src/app/shared/service/Banco_de_Dados/user_service';
+import { UserApartamento } from 'src/app/shared/utilitarios/userApartamento';
 
 @Component({
   selector: 'app-apartamentos-control',
@@ -28,13 +31,19 @@ export class ApartamentosControlComponent {
   saveData:boolean =false;
   uploading: boolean = false;
   apartamentosInsert: Apartamento[] = [];
-
+  apartmentUsers: any[] = [];
+  allUsers: any[] = [];
+  selectedUserId: number | null = null;
+  currentApartmentId: number | null = null;
+  showModal:boolean = false;
   constructor(
     private buildingService: BuildingService,
     private apartamentoService: ApartamentoService,
+    private userApartamentoService: UsersApartamentosService,
     private toastr: ToastrService,
     private formBuilder: FormBuilder,
-    private excelService: ExcelService
+    private excelService: ExcelService,
+    private userService: UserService
 
   ) {
     this.myGroup = new FormGroup({
@@ -70,6 +79,8 @@ export class ApartamentosControlComponent {
     this.buildingId = event.target.value;
     if (this.buildingId) {
       this.getAllApartamentosByBuildingId(this.buildingId);
+      this.loadUserByBuilidngId(); // Carrega todos os usuários disponíveis
+
     }
   }
 
@@ -89,9 +100,13 @@ export class ApartamentosControlComponent {
 
 
   editApartamento(apartamento: Apartamento): void {
-    this.manageScreens('edit')
     this.isEditing = true;
+    this.showModal = true;
     this.titleEditApartamento = "Editar Apartamento"
+    this.currentApartmentId = apartamento.id ?? null;
+    if (apartamento.id !== undefined) {
+      this.loadApartmentUsers(apartamento.id);
+    }
     this.registerForm.patchValue({
       id: apartamento.id,
       nome: apartamento.nome,
@@ -101,10 +116,70 @@ export class ApartamentosControlComponent {
     });
     
   }
+  private loadApartmentUsers(apartmentId: number): void {
+    this.userApartamentoService.getUsersByApartamentoId(apartmentId).subscribe({
+      next: (users) => {
+        this.apartmentUsers = users;
+      },
+      error: (error) => {
+        console.error('Erro ao carregar usuários:', error);
+      }
+    });
+  }
+  loadUserByBuilidngId(): void {
+    
+    this.userService.getUsersByBuilding(this.buildingId!).subscribe({
+      next: (users) => {
+        this.allUsers = users;
+      },
+      error: (error) => {
+        console.error('Erro ao carregar usuários:', error);
+      }
+    });
+  }
+  addUserToApartment(): void {
+    if (this.currentApartmentId && this.selectedUserId) {
+      let userApartamento:UserApartamento = {
+        user_id: this.selectedUserId,
+        apartamento_id: this.currentApartmentId
+      }
+      this.userApartamentoService.createUserApartamento(userApartamento)
+        .subscribe({
+          next: () => {
+            this.loadApartmentUsers(this.currentApartmentId!);
+            this.selectedUserId = null;
+            this.toastr.success('Usuário vinculado com sucesso');
+          },
+          error: (error) => {
+            console.error('Erro ao vincular usuário:', error);
+            this.toastr.error(error.error?.message || 'Erro ao vincular usuário');
+          }
+        });
+    }
+  }
+  
+  removeUserFromApartment(userId: number): void {
+    if (this.currentApartmentId && userId) {
+
+      this.userApartamentoService.deleteUserApartamento(userId, this.currentApartmentId)
+        .subscribe({
+          next: () => {
+            this.loadApartmentUsers(this.currentApartmentId!);
+            this.toastr.success('Usuário removido com sucesso');
+          },
+          error: (error) => {
+            console.error('Erro ao remover usuário:', error);
+            this.toastr.error(error.error?.message || 'Erro ao remover usuário');
+          }
+        });
+    }
+  }
+  
 
   cancelarEdit(): void {
     this.manageScreens('apartamentos')
     this.isEditing = false;
+    this.showModal = false;
     this.registerForm.reset({
       id: "",
       nome: "",
@@ -114,6 +189,8 @@ export class ApartamentosControlComponent {
     });
     
   }
+
+
 
   deleteApartamento(apartamento: Apartamento): void {
     if (apartamento && apartamento.id) {
@@ -127,8 +204,9 @@ export class ApartamentosControlComponent {
   }
 
   addApartamento(): void {
-    this.manageScreens('edit')
+   
     this.isEditing = false;  // Estamos criando uma nova apartamento
+    this.showModal = true;
     this.titleEditApartamento = "Criar Apartamento"
     this.registerForm.reset({  // Resetar o formulário para valores padrão
       id: "",
@@ -151,10 +229,15 @@ export class ApartamentosControlComponent {
           this.toastr.success('Apartamento atualizada com sucesso!');
           this.showEditComponent = false;
           this.getAllApartamentosByBuildingId(this.buildingId!);
+          this.isEditing = false;
+          this.showModal = false;
         },
         error: (error) => {
           this.toastr.error('Erro ao atualizar a apartamento.');
           console.error('Erro ao atualizar a apartamento:', error);
+          this.isEditing = false;
+          this.showModal = false;
+
         }
       });
     } else {
@@ -163,10 +246,14 @@ export class ApartamentosControlComponent {
           this.toastr.success('Apartamento criada com sucesso!');
           this.showEditComponent = false;
           this.getAllApartamentosByBuildingId(this.buildingId!);
+          this.showModal = false;
+
         },
         error: (error) => {
           this.toastr.error('Erro ao criar a apartamento.');
           console.error('Erro ao criar a apartamento:', error);
+          this.showModal = false;
+
         }
       });
     }
@@ -174,11 +261,7 @@ export class ApartamentosControlComponent {
   }
 
   manageScreens(type:String):void{
-    if(type=="edit"){
-      this.showEditComponent = true;
-      this.showAddApartamentosLoteComponent = false;
-      this.showApartamentosComponent = false;
-    }else if(type=="apartamentos"){
+  if(type=="apartamentos"){
       this.showEditComponent = false;
       this.showAddApartamentosLoteComponent = false;
       this.showApartamentosComponent = true;
