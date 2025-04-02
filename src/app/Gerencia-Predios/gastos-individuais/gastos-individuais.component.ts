@@ -306,11 +306,12 @@ export class GastosIndividuaisComponent implements OnInit {
     let valorTotalAgua = taxaAgua * this.apartamentos.length;
     let diferencaAgua = this.valorAguaGastoComum - valorTotalAgua;
   
-    console.log("valorTotalAgua", valorTotalAgua);
-    console.log("this.valorAguaGastoComum", this.valorAguaGastoComum);
-    console.log("diferencaAgua", diferencaAgua);
-  
+
     this.gastosIndividuaisInsert.forEach(expense=>{
+      if(expense.apt_name?.toUpperCase().includes("VAGA") || expense.apt_name?.toUpperCase().includes("LOJA") ){
+        expense.aguaValor = 0;
+        return;
+      }
       expense.aguaValor= taxaAgua;
       expense.valorTotal = Number(expense.aguaValor) + 
                            Number(expense.gasValor) + 
