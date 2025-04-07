@@ -40,6 +40,7 @@ import { NavBarComponent } from './Compartilhados/nav-bar/nav-bar.component';
 import { ProfileComponent } from './Compartilhados/profile/profile.component';
 import { RegisterComponent } from './Compartilhados/register/register.component';
 import { ProvisoesComponent } from './Gerencia-Predios/provisoes/provisoes.component';
+import { EnvioRateioBoletosComponent } from './Gerencia-Predios/envio-rateio-boletos/envio-rateio-boletos.component';
 
 @NgModule({
   declarations: [
@@ -69,7 +70,8 @@ import { ProvisoesComponent } from './Gerencia-Predios/provisoes/provisoes.compo
     NotaFiscalGastosComunsComponent,
     PdfPrestacaoComponent,
     CobrancaPrestacaoComponent,
-    GeradorRateioComponent
+    GeradorRateioComponent,
+    EnvioRateioBoletosComponent
   ],
   imports: [
     BrowserModule,

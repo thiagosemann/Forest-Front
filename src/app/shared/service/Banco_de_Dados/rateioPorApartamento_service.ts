@@ -87,4 +87,10 @@ export class RateioPorApartamentoService {
     const url = `${this.apiUrl}/pagos-diferentes/${predioId}/${mes}/${ano}`;
     return this.http.get<RateioPorApartamento[]>(url, { headers: this.getHeaders() });
   }
+
+  // Nova função: Se tem boleto e Rateio enviado.
+  getRateiosEPdfsNamesByRateioId(rateioId: number): Observable<any[]> {
+    const url = `${this.apiUrl}/rateiosPdfNames/${rateioId}`;
+    return this.http.get<any[]>(url, { headers: this.getHeaders() });
+  }
 }

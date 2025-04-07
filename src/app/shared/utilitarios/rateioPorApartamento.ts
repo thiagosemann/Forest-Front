@@ -9,6 +9,7 @@ export interface RateioPorApartamento {
     valorProvisoes?:number;
     valorFundos?:number;
     apartamento_id: number;
+    rateio_boleto_email_id? : number;
     vagas:Vaga[];
     fracao_total:number;
     data_pagamento?:string;

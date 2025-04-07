@@ -1,0 +1,74 @@
+<div class="container">
+  <div class="table-wrapper">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Apartamento</th>
+          <th>Valor</th>
+          <th>Rateio PDF</th>
+          <th>Boleto PDF</th>
+          <th>Data do Envio</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let rateio of rateiosBoletos">
+          <td>{{ rateio.apt_name }}</td>
+          <td>{{ formatCurrency(rateio.valor) }}</td>
+
+          <!-- Rateio PDF -->
+          <td class="cell-file">
+            <ng-container *ngIf="rateio.rateioPdfFileName; else uploadRateio">
+              <div class="file-actions">
+                <button class="btn-icon download" (click)="downloadPdf(rateio.rateio_boleto_email_id, 'rateio')" title="Download">
+                  ⬇
+                </button>
+                <button class="btn-icon delete" (click)="deletePdf(rateio.rateio_boleto_email_id, 'rateio')" title="Excluir">
+                  🗑
+                </button>
+                <span class="file-name">{{ rateio.rateioPdfFileName }}</span>
+
+              </div>
+            </ng-container>
+            <ng-template #uploadRateio>
+              <button class="btn-upload" (click)="fileInputRateio.click()">Upload</button>
+              <input #fileInputRateio hidden type="file" accept=".pdf"
+                     (change)="uploadPdf($event, rateio, 'rateio')">
+            </ng-template>
+          </td>
+
+          <!-- Boleto PDF -->
+          <td class="cell-file">
+            <ng-container *ngIf="rateio.boletoPdfFileName; else uploadBoleto">
+              <div class="file-actions">
+                <span class="file-name">{{ rateio.boletoPdfFileName }}</span>
+
+                <button class="btn-icon download" (click)="downloadPdf(rateio.rateio_boleto_email_id, 'boleto')" title="Download">
+                  ⬇
+                </button>
+                <button class="btn-icon delete" (click)="deletePdf(rateio.rateio_boleto_email_id, 'boleto')" title="Excluir">
+                  🗑
+                </button>
+              </div>
+            </ng-container>
+            <ng-template #uploadBoleto>
+              <button class="btn-upload" (click)="fileInputBoleto.click()">Upload</button>
+              <input #fileInputBoleto hidden type="file" accept=".pdf"
+                     (change)="uploadPdf($event, rateio, 'boleto')">
+            </ng-template>
+          </td>
+
+          <!-- Data do envio (se precisar exibir) -->
+          <td>{{ rateio.sentDate | date:'dd/MM/yyyy HH:mm' }}</td>
+
+          <!-- Enviar Email -->
+          <td>
+            <button class="btn-send" (click)="sendEmail(rateio.rateio_boleto_email_id)">
+              ✉ Enviar
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

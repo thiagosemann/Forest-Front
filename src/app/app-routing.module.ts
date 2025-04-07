@@ -25,6 +25,7 @@ import { LoginComponent } from './Compartilhados/login/login.component';
 import { RegisterComponent } from './Compartilhados/register/register.component';
 import { ProfileComponent } from './Compartilhados/profile/profile.component';
 import { ProvisoesComponent } from './Gerencia-Predios/provisoes/provisoes.component';
+import { EnvioRateioBoletosComponent } from './Gerencia-Predios/envio-rateio-boletos/envio-rateio-boletos.component';
 
 
 const routes: Routes = [
@@ -49,6 +50,7 @@ const routes: Routes = [
   { path: 'saldos', component: SaldoInvestimentoPredioComponent, canActivate: [AuthGuardService] },
   { path: 'prestacao', component: PrestacaoContasComponent, canActivate: [AuthGuardService] },
   { path: 'geradorRateio', component: GeradorRateioComponent, canActivate: [AuthGuardService] },
+  { path: 'rateioBoleto', component: EnvioRateioBoletosComponent, canActivate: [AuthGuardService] },
 
   { path: 'Airbnb', component: CalendarioAirbnbComponent},
 
