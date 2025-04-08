@@ -1,4 +1,9 @@
 <div class="container">
+
+  <button class="btn-add" (click)="openModal()">
+    <span class="icon">+</span>
+    Adicionar documentos em lote
+  </button>
   <div class="table-wrapper">
     <table class="table">
       <thead>
@@ -70,5 +75,80 @@
         </tr>
       </tbody>
     </table>
+  </div>
+</div>
+
+<!-- Modal -->
+<!-- Modal -->
+<div class="modal" *ngIf="showModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Envio em Lote</h3>
+      <button class="close-btn" (click)="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="upload-section">
+        <button class="btn-upload" (click)="fileInput.click()">
+          Selecionar PDFs
+        </button>
+        <input #fileInput hidden type="file" accept=".pdf" multiple 
+               (change)="handleFileSelect($event)">
+        <p>Selecione os arquivos PDF para upload</p>
+      </div>
+
+      <div class="uploaded-files-table" *ngIf="groupedFiles.length > 0">
+        <table>
+          <thead>
+            <tr>
+              <th>Rateio PDF</th>
+              <th>Boleto PDF</th>
+              <th>Apartamento</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Dentro do <tbody> do modal -->
+              <tr *ngFor="let fileGroup of groupedFiles; let gi = index">
+                <!-- Rateio PDFs -->
+                <td>
+                  <div *ngFor="let file of fileGroup.rateioFiles; let fi = index" class="file-line">
+                    {{ file.name }}
+                    <button class="btn-icon delete-inline" (click)="removeFile(gi, 'rateio', fi)" title="Remover arquivo">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+                <!-- Boleto PDFs -->
+                <td>
+                  <div *ngFor="let file of fileGroup.boletoFiles; let fi = index" class="file-line">
+                    {{ file.name }}
+                    <button class="btn-icon delete-inline" (click)="removeFile(gi, 'boleto', fi)" title="Remover arquivo">
+                      <i class="fas fa-trash"></i>
+
+                    </button>
+                  </div>
+                </td>
+                <!-- Apartamento e botão de excluir grupo inteiro -->
+                <td class="group-actions">
+                  <select [(ngModel)]="fileGroup.selectedApartment" class="apartment-select">
+                    <option value="">Selecione...</option>
+                    <option *ngFor="let apt of apartamentos" [value]="apt.id">
+                      {{ apt.nome }}
+                    </option>
+                  </select>
+                  <!-- Botão para remover todo o grupo -->
+                  <button class="btn-icon delete-group" (click)="removeGroup(gi)" title="Remover este conjunto">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                  
+                </td>
+              </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn save-btn" (click)="saveUploads()">Salvar</button>
+      <button class="btn cancel-btn" (click)="closeModal()">Cancelar</button>
+    </div>
   </div>
 </div>
