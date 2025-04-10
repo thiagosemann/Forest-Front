@@ -258,6 +258,11 @@ h2 {
 .file-actions button {
   margin-left: 5px;
 }
+input[type="checkbox"] {
+  cursor: pointer;
+  width: 20px;
+  height: 20px;
+}
 
 /* Botão de Download */
 .download-btn {

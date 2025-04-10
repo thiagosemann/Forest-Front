@@ -4,5 +4,6 @@ export interface SaldoPredio {
     valor:number;
     data:string;
     type:string
+    isInUse?:boolean;
 }
   

@@ -249,17 +249,26 @@ async generatePdfPrestacao(data: any): Promise<string> {
   private addSaldosSection(pdf: any, startX: number, currentY: number, data: any, totalValue: number): number {
     // Configurações iniciais de fonte e título
     this.configText(pdf, 'bold', 15);
-    pdf.text('Saldo ', startX, currentY);  
-    // Acessa os saldos em data.saldosPredios
-    const sortedSaldos = [...data.saldos].sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime());
-    const latestConta = sortedSaldos.find((item) => item.type === 'conta');
-    const latestInvestimento1 = sortedSaldos.find((item) => item.type === 'investimento1');
-    const latestInvestimento2 = sortedSaldos.find((item) => item.type === 'investimento2');
+    pdf.text('Saldo ', startX, currentY); 
+    
 
-    const contaValue = latestConta ? parseFloat(latestConta.valor) : 0;
-    const investimento1Value = latestInvestimento1 ? parseFloat(latestInvestimento1.valor) : 0;
-    const investimento2Value = latestInvestimento2 ? parseFloat(latestInvestimento2.valor) : 0;
-
+    
+    // Encontrar o saldo em uso para cada tipo
+    const contaItem = data.saldos.find(
+      (item: any) => item.type === 'conta' && item.isInUse === 1
+    );
+    const investimento1Item = data.saldos.find(
+      (item: any) => item.type === 'investimento1' && item.isInUse === 1
+    );
+    const investimento2Item = data.saldos.find(
+      (item: any) => item.type === 'investimento2' && item.isInUse === 1
+    );
+  
+    // Extrair valores (ou zero se não encontrar)
+    const contaValue = contaItem ? parseFloat(contaItem.valor) : 0;
+    const investimento1Value = investimento1Item ? parseFloat(investimento1Item.valor) : 0;
+    const investimento2Value = investimento2Item ? parseFloat(investimento2Item.valor) : 0;
+ 
     // Cria a tabela utilizando a função auxiliar
     currentY = this.generateTable(
       pdf,

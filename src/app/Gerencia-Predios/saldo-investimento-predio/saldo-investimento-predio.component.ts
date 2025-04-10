@@ -171,6 +171,7 @@ export class SaldoInvestimentoPredioComponent {
       valor: contaValor,
       data: `${year}-${month}-${day}`,
       type: type,
+      isInUse: false
     };
 
     this.saveBalance();
@@ -281,6 +282,29 @@ export class SaldoInvestimentoPredioComponent {
       };
       reader.readAsDataURL(this.selectedPdfFile);
     }
+  }
+
+  updateIsInUse(selectedBalance: SaldoPredio): void {
+    // Verifica se o saldo já está em uso para evitar chamadas desnecessárias
+    if (!selectedBalance.isInUse) return;
+  
+    // Atualiza todos os saldos do mesmo tipo para isInUse = false
+    this.saldoPredios.forEach(balance => {
+      if (balance.type === selectedBalance.type && balance.id !== selectedBalance.id) {
+        balance.isInUse = false;
+        this.saldoPorPredioService.updateSaldo(balance).subscribe({
+          error: (err) => console.error('Erro ao desmarcar saldo:', err)
+        });
+      }
+    });
+  
+    this.saldoPorPredioService.updateSaldo(selectedBalance).subscribe({
+      next: () => this.toastr.success('Saldo principal atualizado!'),
+      error: (err) => {
+        console.error('Erro ao atualizar saldo:', err);
+        selectedBalance.isInUse = false; // Reverte visualmente se falhar
+      }
+    });
   }
 
   // Carrega os extratos (PDFs) do prédio para o mês/ano selecionado
