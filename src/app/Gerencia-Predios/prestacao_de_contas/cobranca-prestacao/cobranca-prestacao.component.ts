@@ -68,7 +68,7 @@ getInadimplentesByBuildingId(): void {
 
         
         // Check if the due date is not after the selected month/year
-        if (Number(rateioYear) < Number(this.selectedYear) || (Number(rateioYear) === Number(this.selectedYear) && Number(rateioMonth) < Number(this.selectedMonth))
+        if (Number(rateioYear) < Number(this.selectedYear) || (Number(rateioYear) === Number(this.selectedYear) && Number(rateioMonth) <= Number(this.selectedMonth))
         ) {
           this.pagamentosEmAtraso.push({
             apt_name: rateio.apt_name,
@@ -138,7 +138,7 @@ getInadimplentesByBuildingId(): void {
         valorRecebido: row[9] || '',
         finalidade: row[10] || ''
       }));
-
+      console.log( this.pagamentosXls)
       this.pagamentosXls.forEach(pagamento => {
         let month = pagamento.cod.slice(-2);
         let year = pagamento.vencimento.slice(-4);
@@ -148,7 +148,7 @@ getInadimplentesByBuildingId(): void {
      // Garantir que a data tenha o formato mm/yyyy (com dois dígitos no mês)
       const [dia, mes, ano] = pagamento.dataRecebimento.split('/');
       const dataFormatada = `${month}/${ano}`; // Formata a data para "mm/yyyy"
-      const valorFormatado = parseFloat(pagamento.valorRecebido.replace('R$', '').replace(',', '.'));
+      const valorFormatado = parseFloat(pagamento.valor.replace('R$', '').replace(',', '.'));
       if (pagamento.status.toUpperCase() == 'EXPIRADO') {
         // Não pagos mesmo mês
       } else {
@@ -163,7 +163,7 @@ getInadimplentesByBuildingId(): void {
         this.procuraPagamentoNosAtrasados({
           apartamento: apartamento,
           data: dataFormatada, // Verifica se a data de recebimento é a mesma, agora no formato mm/yyyy
-          valor: pagamento.valorRecebido
+          valor: pagamento.valor
         });
       }
         
@@ -206,13 +206,12 @@ getInadimplentesByBuildingId(): void {
         // Normaliza os valores para comparação
         const valorItemFormatado = normalizarValor(item.valor);
         const valorPagamentoFormatado = normalizarValor(pagamento.valor);
-
+        
         // Verifica se o item corresponde ao pagamento recebido
         const corresponde =
             item.apt_name === pagamento.apartamento &&
             item.data_vencimento === pagamento.data &&
             valorItemFormatado === valorPagamentoFormatado;
-
         // Se o item corresponder, armazena-o para adicionar ao array de pagamentos atrasados pagos
         if (corresponde) {
             pagamentoRemovido = item;
@@ -221,7 +220,6 @@ getInadimplentesByBuildingId(): void {
         // Mantém o item no array apenas se NÃO corresponder ao pagamento recebido
         return !corresponde;
     });
-
     // Se um pagamento foi removido, adiciona-o ao array de pagamentos atrasados pagos
     if (pagamentoRemovido) {
       if(pagamentoRemovido.data_vencimento != `${this.selectedMonth}/${this.selectedYear}`){
