@@ -271,7 +271,7 @@ marcarComoPago(pagamento: { apt_name: string; data_vencimento: string; valor: st
   if (event.target.checked) {
     this.procuraPagamentoNosAtrasados({
       apartamento: pagamento.apt_name,
-      data: pagamento.data_vencimento,
+      data: `${this.selectedMonth.toString().padStart(2, '0')}/${this.selectedYear}`,
       valor: pagamento.valor
     });
   } else {

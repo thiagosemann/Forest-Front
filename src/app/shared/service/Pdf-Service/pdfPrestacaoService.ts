@@ -193,7 +193,7 @@ async generatePdfPrestacao(data: any): Promise<string> {
 
 private addRateiosNaoPagos(pdf: any, startX: number, currentY: number, data: any, months: any): number {
   this.configText(pdf, 'bold', 15);
-  pdf.text('Boletos não pagos', startX, currentY);
+  pdf.text('Inadimplentes', startX, currentY);
   if(data.rateiosNaoPagos.length>0){
     // Calcula o total dos valores
     const totalValue = data.rateiosNaoPagos.reduce((sum: number, item: any) => sum + parseFloat(item.valor), 0);
@@ -256,7 +256,7 @@ private addRateiosGeradosEPagosNoMesCorreto(pdf: any, startX: number, currentY: 
 }
 private addRateiosPagosGeradosEmMesesDiferentes(pdf: any, startX: number, currentY: number, data: any, months: any): number {
   this.configText(pdf, 'bold', 15);
-  pdf.text('Boletos pagos no mês', startX, currentY);
+  pdf.text('Inadimplentes pagos', startX, currentY);
   if(data.rateiosPagosGeradosEmMesesDiferentes.length>0){
      // Calcula o total dos valores
   const totalValue = data.rateiosPagosGeradosEmMesesDiferentes.reduce((sum: number, item: any) => sum + parseFloat(item.valor), 0);
