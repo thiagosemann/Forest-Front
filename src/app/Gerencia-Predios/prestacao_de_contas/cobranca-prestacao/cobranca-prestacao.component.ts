@@ -138,7 +138,7 @@ getInadimplentesByBuildingId(): void {
         valorRecebido: row[9] || '',
         finalidade: row[10] || ''
       }));
-
+      console.log( this.pagamentosXls)
       this.pagamentosXls.forEach(pagamento => {
         let month = pagamento.cod.slice(-2);
         let year = pagamento.vencimento.slice(-4);
@@ -206,13 +206,12 @@ getInadimplentesByBuildingId(): void {
         // Normaliza os valores para comparação
         const valorItemFormatado = normalizarValor(item.valor);
         const valorPagamentoFormatado = normalizarValor(pagamento.valor);
-
+        
         // Verifica se o item corresponde ao pagamento recebido
         const corresponde =
             item.apt_name === pagamento.apartamento &&
             item.data_vencimento === pagamento.data &&
             valorItemFormatado === valorPagamentoFormatado;
-
         // Se o item corresponder, armazena-o para adicionar ao array de pagamentos atrasados pagos
         if (corresponde) {
             pagamentoRemovido = item;
@@ -221,7 +220,6 @@ getInadimplentesByBuildingId(): void {
         // Mantém o item no array apenas se NÃO corresponder ao pagamento recebido
         return !corresponde;
     });
-
     // Se um pagamento foi removido, adiciona-o ao array de pagamentos atrasados pagos
     if (pagamentoRemovido) {
       if(pagamentoRemovido.data_vencimento != `${this.selectedMonth.toString().padStart(2, '0')}/${this.selectedYear}`){

@@ -55,6 +55,7 @@
                 <tr>
                   <th>Valor</th>
                   <th>Data</th>
+                  <th>Usar Esse?</th>
                   <th>Ações</th>
                 </tr>
               </thead>
@@ -63,6 +64,9 @@
                   <tr *ngIf="balance.type == 'conta'">
                     <td>{{ formatReal(balance.valor) }}</td>
                     <td>{{ balance.data }}</td>
+                    <td>
+                      <input type="checkbox" [(ngModel)]="balance.isInUse" (change)="updateIsInUse(balance)">
+                    </td>                    
                     <td>
                       <button class="btn edit-btn" (click)="editBuildingBalance(balance)">
                         <i class="fas fa-edit"></i>
@@ -135,6 +139,7 @@
                 <tr>
                   <th>Valor</th>
                   <th>Data</th>
+                  <th>Usar Esse?</th>
                   <th>Ações</th>
                 </tr>
               </thead>
@@ -143,6 +148,9 @@
                   <tr *ngIf="balance.type == 'investimento1'">
                     <td>{{ formatReal(balance.valor) }}</td>
                     <td>{{ balance.data }}</td>
+                    <td>
+                      <input type="checkbox" [(ngModel)]="balance.isInUse" (change)="updateIsInUse(balance)">
+                    </td>
                     <td>
                       <button class="btn edit-btn" (click)="editBuildingBalance(balance)">
                         <i class="fas fa-edit"></i>
@@ -215,6 +223,7 @@
                 <tr>
                   <th>Valor</th>
                   <th>Data</th>
+                  <th>Usar Esse?</th>
                   <th>Ações</th>
                 </tr>
               </thead>
@@ -223,6 +232,9 @@
                   <tr *ngIf="balance.type == 'investimento2'">
                     <td>{{ formatReal(balance.valor) }}</td>
                     <td>{{ balance.data }}</td>
+                    <td>
+                      <input type="checkbox" [(ngModel)]="balance.isInUse" (change)="updateIsInUse(balance)">
+                    </td>
                     <td>
                       <button class="btn edit-btn" (click)="editBuildingBalance(balance)">
                         <i class="fas fa-edit"></i>

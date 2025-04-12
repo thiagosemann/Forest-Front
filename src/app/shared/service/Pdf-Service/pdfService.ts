@@ -388,31 +388,29 @@ export class PdfService {
     return currentY;
   }
 
-  private addSaldosSection(pdf: any, startX: number, currentY: number, data: any, totalValue: number, scale: number[], fontSize: number): number {
+  private addSaldosSection(pdf: any,startX: number,currentY: number,data: any,totalValue: number,scale: number[],fontSize: number): number {
     pdf.setFont('Helvetica', 'bold');
     pdf.setFontSize(fontSize);
     pdf.text('Saldos Bancários', startX, currentY);
     currentY += 2;
-
-    // Função para converter datas no formato DD/MM/YYYY para Date
-    const parseDate = (dateStr: string): Date => {
-      const [day, month, year] = dateStr.split('/');
-      return new Date(Number(year), Number(month) - 1, Number(day));
-    };
-
-    // Ordenar corretamente considerando o formato DD/MM/YYYY
-    const sortedSaldos = [...data.saldosPredios].sort((a, b) => {
-      return parseDate(b.data).getTime() - parseDate(a.data).getTime();
-    });
-
-    const latestConta = sortedSaldos.find((item) => item.type === 'conta');
-    const latestInvestimento1 = sortedSaldos.find((item) => item.type === 'investimento1');
-    const latestInvestimento2 = sortedSaldos.find((item) => item.type === 'investimento2');
-
-    const contaValue = latestConta ? parseFloat(latestConta.valor) : 0;
-    const investimento1Value = latestInvestimento1 ? parseFloat(latestInvestimento1.valor) : 0;
-    const investimento2Value = latestInvestimento2 ? parseFloat(latestInvestimento2.valor) : 0;
-
+  
+    // Encontrar o saldo em uso para cada tipo
+    const contaItem = data.saldosPredios.find(
+      (item: any) => item.type === 'conta' && item.isInUse === 1
+    );
+    const investimento1Item = data.saldosPredios.find(
+      (item: any) => item.type === 'investimento1' && item.isInUse === 1
+    );
+    const investimento2Item = data.saldosPredios.find(
+      (item: any) => item.type === 'investimento2' && item.isInUse === 1
+    );
+  
+    // Extrair valores (ou zero se não encontrar)
+    const contaValue = contaItem ? parseFloat(contaItem.valor) : 0;
+    const investimento1Value = investimento1Item ? parseFloat(investimento1Item.valor) : 0;
+    const investimento2Value = investimento2Item ? parseFloat(investimento2Item.valor) : 0;
+  
+    // Monta a tabela
     currentY = this.generateTable(
       pdf,
       startX,
@@ -433,15 +431,21 @@ export class PdfService {
         ],
         [
           { content: 'Total', styles: { fontStyle: 'bold' } },
-          { content: this.formatCurrency(contaValue + investimento1Value + investimento2Value), styles: { fontStyle: 'bold' } },
-        ]
+          {
+            content: this.formatCurrency(
+              contaValue + investimento1Value + investimento2Value
+            ),
+            styles: { fontStyle: 'bold' },
+          },
+        ],
       ],
       [scale[0], scale[1]],
       fontSize - 8
     );
-
+  
     return currentY;
   }
+  
 
   private generateTable(pdf: any, startX: number, currentY: number, head: string[], body: any[], columnWidths: number[], fontSize: number): number {
     pdf.setFont('Helvetica', 'normal');
