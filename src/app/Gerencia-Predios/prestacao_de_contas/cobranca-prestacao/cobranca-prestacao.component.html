@@ -1,12 +1,12 @@
 <div class="container">
   <div class="row">
     <div class="col-md-8" *ngIf="predioSelecionado">
-      <label class="btn btn-success" *ngIf="!isPlanilhaInserida && selectedBuildingId!=0">
+      <label class="btn btn-success" *ngIf="(!isPlanilhaInserida && selectedBuildingId!=0)">
         <i class="fas fa-upload"></i> Inserir
         <input type="file" style="display: none;" (change)="uploadFile($event)">
         <span *ngIf="uploading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
       </label>
-      <button *ngIf="isPlanilhaInserida" class="btn btn-warning ml-2" (click)="salvarDados()">
+      <button *ngIf="isPlanilhaInserida || isCheckboxMarcado" class="btn btn-warning ml-2 ml-2" (click)="salvarDados()">
         <i class="fas fa-save"></i> Salvar Dados
       </button>
     </div>
@@ -17,12 +17,13 @@
       <div class="col-md-3">
         <h5>Inadimplentes</h5>
         <div class="table-wrapper">
-          <table class="table ">
+          <table class="table">
             <thead>
               <tr>
                 <th scope="col">Apartamento</th>
                 <th scope="col">Data</th>
                 <th scope="col">Valor</th>
+                <th scope="col">Pago?</th>
               </tr>
             </thead>
             <tbody>
@@ -30,11 +31,16 @@
                 <td>{{ pagamento.apt_name }}</td>
                 <td>{{ pagamento.data_vencimento }}</td>
                 <td>{{ formatCurrencyPTBR(pagamento.valor) }}</td>
+                <!-- Novo checkbox -->
+                <td>
+                  <input type="checkbox" (change)="marcarComoPago(pagamento, $event)" />
+                </td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
+      
       <div class="col-md-3">
         <h5>Inadimplentes Pagos</h5>
         <div class="table-wrapper">

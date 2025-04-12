@@ -15,6 +15,8 @@ import { SaldoPorPredioService } from 'src/app/shared/service/Banco_de_Dados/sal
 import { GastosIndividuaisService } from 'src/app/shared/service/Banco_de_Dados/gastosIndividuais_service';
 import { ExtratoPdfService } from 'src/app/shared/service/Banco_de_Dados/extratopdf_service';
 import { ExtratoPdf } from 'src/app/shared/utilitarios/extratoPdf';
+import { firstValueFrom } from 'rxjs';
+import { RateioPorApartamentoService } from 'src/app/shared/service/Banco_de_Dados/rateioPorApartamento_service';
 
 // Definição da interface para tipar a nota fiscal
 interface NotaFiscal {
@@ -47,7 +49,8 @@ export class PdfPrestacaoComponent implements OnInit {
     private fundoService: FundoService,
     private saldoPorPredioService: SaldoPorPredioService,
     private gastosIndividuaisService: GastosIndividuaisService,
-    private extratoPdfService: ExtratoPdfService
+    private extratoPdfService: ExtratoPdfService,
+    private rateioPorApartamentoService:RateioPorApartamentoService
   ) {}
 
   ngOnInit(): void {
@@ -61,52 +64,61 @@ export class PdfPrestacaoComponent implements OnInit {
 
   async previewPDF(): Promise<void> {
     try {
-      this.isLoading = true;  // Inicia o carregamento
-
+      this.isLoading = true; // Inicia o carregamento
+  
       if (this.selectedBuildingId && this.selectedMonth && this.selectedYear) {
+        // Inicializa o objeto data com todas as propriedades necessárias
         let data: any = {
           selectedBuildingId: this.selectedBuildingId,
           selectedMonth: this.selectedMonth,
           selectedYear: this.selectedYear,
-          notaFiscalList: [] as NotaFiscal[],      // Notas fiscais
-          extratosList: [] as ExtratoPdf[],          // Extratos
+          notaFiscalList: [] as NotaFiscal[],
+          extratosList: [] as ExtratoPdf[],
           building: {},
-          commonExpenses: {},
-          gastosIndividuais: {},
-          provisoes: {},
-          fundos: {},
-          saldos: {}
+          commonExpenses: [] as any[],
+          gastosIndividuais: [] as any[],
+          provisoes: [] as any[],
+          fundos: [] as any[],
+          saldos: [] as any[],
+          rateiosNaoPagos: [] as any[],
+          rateiosGeradosEPagosNoMesCorreto: [] as any[],
+          rateiosPagosGeradosEmMesesDiferentes: [] as any[]
         };
-
-        // Busca os PDFs das notas fiscais e dos extratos
+  
+        // Adiciona as notas fiscais e os PDFs de extrato
         await this.addNotasFiscais(data);
         await this.addPdfExtrato(data);
         await this.getBuildingById(data);
-
-        // Carrega outros valores (despesas, provisões, fundos, saldos e gastos individuais)
-        const { expenses, provisoes, fundos, saldos, gastosIndividuais } = await this.loadValues();
-        if (expenses) {
-          data.commonExpenses = expenses;
-        }
-        if (provisoes) {
-          data.provisoes = provisoes;
-        }
-        if (fundos) {
-          data.fundos = fundos;
-        }
-        if (saldos) {
-          data.saldos = saldos;
-        }
-        if (gastosIndividuais) {
-          data.gastosIndividuais = gastosIndividuais;
-        }
-        console.log(data)
+  
+        // Carrega os demais valores e os rateios, atribuindo ao objeto data
+        const {
+          expenses,
+          provisoes,
+          fundos,
+          saldos,
+          gastosIndividuais,
+          rateiosNaoPagos,
+          rateiosGeradosEPagosNoMesCorreto,
+          rateiosPagosGeradosEmMesesDiferentes
+        } = await this.loadValues();
+  
+        data.commonExpenses = expenses;
+        data.provisoes = provisoes;
+        data.fundos = fundos;
+        data.saldos = saldos;
+        data.gastosIndividuais = gastosIndividuais;
+        data.rateiosNaoPagos = rateiosNaoPagos;
+        data.rateiosGeradosEPagosNoMesCorreto = rateiosGeradosEPagosNoMesCorreto;
+        data.rateiosPagosGeradosEmMesesDiferentes = rateiosPagosGeradosEmMesesDiferentes;
+  
+        console.log(data);
+  
         // Gera o PDF da capa (cover)
         const capaPdf = await this.pdfPrestacaoService.generatePdfPrestacao(data);
         // Remove a parte "data:application/pdf;filename=generated.pdf;base64," da string base64
         const base64Capa = capaPdf.split(',')[1];
-
-        // Cria um array que irá armazenar os PDFs na ordem desejada:
+  
+        // Cria um array que armazena os PDFs na ordem desejada:
         // 1. Capa
         // 2. PDFs do Extrato
         // 3. PDFs das Notas Fiscais
@@ -114,7 +126,7 @@ export class PdfPrestacaoComponent implements OnInit {
         pdfOrder.push({ arquivoPdfBase64: base64Capa });
         data.extratosList.forEach((pdf: any) => pdfOrder.push(pdf));
         data.notaFiscalList.forEach((pdf: any) => pdfOrder.push(pdf));
-
+  
         // Mescla os PDFs na ordem definida
         const mergedPdfBlob = await this.mergePdfBlobs(pdfOrder);
         if (mergedPdfBlob) {
@@ -125,30 +137,113 @@ export class PdfPrestacaoComponent implements OnInit {
         this.toastr.warning("Selecione o prédio, o mês e o ano!");
       }
     } catch (error) {
-      console.error('Error generating PDF:', error);
+      console.error("Error generating PDF:", error);
     } finally {
-      this.isLoading = false;  // Finaliza o carregamento
+      this.isLoading = false; // Finaliza o carregamento
     }
   }
+  
 
-  async loadValues(): Promise<{ expenses: any[] | undefined; provisoes: any[] | undefined; fundos: any[] | undefined; saldos: any[] | undefined; gastosIndividuais: any[] | undefined; }> {
-    try {
-      const [expenses, provisoes, fundos, saldos, gastosIndividuais] = await Promise.all([
-        this.commonExepenseService
-          .getExpensesByBuildingAndMonth(this.selectedBuildingId, this.selectedMonth, this.selectedYear)
-          .toPromise(),
-        this.provisaoService.getProvisoesByBuildingId(this.selectedBuildingId).toPromise(),
-        this.fundoService.getFundosByBuildingId(this.selectedBuildingId).toPromise(),
-        this.saldoPorPredioService.getSaldosByBuildingId(this.selectedBuildingId).toPromise(),
-        this.gastosIndividuaisService.getIndividualExpensesByPredioMonthAndYear(this.selectedBuildingId, this.selectedMonth, this.selectedYear).toPromise(),
-      ]);
-
-      return { expenses, provisoes, fundos, saldos, gastosIndividuais };
-    } catch (error) {
-      console.error("Erro ao carregar valores:", error);
-      return { expenses: [], provisoes: [], fundos: [], saldos: [], gastosIndividuais: [] };
-    }
+  async loadValues(): Promise<{ 
+    expenses: any[]; 
+    provisoes: any[]; 
+    fundos: any[]; 
+    saldos: any[]; 
+    gastosIndividuais: any[];
+    rateiosNaoPagos: any[];
+    rateiosGeradosEPagosNoMesCorreto: any[];
+    rateiosPagosGeradosEmMesesDiferentes: any[];
+  }> {
+    // Cada chamada é envelopada em um catch para retornar [] em caso de erro.
+    const expensesPromise = firstValueFrom(
+      this.commonExepenseService.getExpensesByBuildingAndMonth(this.selectedBuildingId, this.selectedMonth, this.selectedYear)
+    ).catch(error => {
+      console.error("Erro em getExpensesByBuildingAndMonth:", error);
+      return [];
+    });
+  
+    const provisoesPromise = firstValueFrom(
+      this.provisaoService.getProvisoesByBuildingId(this.selectedBuildingId)
+    ).catch(error => {
+      console.error("Erro em getProvisoesByBuildingId:", error);
+      return [];
+    });
+  
+    const fundosPromise = firstValueFrom(
+      this.fundoService.getFundosByBuildingId(this.selectedBuildingId)
+    ).catch(error => {
+      console.error("Erro em getFundosByBuildingId:", error);
+      return [];
+    });
+  
+    const saldosPromise = firstValueFrom(
+      this.saldoPorPredioService.getSaldosByBuildingId(this.selectedBuildingId)
+    ).catch(error => {
+      console.error("Erro em getSaldosByBuildingId:", error);
+      return [];
+    });
+  
+    const gastosIndividuaisPromise = firstValueFrom(
+      this.gastosIndividuaisService.getIndividualExpensesByPredioMonthAndYear(this.selectedBuildingId, this.selectedMonth, this.selectedYear)
+    ).catch(error => {
+      console.error("Erro em getIndividualExpensesByPredioMonthAndYear:", error);
+      return [];
+    });
+  
+    const rateiosNaoPagosPromise = firstValueFrom(
+      this.rateioPorApartamentoService.getRateiosNaoPagosPorPredioId(this.selectedBuildingId, this.selectedMonth, this.selectedYear)
+    ).catch(error => {
+      console.error("Erro em getRateiosNaoPagosPorPredioId:", error);
+      return [];
+    });
+  
+    const rateiosGeradosEPagosNoMesCorretoPromise = firstValueFrom(
+      this.rateioPorApartamentoService.getRateiosGeradosEPagosNoMesCorreto(this.selectedBuildingId, this.selectedMonth, this.selectedYear)
+    ).catch(error => {
+      console.error("Erro em getRateiosGeradosEPagosNoMesCorreto:", error);
+      return [];
+    });
+  
+    const rateiosPagosGeradosEmMesesDiferentesPromise = firstValueFrom(
+      this.rateioPorApartamentoService.getRateiosPagosGeradosEmMesesDiferentes(this.selectedBuildingId, this.selectedMonth, this.selectedYear)
+    ).catch(error => {
+      console.error("Erro em getRateiosPagosGeradosEmMesesDiferentes:", error);
+      return [];
+    });
+  
+    // Executa todas as promises em paralelo
+    const [
+      expenses, 
+      provisoes, 
+      fundos, 
+      saldos, 
+      gastosIndividuais,
+      rateiosNaoPagos,
+      rateiosGeradosEPagosNoMesCorreto,
+      rateiosPagosGeradosEmMesesDiferentes
+    ] = await Promise.all([
+      expensesPromise,
+      provisoesPromise,
+      fundosPromise,
+      saldosPromise,
+      gastosIndividuaisPromise,
+      rateiosNaoPagosPromise,
+      rateiosGeradosEPagosNoMesCorretoPromise,
+      rateiosPagosGeradosEmMesesDiferentesPromise
+    ]);
+  
+    return { 
+      expenses, 
+      provisoes, 
+      fundos, 
+      saldos, 
+      gastosIndividuais,
+      rateiosNaoPagos,
+      rateiosGeradosEPagosNoMesCorreto,
+      rateiosPagosGeradosEmMesesDiferentes
+    };
   }
+  
 
   getBuildingById(data: any): Promise<void> {
     return new Promise((resolve, reject) => {

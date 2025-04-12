@@ -42,8 +42,8 @@ export class RateioPorApartamentoService {
   }
 
   // Função para obter rateios por prédio (inadimplentes)
-  getRateiosNaoPagosPorPredioId(predioId: number): Observable<RateioPorApartamento[]> {
-    const url = `${this.apiUrl}/inadimplentes/predio/${predioId}`;
+  getRateiosNaoPagosPorPredioId(predioId: number, mes: number, ano: number): Observable<RateioPorApartamento[]> {
+    const url = `${this.apiUrl}/inadimplentes/predio/${predioId}/${mes}/${ano}`;
     return this.http.get<RateioPorApartamento[]>(url, { headers: this.getHeaders() });
   }
 

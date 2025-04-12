@@ -112,6 +112,9 @@ async generatePdfPrestacao(data: any): Promise<string> {
     pdf.addImage(logoData, 'JPEG', startX+10, currentY, 30, 30, undefined, 'FAST');
     currentY+=30;
     currentY = this.addGastosIndividuais(pdf,startX,currentY,data,months)
+    currentY = this.addRateiosNaoPagos(pdf,startX,currentY,data,months)
+    currentY = this.addRateiosGeradosEPagosNoMesCorreto(pdf,startX,currentY,data,months)
+    currentY = this.addRateiosPagosGeradosEmMesesDiferentes(pdf,startX,currentY,data,months)
 
     
   }
@@ -187,6 +190,103 @@ async generatePdfPrestacao(data: any): Promise<string> {
 
     return currentY;
 }
+
+private addRateiosNaoPagos(pdf: any, startX: number, currentY: number, data: any, months: any): number {
+  this.configText(pdf, 'bold', 15);
+  pdf.text('Boletos não pagos', startX, currentY);
+  if(data.rateiosNaoPagos.length>0){
+    // Calcula o total dos valores
+    const totalValue = data.rateiosNaoPagos.reduce((sum: number, item: any) => sum + parseFloat(item.valor), 0);
+
+    // Cria a tabela utilizando a função auxiliar
+    currentY = this.generateTable(pdf, startX, currentY,
+        [
+            'Apartamento', 'Data', 'Valor (R$)',
+        ], 
+        [
+            ...data.rateiosNaoPagos.map((item: any) => [
+                item.apt_name,
+                `${item.data_vencimento}`,
+                `R$ ${parseFloat(item.valor).toFixed(2)}`,             
+            ]),
+            // Adiciona o item "Total" ao final da tabela
+            [
+              { content: 'Total', styles: { fontStyle: 'bold' } },
+              '',
+              { content: `R$ ${totalValue.toFixed(2)}`, styles: { fontStyle: 'bold' } }
+          ]
+        ], 
+        [67, 66, 66], 9
+    );
+  }
+  return currentY;
+}
+
+private addRateiosGeradosEPagosNoMesCorreto(pdf: any, startX: number, currentY: number, data: any, months: any): number {
+  this.configText(pdf, 'bold', 15);
+  pdf.text('Boletos pagos no mês', startX, currentY);
+
+  if(data.rateiosGeradosEPagosNoMesCorreto.length>0){
+      // Calcula o total dos valores
+      const totalValue = data.rateiosGeradosEPagosNoMesCorreto.reduce((sum: number, item: any) => sum + parseFloat(item.valor), 0);
+
+      // Cria a tabela utilizando a função auxiliar
+      currentY = this.generateTable(pdf, startX, currentY,
+          [
+              'Apartamento', 'Data', 'Valor (R$)',
+          ], 
+          [
+              ...data.rateiosGeradosEPagosNoMesCorreto.map((item: any) => [
+                  item.apt_name,
+                  `${item.data_vencimento}`,
+                  `R$ ${parseFloat(item.valor).toFixed(2)}`,             
+              ]),
+              // Adiciona o item "Total" ao final da tabela
+              [
+                  { content: 'Total', styles: { fontStyle: 'bold' } },
+                  '',
+                  { content: `R$ ${totalValue.toFixed(2)}`, styles: { fontStyle: 'bold' } }
+              ]
+          ], 
+          [67, 66, 66], 9
+      );
+  }
+ 
+  return currentY;
+}
+private addRateiosPagosGeradosEmMesesDiferentes(pdf: any, startX: number, currentY: number, data: any, months: any): number {
+  this.configText(pdf, 'bold', 15);
+  pdf.text('Boletos pagos no mês', startX, currentY);
+  if(data.rateiosPagosGeradosEmMesesDiferentes.length>0){
+     // Calcula o total dos valores
+  const totalValue = data.rateiosPagosGeradosEmMesesDiferentes.reduce((sum: number, item: any) => sum + parseFloat(item.valor), 0);
+  
+  // Cria a tabela utilizando a função auxiliar
+  currentY = this.generateTable(pdf, startX, currentY,
+      [
+          'Apartamento', 'Data', 'Valor (R$)',
+      ], 
+      [
+          ...data.rateiosPagosGeradosEmMesesDiferentes.map((item: any) => [
+              item.apt_name,
+              `${item.data_vencimento}`,
+              `R$ ${parseFloat(item.valor).toFixed(2)}`,             
+          ]),
+          // Adiciona o item "Total" ao final da tabela
+          [
+              { content: 'Total', styles: { fontStyle: 'bold' } },
+              '',
+              { content: `R$ ${totalValue.toFixed(2)}`, styles: { fontStyle: 'bold' } }
+          ]
+      ], 
+      [67, 66, 66], 9
+    );
+  }
+ 
+
+  return currentY;
+}
+
 
   private addProvisionsSection(pdf: any, startX: number, currentY: number, data: any): number {
     this.configText(pdf, 'bold', 15);
@@ -299,6 +399,8 @@ async generatePdfPrestacao(data: any): Promise<string> {
   
     return currentY;
   }
+
+
 
   
   //------------------------- UTILITARIOS----------------------------------------------------------------------------------------------------//

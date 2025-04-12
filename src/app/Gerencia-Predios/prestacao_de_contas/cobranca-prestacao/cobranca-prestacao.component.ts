@@ -36,6 +36,7 @@ export class CobrancaPrestacaoComponent {
   selectedYear: number = 0;
   predioSelecionado: boolean = true;
   isPlanilhaInserida: boolean = false;
+  isCheckboxMarcado: boolean = false;
 
   constructor(
     private selectionService: SelectionService,
@@ -57,7 +58,7 @@ export class CobrancaPrestacaoComponent {
 
 getInadimplentesByBuildingId(): void {
   this.pagamentosEmAtraso = [];
-  this.rateioPorApartamentoService.getRateiosNaoPagosPorPredioId(this.selectedBuildingId).subscribe(
+  this.rateioPorApartamentoService.getRateiosNaoPagosPorPredioId(this.selectedBuildingId,this.selectedMonth,this.selectedYear).subscribe(
     (rateiosNaoPagos: any) => {
       console.log(rateiosNaoPagos)
       rateiosNaoPagos.forEach((rateio: any) => {
@@ -65,18 +66,15 @@ getInadimplentesByBuildingId(): void {
         const [mes, ano] = rateio.data_vencimento.split('/');
         const rateioMonth = parseInt(mes, 10);
         const rateioYear = parseInt(ano, 10);
-
-        
-        // Check if the due date is not after the selected month/year
-        if (Number(rateioYear) < Number(this.selectedYear) || (Number(rateioYear) === Number(this.selectedYear) && Number(rateioMonth) <= Number(this.selectedMonth))
-        ) {
-          this.pagamentosEmAtraso.push({
+        this.pagamentosEmAtraso.push({
             apt_name: rateio.apt_name,
             data_vencimento: rateio.data_vencimento,
             valor: rateio.valor
-          });
-        }
+        });
+        
       });
+      this.pagamentosEmAtraso.sort((a, b) => a.apt_name.localeCompare(b.apt_name));
+
     },
     (error) => {
       console.error('Error fetching buildings:', error);
@@ -170,8 +168,10 @@ getInadimplentesByBuildingId(): void {
       });
       
       // Ordenando os arrays por apartamento em ordem crescente
-      this.pagamentosAtrasadosPagos.sort((a, b) => Number(a.apt_name) - Number(b.apt_name));
-      this.pagamentosEmAtraso.sort((a, b) => Number(a.apt_name) - Number(b.apt_name));
+      this.pagamentosAtrasadosPagos.sort((a, b) => a.apt_name.localeCompare(b.apt_name));
+      this.pagamentosEmAtraso.sort((a, b) => a.apt_name.localeCompare(b.apt_name));
+      this.pagamentosMesmoMesPagos.sort((a, b) => a.apt_name.localeCompare(b.apt_name));
+      this.condominiosPagos.sort((a, b) => a.apt_name.localeCompare(b.apt_name));
       this.isPlanilhaInserida = true;
 
     };
@@ -189,55 +189,45 @@ getInadimplentesByBuildingId(): void {
   }
 
   procuraPagamentoNosAtrasados(pagamento: { apartamento: string; data: string; valor: string }): void {
-    // Função para normalizar o valor (remover "R$", substituir vírgula por ponto e arredondar)
     const normalizarValor = (valor: string): number => {
-        // Remove "R$", substitui vírgula por ponto e converte para número
-        const valorNumerico = parseFloat(valor.replace('R$', '').replace(',', '.').trim());
-        // Arredonda para ignorar centavos
-        return Math.floor(valorNumerico);
+      const valorNumerico = parseFloat(valor.replace('R$', '').replace(',', '.').trim());
+      return Math.floor(valorNumerico);
     };
-
-    // Variável para armazenar o pagamento removido
+  
     let pagamentoRemovido: any | null = null;
-
-    // Filtra os pagamentos em atraso, removendo o que corresponde ao pagamento recebido
+  
     this.pagamentosEmAtraso = this.pagamentosEmAtraso.filter((item) => {
-
-        // Normaliza os valores para comparação
-        const valorItemFormatado = normalizarValor(item.valor);
-        const valorPagamentoFormatado = normalizarValor(pagamento.valor);
-        
-        // Verifica se o item corresponde ao pagamento recebido
-        const corresponde =
-            item.apt_name === pagamento.apartamento &&
-            item.data_vencimento === pagamento.data &&
-            valorItemFormatado === valorPagamentoFormatado;
-        // Se o item corresponder, armazena-o para adicionar ao array de pagamentos atrasados pagos
-        if (corresponde) {
-            pagamentoRemovido = item;
-        }
-
-        // Mantém o item no array apenas se NÃO corresponder ao pagamento recebido
-        return !corresponde;
-    });
-    // Se um pagamento foi removido, adiciona-o ao array de pagamentos atrasados pagos
-    if (pagamentoRemovido) {
-      if(pagamentoRemovido.data_vencimento != `${this.selectedMonth.toString().padStart(2, '0')}/${this.selectedYear}`){
-        this.pagamentosAtrasadosPagos.push({
-          apt_name: pagamentoRemovido.apt_name, // Mapeia apt_name para apartamento
-          data_vencimento: pagamentoRemovido.data_vencimento, // Mapeia data_vencimento para data
-          valor: pagamentoRemovido.valor // Mantém o valor
-        });
-      }else{
-        this.pagamentosMesmoMesPagos.push({
-          apt_name: pagamentoRemovido.apt_name, // Mapeia apt_name para apartamento
-          data_vencimento: pagamentoRemovido.data_vencimento, // Mapeia data_vencimento para data
-          valor: pagamentoRemovido.valor // Mantém o valor
-        });
+      const valorItemFormatado = normalizarValor(item.valor);
+      const valorPagamentoFormatado = normalizarValor(pagamento.valor);
+      const corresponde =
+        item.apt_name === pagamento.apartamento &&
+        item.data_vencimento === pagamento.data &&
+        valorItemFormatado === valorPagamentoFormatado;
+      if (corresponde) {
+        pagamentoRemovido = item;
       }
-
+      return !corresponde;
+    });
+  
+    if (pagamentoRemovido) {
+      if (pagamentoRemovido.data_vencimento !== `${this.selectedMonth.toString().padStart(2, '0')}/${this.selectedYear}`) {
+        this.pagamentosAtrasadosPagos.push({
+          apt_name: pagamentoRemovido.apt_name,
+          data_vencimento: pagamentoRemovido.data_vencimento,
+          valor: pagamentoRemovido.valor
+        });
+        this.pagamentosAtrasadosPagos.sort((a, b) => a.apt_name.localeCompare(b.apt_name));
+      } else {
+        this.pagamentosMesmoMesPagos.push({
+          apt_name: pagamentoRemovido.apt_name,
+          data_vencimento: pagamentoRemovido.data_vencimento,
+          valor: pagamentoRemovido.valor
+        });
+        this.pagamentosMesmoMesPagos.sort((a, b) => a.apt_name.localeCompare(b.apt_name));
+      }
     }
-}
+  }
+  
 
 salvarDados(): void {
   // Cria um array consolidado com os pagamentos atrasados pagos e os condomínios pagos
@@ -276,5 +266,23 @@ salvarDados(): void {
   this.pagamentosAtrasadosPagos = [];
   this.pagamentosEmAtraso = [];
 }
+
+marcarComoPago(pagamento: { apt_name: string; data_vencimento: string; valor: string }, event: any): void {
+  if (event.target.checked) {
+    this.procuraPagamentoNosAtrasados({
+      apartamento: pagamento.apt_name,
+      data: pagamento.data_vencimento,
+      valor: pagamento.valor
+    });
+  } else {
+    // Se desmarcar o checkbox, talvez você queira desfazer a ação.
+    // Opcional: implementar lógica para reverter o pagamento marcado.
+  }
+
+  // Atualiza a flag com base na existência de pagamentos marcados
+  this.isCheckboxMarcado = this.pagamentosAtrasadosPagos.length > 0 || this.pagamentosMesmoMesPagos.length > 0;
+}
+
+
   
 }
