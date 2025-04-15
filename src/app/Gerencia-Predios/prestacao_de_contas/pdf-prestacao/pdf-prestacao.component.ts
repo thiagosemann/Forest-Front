@@ -17,6 +17,7 @@ import { ExtratoPdfService } from 'src/app/shared/service/Banco_de_Dados/extrato
 import { ExtratoPdf } from 'src/app/shared/utilitarios/extratoPdf';
 import { firstValueFrom } from 'rxjs';
 import { RateioPorApartamentoService } from 'src/app/shared/service/Banco_de_Dados/rateioPorApartamento_service';
+import { PrestacaoCobrancaBoletoService } from 'src/app/shared/service/Banco_de_Dados/prestacaoCobrancaBoletos_service';
 
 // Definição da interface para tipar a nota fiscal
 interface NotaFiscal {
@@ -50,7 +51,9 @@ export class PdfPrestacaoComponent implements OnInit {
     private saldoPorPredioService: SaldoPorPredioService,
     private gastosIndividuaisService: GastosIndividuaisService,
     private extratoPdfService: ExtratoPdfService,
-    private rateioPorApartamentoService:RateioPorApartamentoService
+    private rateioPorApartamentoService:RateioPorApartamentoService,
+    private prestacaoCobrancaBoletoService: PrestacaoCobrancaBoletoService
+
   ) {}
 
   ngOnInit(): void {
@@ -99,7 +102,8 @@ export class PdfPrestacaoComponent implements OnInit {
           gastosIndividuais,
           rateiosNaoPagos,
           rateiosGeradosEPagosNoMesCorreto,
-          rateiosPagosGeradosEmMesesDiferentes
+          rateiosPagosGeradosEmMesesDiferentes,
+          pdfCobrancaBoletos
         } = await this.loadValues();
   
         data.commonExpenses = expenses;
@@ -110,8 +114,7 @@ export class PdfPrestacaoComponent implements OnInit {
         data.rateiosNaoPagos = rateiosNaoPagos;
         data.rateiosGeradosEPagosNoMesCorreto = rateiosGeradosEPagosNoMesCorreto;
         data.rateiosPagosGeradosEmMesesDiferentes = rateiosPagosGeradosEmMesesDiferentes;
-  
-        console.log(data);
+        data.pdfCobrancaBoletos = pdfCobrancaBoletos;
   
         // Gera o PDF da capa (cover)
         const capaPdf = await this.pdfPrestacaoService.generatePdfPrestacao(data);
@@ -124,9 +127,10 @@ export class PdfPrestacaoComponent implements OnInit {
         // 3. PDFs das Notas Fiscais
         const pdfOrder: any[] = [];
         pdfOrder.push({ arquivoPdfBase64: base64Capa });
+        pdfOrder.push({ arquivoPdfBase64: data.pdfCobrancaBoletos[0].pdf });
         data.extratosList.forEach((pdf: any) => pdfOrder.push(pdf));
         data.notaFiscalList.forEach((pdf: any) => pdfOrder.push(pdf));
-  
+
         // Mescla os PDFs na ordem definida
         const mergedPdfBlob = await this.mergePdfBlobs(pdfOrder);
         if (mergedPdfBlob) {
@@ -153,6 +157,7 @@ export class PdfPrestacaoComponent implements OnInit {
     rateiosNaoPagos: any[];
     rateiosGeradosEPagosNoMesCorreto: any[];
     rateiosPagosGeradosEmMesesDiferentes: any[];
+    pdfCobrancaBoletos: any[];
   }> {
     // Cada chamada é envelopada em um catch para retornar [] em caso de erro.
     const expensesPromise = firstValueFrom(
@@ -204,6 +209,12 @@ export class PdfPrestacaoComponent implements OnInit {
       return [];
     });
   
+    const pdfCobrancaBoletosPromise = firstValueFrom(
+      this.prestacaoCobrancaBoletoService.getPrestacaoCobrancaBoletoByBuildingAndMonth(this.selectedBuildingId, this.selectedMonth, this.selectedYear)
+    ).catch(error => {
+      console.error("Erro em getRateiosGeradosEPagosNoMesCorreto:", error);
+      return [];
+    });
     const rateiosPagosGeradosEmMesesDiferentesPromise = firstValueFrom(
       this.rateioPorApartamentoService.getRateiosPagosGeradosEmMesesDiferentes(this.selectedBuildingId, this.selectedMonth, this.selectedYear)
     ).catch(error => {
@@ -220,7 +231,8 @@ export class PdfPrestacaoComponent implements OnInit {
       gastosIndividuais,
       rateiosNaoPagos,
       rateiosGeradosEPagosNoMesCorreto,
-      rateiosPagosGeradosEmMesesDiferentes
+      rateiosPagosGeradosEmMesesDiferentes,
+      pdfCobrancaBoletos
     ] = await Promise.all([
       expensesPromise,
       provisoesPromise,
@@ -229,7 +241,8 @@ export class PdfPrestacaoComponent implements OnInit {
       gastosIndividuaisPromise,
       rateiosNaoPagosPromise,
       rateiosGeradosEPagosNoMesCorretoPromise,
-      rateiosPagosGeradosEmMesesDiferentesPromise
+      rateiosPagosGeradosEmMesesDiferentesPromise,
+      pdfCobrancaBoletosPromise
     ]);
   
     return { 
@@ -240,7 +253,8 @@ export class PdfPrestacaoComponent implements OnInit {
       gastosIndividuais,
       rateiosNaoPagos,
       rateiosGeradosEPagosNoMesCorreto,
-      rateiosPagosGeradosEmMesesDiferentes
+      rateiosPagosGeradosEmMesesDiferentes,
+      pdfCobrancaBoletos
     };
   }
   
