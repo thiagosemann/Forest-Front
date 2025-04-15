@@ -26,10 +26,10 @@
   color: white;
 }
 
-.card-header.warning { background: #4cd97b; }
-.card-header.success { background: #4cd97b; }
-.card-header.primary { background: #4cd97b; }
-.card-header.secondary { background: #4cd97b; }
+.card-header.warning { background: #369b57; }
+.card-header.success { background: #369b57; }
+.card-header.primary { background: #369b57; }
+.card-header.secondary { background: #369b57; }
 
 .table-container {
   flex: 1;
@@ -79,7 +79,7 @@
 }
 
 .btn-success-gradient {
-  background: linear-gradient(135deg, #4cd97b, #2f9e44);
+  background: linear-gradient(135deg, #369b57, #2f9e44);
   color: white;
 }
 
@@ -132,7 +132,7 @@
 }
 
 input:checked + .slider {
-  background: #4cd97b;
+  background: #369b57;
 }
 
 input:checked + .slider:before {

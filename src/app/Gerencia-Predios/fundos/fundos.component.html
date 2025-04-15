@@ -1,64 +1,83 @@
-<div class="container">
-  <h3>Gerência de Fundos</h3>
-  <form [formGroup]="myForm" (ngSubmit)="cadastrarFundo()">
-    <div class="row mt-4">
-      <div class="col-md-4">
-        <input formControlName="tipo_fundo" class="custom-input" placeholder="Tipo de Fundo" required>
-      </div>
-      <div class="col-md-1">
-        <input type="number" formControlName="porcentagem" min="0" increment="0.1" class="custom-input" placeholder="Porcentagem (%)" required>
-      </div>
-      <div class="col-md-4" style="margin-left: 15px;">
-        <button class="btn btn-primary" style="margin-left: -25px;">
-          <i class="fas fa-add"></i> Cadastrar
-        </button>
+<div class="container-fluid p-4">
+  <div class="dashboard-card">
+    <!-- Card Header -->
+    <div class="card-header primary">
+      <h5><i class="fas fa-coins me-2"></i>Gerência de Fundos</h5>
+      <span class="badge bg-success">{{fundos.length}}</span>
+    </div>
+
+    <!-- Conteúdo -->
+    <div class="card-content p-3">
+      <!-- Formulário -->
+      <form [formGroup]="myForm" (ngSubmit)="cadastrarFundo()" class="mb-4">
+        <div class="d-flex gap-3 align-items-end">
+          <div class="flex-grow-1">
+            <input formControlName="tipo_fundo" 
+                   class="modern-input"
+                   placeholder="Tipo de Fundo"
+                   required>
+          </div>
+          <div class="flex-grow-1">
+            <input type="number" 
+                   formControlName="porcentagem" 
+                   min="0" 
+                   step="0.1"
+                   class="modern-input"
+                   placeholder="Porcentagem (%)"
+                   required>
+          </div>
+          <button class="btn btn-primary-gradient">
+            <i class="fas fa-plus me-2"></i>Cadastrar
+          </button>
+        </div>
+      </form>
+
+      <!-- Tabela -->
+      <div class="table-container">
+        <table class="modern-table">
+          <thead>
+            <tr>
+              <th style="width: 40%;">Tipo de Fundo</th>
+              <th style="width: 20%;">Porcentagem</th>
+              <th style="width: 20%;">Saldo</th>
+              <th style="width: 20%;">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let fundo of fundos">
+              <td>{{ fundo.tipo_fundo }}</td>
+              <td>{{ fundo.porcentagem * 100 }}%</td>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <label class="toggle-switch">
+                    <input type="checkbox" [(ngModel)]="fundo.isEditable" />
+                    <span class="slider"></span>
+                  </label>
+                  <div class="input-wrapper">
+                    <input type="number" 
+                          [(ngModel)]="fundo.saldo" 
+                          (blur)="updateSaldo(fundo)"
+                          class="modern-input"
+                          [disabled]="!fundo.isEditable"
+                          placeholder="0,00"/>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="d-flex gap-2">
+                  <button class="btn btn-success-gradient btn-icon">
+                    <i class="fas fa-info"></i>
+                  </button>
+                  <button class="btn btn-danger-gradient btn-icon" 
+                          (click)="deletarFundo(fundo)">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
-  </form>
-
-  <br>
-  <table class="table">
-    <thead>
-      <tr>
-        <th scope="col" style="width: 40%;">Tipo de Fundo</th>
-        <th scope="col" style="width: 20%;">Porcentagem</th>
-        <th scope="col" style="width: 20%;">Saldo</th>
-        <th scope="col" style="width: 20%;">Ação</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let fundo of fundos">
-        <td>{{ fundo.tipo_fundo }}</td>
-        <td>{{ fundo.porcentagem * 100 }}%</td>
-        <td>
-          <div class="row align-items-center">
-            <div class="col-md-2">
-              <input type="checkbox" [(ngModel)]="fundo.isEditable" />
-            </div>
-            <div class="col-md-10">
-              <div class="input-group">
-                <span class="input-group-text">R$</span>
-                <input 
-                  type="number" 
-                  [(ngModel)]="fundo.saldo" 
-                  (blur)="updateSaldo(fundo)" 
-                  class="form-control" 
-                  [disabled]="!fundo.isEditable"
-                  placeholder="0,00"
-                />
-              </div>
-            </div>
-          </div>
-        </td>
-        <td>
-          <button class="btn btn-primary btn-xs">
-            <i class="fas fa-info"></i>
-          </button>
-          <button class="btn btn-danger btn-xs" style="margin-left: 5px;" (click)="deletarFundo(fundo)">
-            <i class="fas fa-trash"></i>
-          </button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  </div>
 </div>
