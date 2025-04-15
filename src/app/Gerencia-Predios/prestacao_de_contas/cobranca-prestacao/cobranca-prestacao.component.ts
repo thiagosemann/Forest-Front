@@ -274,8 +274,8 @@ salvarDados(): void {
  
 }
 
-marcarComoPago(pagamento: { apt_name: string; data_vencimento: string; valor: string }, event: any): void {
-  if (event.target.checked) {
+marcarComoPago(pagamento: { apt_name: string; data_vencimento: string; valor: string }): void {
+  
 
     let pagamentoRemovido: any | null = null;
     this.pagamentosEmAtraso = this.pagamentosEmAtraso.filter((item) => {
@@ -306,11 +306,7 @@ marcarComoPago(pagamento: { apt_name: string; data_vencimento: string; valor: st
       }
     }
 
-  } else {
-    // Se desmarcar o checkbox, talvez você queira desfazer a ação.
-    // Opcional: implementar lógica para reverter o pagamento marcado.
-  }
-  console.log(pagamento)
+  
   // Atualiza a flag com base na existência de pagamentos marcados
   this.isCheckboxMarcado = this.pagamentosAtrasadosPagos.length > 0 || this.pagamentosMesmoMesPagos.length > 0;
 }
