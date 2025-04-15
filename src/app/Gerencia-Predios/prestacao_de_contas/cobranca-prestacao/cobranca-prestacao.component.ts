@@ -195,7 +195,6 @@ getInadimplentesByBuildingId(): void {
     };
   
     let pagamentoRemovido: any | null = null;
-  
     this.pagamentosEmAtraso = this.pagamentosEmAtraso.filter((item) => {
       const valorItemFormatado = normalizarValor(item.valor);
       const valorPagamentoFormatado = normalizarValor(pagamento.valor);
@@ -265,20 +264,46 @@ salvarDados(): void {
   this.condominiosPagos = [];
   this.pagamentosAtrasadosPagos = [];
   this.pagamentosEmAtraso = [];
+  
 }
 
 marcarComoPago(pagamento: { apt_name: string; data_vencimento: string; valor: string }, event: any): void {
   if (event.target.checked) {
-    this.procuraPagamentoNosAtrasados({
-      apartamento: pagamento.apt_name,
-      data: `${this.selectedMonth.toString().padStart(2, '0')}/${this.selectedYear}`,
-      valor: pagamento.valor
+
+    let pagamentoRemovido: any | null = null;
+    this.pagamentosEmAtraso = this.pagamentosEmAtraso.filter((item) => {
+      const corresponde =
+        item.apt_name === pagamento.apt_name &&
+        item.data_vencimento === pagamento.data_vencimento &&
+        item.valor === pagamento.valor;
+      if (corresponde) {
+        pagamentoRemovido = item;
+      }
+      return !corresponde;
     });
+    if (pagamentoRemovido) {
+      if (pagamentoRemovido.data_vencimento !== `${this.selectedMonth.toString().padStart(2, '0')}/${this.selectedYear}`) {
+        this.pagamentosAtrasadosPagos.push({
+          apt_name: pagamentoRemovido.apt_name,
+          data_vencimento: `${this.selectedMonth.toString().padStart(2, '0')}/${this.selectedYear}`,
+          valor: pagamentoRemovido.valor
+        });
+        this.pagamentosAtrasadosPagos.sort((a, b) => a.apt_name.localeCompare(b.apt_name));
+      } else {
+        this.pagamentosMesmoMesPagos.push({
+          apt_name: pagamentoRemovido.apt_name,
+          data_vencimento: pagamentoRemovido.data_vencimento,
+          valor: pagamentoRemovido.valor
+        });
+        this.pagamentosMesmoMesPagos.sort((a, b) => a.apt_name.localeCompare(b.apt_name));
+      }
+    }
+
   } else {
     // Se desmarcar o checkbox, talvez você queira desfazer a ação.
     // Opcional: implementar lógica para reverter o pagamento marcado.
   }
-
+  console.log(pagamento)
   // Atualiza a flag com base na existência de pagamentos marcados
   this.isCheckboxMarcado = this.pagamentosAtrasadosPagos.length > 0 || this.pagamentosMesmoMesPagos.length > 0;
 }
