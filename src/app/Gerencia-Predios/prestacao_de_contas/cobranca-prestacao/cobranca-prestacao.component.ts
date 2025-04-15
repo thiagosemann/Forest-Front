@@ -1,9 +1,11 @@
 import { Component } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
 import { BuildingService } from 'src/app/shared/service/Banco_de_Dados/buildings_service';
+import { PrestacaoCobrancaBoletoService } from 'src/app/shared/service/Banco_de_Dados/prestacaoCobrancaBoletos_service';
 import { RateioPorApartamentoService } from 'src/app/shared/service/Banco_de_Dados/rateioPorApartamento_service';
 import { SelectionService } from 'src/app/shared/service/selectionService';
 import { Building } from 'src/app/shared/utilitarios/building';
+import { PrestacaoCobrancaBoleto } from 'src/app/shared/utilitarios/prestacaoCobrancaBoleto';
 import * as XLSX from 'xlsx';
 
 @Component({
@@ -37,12 +39,14 @@ export class CobrancaPrestacaoComponent {
   predioSelecionado: boolean = true;
   isPlanilhaInserida: boolean = false;
   isCheckboxMarcado: boolean = false;
+  existingBoleto!: PrestacaoCobrancaBoleto | null;
 
   constructor(
     private selectionService: SelectionService,
     private toastr: ToastrService,
     private buildingService: BuildingService,
-    private rateioPorApartamentoService: RateioPorApartamentoService
+    private rateioPorApartamentoService: RateioPorApartamentoService,
+    private prestacaoCobrancaBoletoService: PrestacaoCobrancaBoletoService
 
   ) {}
 
@@ -53,6 +57,8 @@ export class CobrancaPrestacaoComponent {
       this.selectedYear = selecao.year;
       this.verifySelected();
       this.getInadimplentesByBuildingId();
+      // Consulta se existe boleto para o prédio, mês e ano selecionados
+      this.checkExistingBoleto();
     });
   }
 
@@ -62,6 +68,7 @@ getInadimplentesByBuildingId(): void {
     (rateiosNaoPagos: any) => {
       console.log(rateiosNaoPagos)
       rateiosNaoPagos.forEach((rateio: any) => {
+        console.log(rateio)
         // Split the due date into day, month, and year
         const [mes, ano] = rateio.data_vencimento.split('/');
         const rateioMonth = parseInt(mes, 10);
@@ -264,7 +271,7 @@ salvarDados(): void {
   this.condominiosPagos = [];
   this.pagamentosAtrasadosPagos = [];
   this.pagamentosEmAtraso = [];
-  
+ 
 }
 
 marcarComoPago(pagamento: { apt_name: string; data_vencimento: string; valor: string }, event: any): void {
@@ -308,6 +315,104 @@ marcarComoPago(pagamento: { apt_name: string; data_vencimento: string; valor: st
   this.isCheckboxMarcado = this.pagamentosAtrasadosPagos.length > 0 || this.pagamentosMesmoMesPagos.length > 0;
 }
 
+  uploadBoletoPdf(event: any): void {
+    const file: File = event.target.files[0];
+    if (!file) return;
+    
+    if (file.type !== 'application/pdf') {
+      this.toastr.warning('Por favor, selecione um arquivo PDF.');
+      return;
+    }
 
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result?.toString();
+      if (result) {
+        // Remove a parte do prefixo base64 e obtém somente a string codificada
+        const fileContentBase64 = result.split(',')[1];
+        const newBoleto: PrestacaoCobrancaBoleto = {
+          pdf: fileContentBase64,
+          predio_id: this.selectedBuildingId,
+          month: this.selectedMonth,
+          year: this.selectedYear
+        };
+
+        this.prestacaoCobrancaBoletoService.createPrestacaoCobrancaBoleto(newBoleto).subscribe(
+          (response) => {
+            this.toastr.success(`Arquivo "${file.name}" enviado com sucesso!`);
+            // Atualiza a variável para que apareçam as opções de download e delete
+            this.existingBoleto = response;
+          },
+          (error) => {
+            this.toastr.error('Erro ao enviar o arquivo. Tente novamente.');
+            console.error('Erro no upload do boleto:', error);
+          }
+        );
+      } else {
+        this.toastr.error('Falha ao ler o arquivo PDF.');
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  checkExistingBoleto(): void {
+    this.prestacaoCobrancaBoletoService
+      .getPrestacaoCobrancaBoletoByBuildingAndMonth(this.selectedBuildingId, this.selectedMonth, this.selectedYear)
+      .subscribe(
+        (boletos: PrestacaoCobrancaBoleto[]) => {
+          if (boletos && boletos.length > 0) {
+            this.existingBoleto = boletos[0];
+          } else {
+            this.existingBoleto = null;
+          }
+        },
+        (error) => {
+          console.error('Erro ao consultar boleto:', error);
+          this.existingBoleto = null;
+        }
+      );
+  }
+
+  downloadBoleto(): void {
+    if (!this.existingBoleto?.id) {
+      this.toastr.warning('Nenhum boleto encontrado para download.');
+      return;
+    }
+    this.prestacaoCobrancaBoletoService.getPrestacaoCobrancaBoletoById(this.existingBoleto.id).subscribe(
+      (response) => {
+        if (!response || !response.pdf) {
+          this.toastr.error('Boleto não contém dados para download.');
+          return;
+        }
+        const byteArray = new Uint8Array(atob(response.pdf).split('').map(char => char.charCodeAt(0)));
+        const blob = new Blob([byteArray], { type: 'application/pdf' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `boleto_${this.existingBoleto!.id}.pdf`;
+        link.click();
+      },
+      (error) => {
+        console.error('Erro ao efetuar download do boleto:', error);
+        this.toastr.error('Erro no download do boleto.');
+      }
+    );
+  }
+
+  deleteBoleto(): void {
+    if (!this.existingBoleto?.id) {
+      this.toastr.warning('Nenhum boleto encontrado para exclusão.');
+      return;
+    }
+    this.prestacaoCobrancaBoletoService.deletePrestacaoCobrancaBoleto(this.existingBoleto.id).subscribe(
+      () => {
+        this.toastr.success('Boleto excluído com sucesso!');
+        this.existingBoleto = null;
+      },
+      (error) => {
+        console.error('Erro ao excluir boleto:', error);
+        this.toastr.error('Erro ao excluir boleto.');
+      }
+    );
+  }
   
 }
