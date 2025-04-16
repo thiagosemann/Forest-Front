@@ -14,10 +14,9 @@ import * as XLSX from 'xlsx';
   styleUrls: ['./cobranca-prestacao.component.css']
 })
 export class CobrancaPrestacaoComponent {
-  pagamentosEmAtraso: { apt_name: string; data_vencimento: string; valor: string }[] = [];
-  pagamentosAtrasadosPagos: { apt_name: string; data_vencimento: string; valor: string }[] = [];
-  pagamentosMesmoMesPagos: { apt_name: string; data_vencimento: string; valor: string }[] = [];
-  condominiosPagos: { apt_name: string; data_vencimento: string; valor: string }[] = [];
+  pagamentosEmAtraso: { apt_name: string; data_vencimento: string; valor: string,id:number }[] = [];
+  pagamentosAtrasadosPagos: { apt_name: string; data_vencimento: string; valor: string,id:number }[] = [];
+  pagamentosMesmoMesPagos: { apt_name: string; data_vencimento: string; valor: string,id:number }[] = [];
   cnpj:string="";
   uploading: boolean = false;
   pagamentosXls: Array<{
@@ -55,10 +54,12 @@ export class CobrancaPrestacaoComponent {
       this.selectedBuildingId = selecao.predioID;
       this.selectedMonth = selecao.month;
       this.selectedYear = selecao.year;
-      this.verifySelected();
       this.getInadimplentesByBuildingId();
-      // Consulta se existe boleto para o prédio, mês e ano selecionados
+      this.verifySelected();
       this.checkExistingBoleto();
+
+      // Consulta se existe boleto para o prédio, mês e ano selecionados
+
     });
   }
 
@@ -66,9 +67,7 @@ getInadimplentesByBuildingId(): void {
   this.pagamentosEmAtraso = [];
   this.rateioPorApartamentoService.getRateiosNaoPagosPorPredioId(this.selectedBuildingId,this.selectedMonth,this.selectedYear).subscribe(
     (rateiosNaoPagos: any) => {
-      console.log(rateiosNaoPagos)
       rateiosNaoPagos.forEach((rateio: any) => {
-        console.log(rateio)
         // Split the due date into day, month, and year
         const [mes, ano] = rateio.data_vencimento.split('/');
         const rateioMonth = parseInt(mes, 10);
@@ -76,7 +75,8 @@ getInadimplentesByBuildingId(): void {
         this.pagamentosEmAtraso.push({
             apt_name: rateio.apt_name,
             data_vencimento: rateio.data_vencimento,
-            valor: rateio.valor
+            valor: rateio.valor,
+            id:rateio.id
         });
         
       });
@@ -103,7 +103,6 @@ getInadimplentesByBuildingId(): void {
       );
     });
   }
-
   verifySelected(): void {
     if (this.selectedBuildingId && this.selectedMonth && this.selectedYear) {
       this.predioSelecionado = true;
@@ -143,7 +142,6 @@ getInadimplentesByBuildingId(): void {
         valorRecebido: row[9] || '',
         finalidade: row[10] || ''
       }));
-      console.log( this.pagamentosXls)
       this.pagamentosXls.forEach(pagamento => {
         let month = pagamento.cod.slice(-2);
         let year = pagamento.vencimento.slice(-4);
@@ -157,13 +155,7 @@ getInadimplentesByBuildingId(): void {
       if (pagamento.status.toUpperCase() == 'EXPIRADO') {
         // Não pagos mesmo mês
       } else {
-        // Pagos mesmo mês
-        this.condominiosPagos.push({
-          apt_name: apartamento,
-          data_vencimento: dataFormatada, // Data no formato mm/yyyy
-          valor: valorFormatado.toString()
-        });
-  
+     
         // Remover do array pagamentosEmAtraso se a data for igual
         this.procuraPagamentoNosAtrasados({
           apartamento: apartamento,
@@ -178,21 +170,10 @@ getInadimplentesByBuildingId(): void {
       this.pagamentosAtrasadosPagos.sort((a, b) => a.apt_name.localeCompare(b.apt_name));
       this.pagamentosEmAtraso.sort((a, b) => a.apt_name.localeCompare(b.apt_name));
       this.pagamentosMesmoMesPagos.sort((a, b) => a.apt_name.localeCompare(b.apt_name));
-      this.condominiosPagos.sort((a, b) => a.apt_name.localeCompare(b.apt_name));
       this.isPlanilhaInserida = true;
 
     };
     reader.readAsArrayBuffer(file);
-  }
-  formatCurrencyPTBR(value: string): string {
-    const numericValue = parseFloat(value.replace(',', '.')); // Converte a string para número
-    if (isNaN(numericValue)) {
-      return 'Valor inválido'; // Retorna uma mensagem de erro se o valor não for numérico
-    }
-    
-    return numericValue
-      .toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-      .replace('R$', 'R$ '); // Adiciona o espaço após o símbolo "R$"
   }
 
   procuraPagamentoNosAtrasados(pagamento: { apartamento: string; data: string; valor: string }): void {
@@ -220,69 +201,73 @@ getInadimplentesByBuildingId(): void {
         this.pagamentosAtrasadosPagos.push({
           apt_name: pagamentoRemovido.apt_name,
           data_vencimento: pagamentoRemovido.data_vencimento,
-          valor: pagamentoRemovido.valor
+          valor: pagamentoRemovido.valor,
+          id:pagamentoRemovido.id
         });
         this.pagamentosAtrasadosPagos.sort((a, b) => a.apt_name.localeCompare(b.apt_name));
       } else {
         this.pagamentosMesmoMesPagos.push({
           apt_name: pagamentoRemovido.apt_name,
           data_vencimento: pagamentoRemovido.data_vencimento,
-          valor: pagamentoRemovido.valor
+          valor: pagamentoRemovido.valor,
+          id:pagamentoRemovido.id
         });
         this.pagamentosMesmoMesPagos.sort((a, b) => a.apt_name.localeCompare(b.apt_name));
       }
     }
   }
-  
+
+ 
+  formatCurrencyPTBR(value: string): string {
+    const numericValue = parseFloat(value.replace(',', '.')); // Converte a string para número
+    if (isNaN(numericValue)) {
+      return 'Valor inválido'; // Retorna uma mensagem de erro se o valor não for numérico
+    }
+    
+    return numericValue
+      .toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+      .replace('R$', 'R$ '); // Adiciona o espaço após o símbolo "R$"
+  }
+
+
 
 salvarDados(): void {
   // Cria um array consolidado com os pagamentos atrasados pagos e os condomínios pagos
   const pagamentosConsolidados = [
     ...this.pagamentosAtrasadosPagos.map(pagamento => ({
-      apt_name: pagamento.apt_name,
-      data_vencimento: pagamento.data_vencimento,
-      valor: pagamento.valor,
-      tipo: 'Atrasado Pago'
+      data_pagamento: pagamento.data_vencimento,
+      id:pagamento.id
     })),
     ...this.pagamentosMesmoMesPagos.map(pagamento => ({
-      apt_name: pagamento.apt_name,
-      data_vencimento: pagamento.data_vencimento,
-      valor: pagamento.valor,
-      tipo: 'Condomínio Pago'
+      data_pagamento: pagamento.data_vencimento,
+      id:pagamento.id
     }))
   ];
-  console.log(pagamentosConsolidados)
 
-  // Chama a função do service para atualizar a data de pagamento
- this.rateioPorApartamentoService.atualizarDataPagamento(pagamentosConsolidados)
+  this.rateioPorApartamentoService.atualizarDataPagamento(pagamentosConsolidados)
     .subscribe(
       () => {
-        console.log('Data de pagamento atualizada com sucesso.');
-        this.toastr.success('Dados salvos com sucesso!');
+        this.toastr.success('Pagamentos atualizados com sucesso!');
+        // Resetar o estado após salvar
+        this.pagamentosAtrasadosPagos = [];
+        this.pagamentosMesmoMesPagos = [];
+        this.isPlanilhaInserida = false;
+        this.isCheckboxMarcado = false;
+        this.getInadimplentesByBuildingId(); // Atualiza os inadimplentes na tela
       },
       error => {
-        console.error('Erro ao atualizar data de pagamento:', error);
-        this.toastr.error('Erro ao salvar os dados.');
+        console.error('Erro ao atualizar os pagamentos:', error);
+        this.toastr.error('Erro ao salvar os pagamentos.');
       }
     );
-
-  // Resetar o estado após salvar
-  this.isPlanilhaInserida = false;
-  this.condominiosPagos = [];
-  this.pagamentosAtrasadosPagos = [];
-  this.pagamentosEmAtraso = [];
  
 }
 
-marcarComoPago(pagamento: { apt_name: string; data_vencimento: string; valor: string }): void {
-  
-
-    let pagamentoRemovido: any | null = null;
+marcarComoPago(pagamento: { apt_name: string; data_vencimento: string; valor: string;id:number }): void {
+  let pagamentoRemovido: any | null = null;
     this.pagamentosEmAtraso = this.pagamentosEmAtraso.filter((item) => {
       const corresponde =
-        item.apt_name === pagamento.apt_name &&
-        item.data_vencimento === pagamento.data_vencimento &&
-        item.valor === pagamento.valor;
+        item.id === pagamento.id
       if (corresponde) {
         pagamentoRemovido = item;
       }
@@ -293,14 +278,16 @@ marcarComoPago(pagamento: { apt_name: string; data_vencimento: string; valor: st
         this.pagamentosAtrasadosPagos.push({
           apt_name: pagamentoRemovido.apt_name,
           data_vencimento: `${this.selectedMonth.toString().padStart(2, '0')}/${this.selectedYear}`,
-          valor: pagamentoRemovido.valor
+          valor: pagamentoRemovido.valor,
+          id:pagamentoRemovido.id
         });
         this.pagamentosAtrasadosPagos.sort((a, b) => a.apt_name.localeCompare(b.apt_name));
       } else {
         this.pagamentosMesmoMesPagos.push({
           apt_name: pagamentoRemovido.apt_name,
           data_vencimento: pagamentoRemovido.data_vencimento,
-          valor: pagamentoRemovido.valor
+          valor: pagamentoRemovido.valor,
+          id:pagamentoRemovido.id
         });
         this.pagamentosMesmoMesPagos.sort((a, b) => a.apt_name.localeCompare(b.apt_name));
       }
@@ -311,6 +298,8 @@ marcarComoPago(pagamento: { apt_name: string; data_vencimento: string; valor: st
   this.isCheckboxMarcado = this.pagamentosAtrasadosPagos.length > 0 || this.pagamentosMesmoMesPagos.length > 0;
 }
 
+ // ----------------------------------------------------PDF COBRANCA------------------------------------------------------------------------------------------//
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------//
   uploadBoletoPdf(event: any): void {
     const file: File = event.target.files[0];
     if (!file) return;
