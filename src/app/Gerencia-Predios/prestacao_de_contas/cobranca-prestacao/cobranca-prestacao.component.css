@@ -37,6 +37,7 @@
   padding: 0 1rem;
 }
 
+
 .modern-table {
   width: 100%;
   border-collapse: collapse;
@@ -61,6 +62,8 @@
 .modern-table tr:hover {
   background: #f8f9fa;
 }
+
+
 
 /* Botões */
 .btn {
@@ -152,6 +155,36 @@ input:checked + .slider:before {
   background: #ced4da;
   border-radius: 4px;
 }
+/* ==== Inputs com R$ ==== */
+.currency-input .input-group-text {
+  background-color: #f1f3f5;       /* mesmo tom de fundo das linhas */
+  border: 1px solid #ced4da;       /* borda suave */
+  border-right: none;              /* não duplicar borda */
+  border-radius: 8px 0 0 8px;      /* mesmo radius dos botões */
+  font-weight: 500;
+  color: #495057;
+  padding: 0.375rem 0.75rem;
+}
+
+.currency-input .form-control {
+  border: 1px solid #ced4da;
+  border-radius: 0 8px 8px 0;
+  padding: 0.375rem 0.75rem;
+}
+
+/* se quiser aplicar a inputs de data e outros de forma geral */
+.form-control-sm {
+  border-radius: 8px !important;
+  padding: 0.375rem 0.75rem;
+}
+
+/* ajuste fino de hover/focus (opcional) */
+.currency-input .form-control:focus,
+.currency-input .input-group-text:focus {
+  box-shadow: 0 0 0 0.15rem rgba(52, 144, 220, 0.25);
+  border-color: #80bdff;
+}
+
 
 @media (max-width: 768px) {
   .dashboard-card {

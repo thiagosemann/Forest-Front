@@ -71,7 +71,7 @@ export class RateioPorApartamentoService {
   }
 
   // Nova função para atualizar a data de pagamento com base nos pagamentos consolidados
-  atualizarDataPagamento(pagamentosConsolidados: { id: number, data_pagamento: string }[]): Observable<void> {
+  atualizarDataPagamentoEValor(pagamentosConsolidados: { id: number, data_pagamento: string }[]): Observable<void> {
     const url = `${this.apiUrl}/atualizar-datas-pagamento`;
     return this.http.put<void>(url, { pagamentosConsolidados }, { headers: this.getHeaders() });
   }

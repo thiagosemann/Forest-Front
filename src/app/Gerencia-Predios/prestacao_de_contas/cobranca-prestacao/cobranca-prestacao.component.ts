@@ -5,6 +5,7 @@ import { PrestacaoCobrancaBoletoService } from 'src/app/shared/service/Banco_de_
 import { RateioPorApartamentoService } from 'src/app/shared/service/Banco_de_Dados/rateioPorApartamento_service';
 import { SelectionService } from 'src/app/shared/service/selectionService';
 import { Building } from 'src/app/shared/utilitarios/building';
+import { Pagamento } from 'src/app/shared/utilitarios/pagamento';
 import { PrestacaoCobrancaBoleto } from 'src/app/shared/utilitarios/prestacaoCobrancaBoleto';
 import * as XLSX from 'xlsx';
 
@@ -14,9 +15,9 @@ import * as XLSX from 'xlsx';
   styleUrls: ['./cobranca-prestacao.component.css']
 })
 export class CobrancaPrestacaoComponent {
-  pagamentosEmAtraso: { apt_name: string; data_vencimento: string; valor: string,id:number }[] = [];
-  pagamentosAtrasadosPagos: { apt_name: string; data_vencimento: string; valor: string,id:number }[] = [];
-  pagamentosMesmoMesPagos: { apt_name: string; data_vencimento: string; valor: string,id:number }[] = [];
+  pagamentosEmAtraso: Pagamento[] = [];
+  pagamentosAtrasadosPagos: Pagamento[] = [];
+  pagamentosMesmoMesPagos: Pagamento[] = [];
   cnpj:string="";
   uploading: boolean = false;
   pagamentosXls: Array<{
@@ -67,15 +68,16 @@ getInadimplentesByBuildingId(): void {
   this.pagamentosEmAtraso = [];
   this.rateioPorApartamentoService.getRateiosNaoPagosPorPredioId(this.selectedBuildingId,this.selectedMonth,this.selectedYear).subscribe(
     (rateiosNaoPagos: any) => {
+
       rateiosNaoPagos.forEach((rateio: any) => {
         // Split the due date into day, month, and year
         const [mes, ano] = rateio.data_vencimento.split('/');
-        const rateioMonth = parseInt(mes, 10);
-        const rateioYear = parseInt(ano, 10);
         this.pagamentosEmAtraso.push({
             apt_name: rateio.apt_name,
             data_vencimento: rateio.data_vencimento,
+            data_pagamento: rateio.data_pagamento,
             valor: rateio.valor,
+            valor_pagamento: rateio.valor_pagamento,
             id:rateio.id
         });
         
@@ -123,12 +125,9 @@ getInadimplentesByBuildingId(): void {
     reader.onload = (e: any) => {
       const data = new Uint8Array(e.target.result);
       const workbook = XLSX.read(data, { type: 'array' });
-
       const firstSheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[firstSheetName];
-
       const jsonData: any[] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-
       this.pagamentosXls = jsonData.slice(1).map((row: any) => ({
         cliente: row[0] || '',
         coibranca: row[1] || '',
@@ -144,25 +143,29 @@ getInadimplentesByBuildingId(): void {
       }));
       this.pagamentosXls.forEach(pagamento => {
         let month = pagamento.cod.slice(-2);
-        let year = pagamento.vencimento.slice(-4);
         let apartamento = pagamento.cod.slice(0, -2);
-      
         // Formatar a data para "mm/yyyy" removendo o dia
-     // Garantir que a data tenha o formato mm/yyyy (com dois dígitos no mês)
-      const [dia, mes, ano] = pagamento.dataRecebimento.split('/');
-      const dataFormatada = `${month}/${ano}`; // Formata a data para "mm/yyyy"
-      const valorFormatado = parseFloat(pagamento.valor.replace('R$', '').replace(',', '.'));
-      if (pagamento.status.toUpperCase() == 'EXPIRADO') {
-        // Não pagos mesmo mês
-      } else {
-     
-        // Remover do array pagamentosEmAtraso se a data for igual
-        this.procuraPagamentoNosAtrasados({
-          apartamento: apartamento,
-          data: dataFormatada, // Verifica se a data de recebimento é a mesma, agora no formato mm/yyyy
-          valor: pagamento.valor
-        });
-      }
+       // Garantir que a data tenha o formato mm/yyyy (com dois dígitos no mês)
+        const [dia,mes,ano] = pagamento.dataRecebimento.split('/');
+        const dataFormatada = `${month}/${ano}`; // Formata a data para "mm/yyyy"
+
+      
+        const dataFormatada2 = `${mes}/${ano}`; // Formata a data para "mm/yyyy"
+
+        if (pagamento.status.toUpperCase() != 'EXPIRADO') {
+          // Remover do array pagamentosEmAtraso se a data for igual
+          let pagamentoAux:Pagamento = {
+            apt_name: apartamento,
+            data_vencimento: dataFormatada,
+            data_pagamento: dataFormatada2,
+            valor: pagamento.valor,
+            valor_pagamento: pagamento.valorRecebido,
+            
+          }
+          if(pagamentoAux.apt_name !=""){
+            this.procuraPagamentoNosAtrasados(pagamentoAux);
+          }
+        }
         
       });
       
@@ -176,7 +179,7 @@ getInadimplentesByBuildingId(): void {
     reader.readAsArrayBuffer(file);
   }
 
-  procuraPagamentoNosAtrasados(pagamento: { apartamento: string; data: string; valor: string }): void {
+  procuraPagamentoNosAtrasados(pagamento: Pagamento): void {
     const normalizarValor = (valor: string): number => {
       const valorNumerico = parseFloat(valor.replace('R$', '').replace(',', '.').trim());
       return Math.floor(valorNumerico);
@@ -187,8 +190,8 @@ getInadimplentesByBuildingId(): void {
       const valorItemFormatado = normalizarValor(item.valor);
       const valorPagamentoFormatado = normalizarValor(pagamento.valor);
       const corresponde =
-        item.apt_name === pagamento.apartamento &&
-        item.data_vencimento === pagamento.data &&
+        item.apt_name === pagamento.apt_name &&
+        item.data_vencimento === pagamento.data_vencimento &&
         valorItemFormatado === valorPagamentoFormatado;
       if (corresponde) {
         pagamentoRemovido = item;
@@ -201,6 +204,8 @@ getInadimplentesByBuildingId(): void {
         this.pagamentosAtrasadosPagos.push({
           apt_name: pagamentoRemovido.apt_name,
           data_vencimento: pagamentoRemovido.data_vencimento,
+          data_pagamento: pagamento.data_pagamento,
+          valor_pagamento:  pagamento.valor_pagamento ? pagamento.valor_pagamento.replace('R$', '').replace(',', '.').trim() : "0.00",
           valor: pagamentoRemovido.valor,
           id:pagamentoRemovido.id
         });
@@ -209,6 +214,8 @@ getInadimplentesByBuildingId(): void {
         this.pagamentosMesmoMesPagos.push({
           apt_name: pagamentoRemovido.apt_name,
           data_vencimento: pagamentoRemovido.data_vencimento,
+          data_pagamento: pagamento.data_pagamento,
+          valor_pagamento:  pagamento.valor_pagamento ? pagamento.valor_pagamento.replace('R$', '').replace(',', '.').trim() : "0.00",
           valor: pagamentoRemovido.valor,
           id:pagamentoRemovido.id
         });
@@ -218,9 +225,13 @@ getInadimplentesByBuildingId(): void {
   }
 
  
-  formatCurrencyPTBR(value: string): string {
+  formatCurrencyPTBR(value: string | undefined): string {
+    if(!value){
+      return 'R$ 0,00'; // Retorna um valor padrão se o valor for indefinido
+    }
     const numericValue = parseFloat(value.replace(',', '.')); // Converte a string para número
     if (isNaN(numericValue)) {
+      console.log(value)
       return 'Valor inválido'; // Retorna uma mensagem de erro se o valor não for numérico
     }
     
@@ -230,21 +241,70 @@ getInadimplentesByBuildingId(): void {
   }
 
 
+marcarComoPago(pagamento: Pagamento): void {
+  let dataSelects = `${this.selectedMonth.toString().padStart(2, '0')}/${this.selectedYear}`;
+  let pagamentoRemovido: any | null = null;
+    this.pagamentosEmAtraso = this.pagamentosEmAtraso.filter((item) => {
+      const corresponde =
+        item.id === pagamento.id
+      if (corresponde) {
+        pagamentoRemovido = item;
+      }
+      return !corresponde;
+    });
+    if (pagamentoRemovido) {
+      if (pagamentoRemovido.data_vencimento !== `${this.selectedMonth.toString().padStart(2, '0')}/${this.selectedYear}`) {
+        this.pagamentosAtrasadosPagos.push({
+          apt_name: pagamentoRemovido.apt_name,
+          data_vencimento: pagamentoRemovido.data_vencimento,
+          data_pagamento: dataSelects,
+          valor_pagamento: pagamentoRemovido.valor,
+          valor: pagamentoRemovido.valor,
+          id:pagamentoRemovido.id
+        });
+        this.pagamentosAtrasadosPagos.sort((a, b) => a.apt_name.localeCompare(b.apt_name));
+      } else {
+        this.pagamentosMesmoMesPagos.push({
+          apt_name: pagamentoRemovido.apt_name,
+          data_vencimento: pagamentoRemovido.data_vencimento,
+          data_pagamento: pagamentoRemovido.data_vencimento,
+          valor_pagamento: pagamentoRemovido.valor,
+          valor: pagamentoRemovido.valor,
+          id:pagamentoRemovido.id
+        });
+        this.pagamentosMesmoMesPagos.sort((a, b) => a.apt_name.localeCompare(b.apt_name));
+      }
+    }
+
+  
+  // Atualiza a flag com base na existência de pagamentos marcados
+  this.isCheckboxMarcado = this.pagamentosAtrasadosPagos.length > 0 || this.pagamentosMesmoMesPagos.length > 0;
+}
+
 
 salvarDados(): void {
   // Cria um array consolidado com os pagamentos atrasados pagos e os condomínios pagos
-  const pagamentosConsolidados = [
-    ...this.pagamentosAtrasadosPagos.map(pagamento => ({
-      data_pagamento: pagamento.data_vencimento,
-      id:pagamento.id
-    })),
-    ...this.pagamentosMesmoMesPagos.map(pagamento => ({
-      data_pagamento: pagamento.data_vencimento,
-      id:pagamento.id
-    }))
-  ];
+  let pagamentosConsolidados:any[]=[]
 
-  this.rateioPorApartamentoService.atualizarDataPagamento(pagamentosConsolidados)
+  this.pagamentosAtrasadosPagos.forEach(pagamento=>{
+    pagamentosConsolidados.push({
+      data_pagamento: pagamento.data_pagamento,
+      valor_pagamento: pagamento.valor_pagamento,
+      id:pagamento.id
+    })
+  })
+  this.pagamentosMesmoMesPagos.forEach(pagamento=>{
+    pagamentosConsolidados.push({
+      data_pagamento: pagamento.data_pagamento,
+      valor_pagamento: pagamento.valor_pagamento,
+      id:pagamento.id
+    })
+  })
+  console.log("pagamentosAtrasadosPagos",this.pagamentosAtrasadosPagos)
+  console.log("pagamentosMesmoMesPagos",this.pagamentosMesmoMesPagos)
+  console.log("pagamentosConsolidados",pagamentosConsolidados)
+
+  this.rateioPorApartamentoService.atualizarDataPagamentoEValor(pagamentosConsolidados)
     .subscribe(
       () => {
         this.toastr.success('Pagamentos atualizados com sucesso!');
@@ -260,44 +320,9 @@ salvarDados(): void {
         this.toastr.error('Erro ao salvar os pagamentos.');
       }
     );
+    
  
 }
-
-marcarComoPago(pagamento: { apt_name: string; data_vencimento: string; valor: string;id:number }): void {
-  let pagamentoRemovido: any | null = null;
-    this.pagamentosEmAtraso = this.pagamentosEmAtraso.filter((item) => {
-      const corresponde =
-        item.id === pagamento.id
-      if (corresponde) {
-        pagamentoRemovido = item;
-      }
-      return !corresponde;
-    });
-    if (pagamentoRemovido) {
-      if (pagamentoRemovido.data_vencimento !== `${this.selectedMonth.toString().padStart(2, '0')}/${this.selectedYear}`) {
-        this.pagamentosAtrasadosPagos.push({
-          apt_name: pagamentoRemovido.apt_name,
-          data_vencimento: `${this.selectedMonth.toString().padStart(2, '0')}/${this.selectedYear}`,
-          valor: pagamentoRemovido.valor,
-          id:pagamentoRemovido.id
-        });
-        this.pagamentosAtrasadosPagos.sort((a, b) => a.apt_name.localeCompare(b.apt_name));
-      } else {
-        this.pagamentosMesmoMesPagos.push({
-          apt_name: pagamentoRemovido.apt_name,
-          data_vencimento: pagamentoRemovido.data_vencimento,
-          valor: pagamentoRemovido.valor,
-          id:pagamentoRemovido.id
-        });
-        this.pagamentosMesmoMesPagos.sort((a, b) => a.apt_name.localeCompare(b.apt_name));
-      }
-    }
-
-  
-  // Atualiza a flag com base na existência de pagamentos marcados
-  this.isCheckboxMarcado = this.pagamentosAtrasadosPagos.length > 0 || this.pagamentosMesmoMesPagos.length > 0;
-}
-
  // ----------------------------------------------------PDF COBRANCA------------------------------------------------------------------------------------------//
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------//
   uploadBoletoPdf(event: any): void {

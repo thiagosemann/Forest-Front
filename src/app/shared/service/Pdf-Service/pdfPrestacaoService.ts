@@ -263,26 +263,31 @@ private addRateiosPagosGeradosEmMesesDiferentes(pdf: any, startX: number, curren
     pdf.text('Inadimplentes pagos', startX, currentY);
      // Calcula o total dos valores
   const totalValue = data.rateiosPagosGeradosEmMesesDiferentes.reduce((sum: number, item: any) => sum + parseFloat(item.valor), 0);
+  const totalValuePagamento = data.rateiosPagosGeradosEmMesesDiferentes.reduce((sum: number, item: any) => sum + parseFloat(item.valor_pagamento), 0);
   
   // Cria a tabela utilizando a função auxiliar
   currentY = this.generateTable(pdf, startX, currentY,
       [
-          'Apartamento', 'Data', 'Valor (R$)',
+          'Apartamento', 'Data Competência ',  'Data Pagamento ','Valor Original (R$)', 'Valor Pago (R$)' ,
       ], 
       [
           ...data.rateiosPagosGeradosEmMesesDiferentes.map((item: any) => [
               item.apt_name,
               `${item.data_vencimento}`,
-              `R$ ${parseFloat(item.valor).toFixed(2)}`,             
+              `${item.data_pagamento}`,
+              `R$ ${parseFloat(item.valor).toFixed(2)}`, 
+              `R$ ${parseFloat(item.valor_pagamento).toFixed(2)}`,             
           ]),
           // Adiciona o item "Total" ao final da tabela
           [
               { content: 'Total', styles: { fontStyle: 'bold' } },
               '',
-              { content: `R$ ${totalValue.toFixed(2)}`, styles: { fontStyle: 'bold' } }
+              '',
+              { content: `R$ ${totalValue.toFixed(2)}`, styles: { fontStyle: 'bold' } },
+              { content: `R$ ${totalValuePagamento.toFixed(2)}`, styles: { fontStyle: 'bold' } }
           ]
       ], 
-      [67, 66, 66], 9
+      [40, 40, 40,40,40], 9
     );
   }
  

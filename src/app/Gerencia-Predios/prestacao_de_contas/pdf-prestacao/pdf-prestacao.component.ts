@@ -127,7 +127,9 @@ export class PdfPrestacaoComponent implements OnInit {
         // 3. PDFs das Notas Fiscais
         const pdfOrder: any[] = [];
         pdfOrder.push({ arquivoPdfBase64: base64Capa });
-        pdfOrder.push({ arquivoPdfBase64: data.pdfCobrancaBoletos[0].pdf });
+        if( data.pdfCobrancaBoletos.length>0){
+          pdfOrder.push({ arquivoPdfBase64: data.pdfCobrancaBoletos[0].pdf });
+        }
         data.extratosList.forEach((pdf: any) => pdfOrder.push(pdf));
         data.notaFiscalList.forEach((pdf: any) => pdfOrder.push(pdf));
 
