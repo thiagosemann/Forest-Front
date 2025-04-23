@@ -66,6 +66,9 @@ export class CobrancaPrestacaoComponent {
 
 getInadimplentesByBuildingId(): void {
   this.pagamentosEmAtraso = [];
+  this.pagamentosAtrasadosPagos = [];
+  this.pagamentosMesmoMesPagos = [];
+  
   this.rateioPorApartamentoService.getRateiosNaoPagosPorPredioId(this.selectedBuildingId,this.selectedMonth,this.selectedYear).subscribe(
     (rateiosNaoPagos: any) => {
 
@@ -320,9 +323,57 @@ salvarDados(): void {
         this.toastr.error('Erro ao salvar os pagamentos.');
       }
     );
-    
- 
+
 }
+/**
+ * Remove um pagamento das listas de pagos e devolve para inadimplentes.
+ */
+reverterPagamentoAtrasado(pagamento: Pagamento): void {
+  // 1) Remove de pagamentosAtrasadosPagos
+  this.pagamentosAtrasadosPagos = this.pagamentosAtrasadosPagos.filter(p => p.id !== pagamento.id);
+
+  // (se você tratar pagamentosMesmoMesPagos separadamente,
+  // também filtraria ali, ex: this.pagamentosMesmoMesPagos = ...)
+
+  // 2) Insere de volta em EmAtraso
+  this.pagamentosEmAtraso.push({
+    apt_name: pagamento.apt_name,
+    data_vencimento: pagamento.data_vencimento,
+    valor: pagamento.valor,
+    id: pagamento.id
+  });
+
+  // 3) Reordena alfabeticamente
+  this.pagamentosEmAtraso.sort((a, b) => a.apt_name.localeCompare(b.apt_name));
+
+  // 4) Atualiza flag de “tem algo marcado”
+  this.isCheckboxMarcado = this.pagamentosAtrasadosPagos.length > 0
+                        || this.pagamentosMesmoMesPagos.length > 0;
+}
+
+reverterPagamentoMesmoMes(pagamento: Pagamento): void {
+  // 1) Remove de pagamentosAtrasadosPagos
+  this.pagamentosMesmoMesPagos = this.pagamentosMesmoMesPagos.filter(p => p.id !== pagamento.id);
+
+  // (se você tratar pagamentosMesmoMesPagos separadamente,
+  // também filtraria ali, ex: this.pagamentosMesmoMesPagos = ...)
+
+  // 2) Insere de volta em EmAtraso
+  this.pagamentosEmAtraso.push({
+    apt_name: pagamento.apt_name,
+    data_vencimento: pagamento.data_vencimento,
+    valor: pagamento.valor,
+    id: pagamento.id
+  });
+
+  // 3) Reordena alfabeticamente
+  this.pagamentosEmAtraso.sort((a, b) => a.apt_name.localeCompare(b.apt_name));
+
+  // 4) Atualiza flag de “tem algo marcado”
+  this.isCheckboxMarcado = this.pagamentosAtrasadosPagos.length > 0
+                        || this.pagamentosMesmoMesPagos.length > 0;
+}
+
  // ----------------------------------------------------PDF COBRANCA------------------------------------------------------------------------------------------//
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------//
   uploadBoletoPdf(event: any): void {

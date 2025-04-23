@@ -90,11 +90,12 @@
           <table class="modern-table">
             <thead>
               <tr>
-                <th style="width:15%;">Apartamento</th>
-                <th style="width:15%;">Competencia</th>
+                <th style="width:5%;">Apt</th>
+                <th style="width:10%;">Competencia</th>
                 <th style="width:20%;">Pagamento</th>
                 <th style="width:20%;">Valor</th>
-                <th style="width:30%;">Valor Pago</th>
+                <th style="width:35%;">Valor Pago</th>
+                <th style="width:10%;">Ações</th>  <!-- nova coluna -->
               </tr>
             </thead>
             <tbody>
@@ -116,7 +117,12 @@
                       placeholder="0,00"
                     >
                   </div>
-                </td>                
+                </td>  
+                <td>
+                  <button class="btn btn-sm btn-warning" (click)="reverterPagamentoAtrasado(pagamento)">
+                    <i class="fas fa-undo"></i>
+                  </button>
+                </td>              
               </tr>
             </tbody>
           </table>
@@ -138,8 +144,10 @@
                 <th style="width:10%;">Apt</th>
                 <th style="width:10%;">Comp</th>
                 <th style="width:10%;">Pag</th>
-                <th style="width:35%;">Valor</th>
-                <th style="width:35%;">Valor Pago</th>
+                <th style="width:30%;">Valor</th>
+                <th style="width:30%;">Valor Pago</th>
+                <th style="width:10%;">Ações</th>  <!-- nova coluna -->
+
               </tr>
             </thead>
             <tbody>
@@ -149,6 +157,11 @@
                 <td>{{ condominio.data_pagamento }}</td>
                 <td>{{ formatCurrencyPTBR(condominio.valor)}}</td>
                 <td>{{ formatCurrencyPTBR(condominio.valor_pagamento)}}</td>
+                <td>
+                  <button class="btn btn-sm btn-warning" (click)="reverterPagamentoMesmoMes(condominio)">
+                    <i class="fas fa-undo"></i>
+                  </button>
+                </td>  
               </tr>
             </tbody>
           </table>
