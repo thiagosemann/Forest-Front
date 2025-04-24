@@ -248,6 +248,7 @@ private addRateiosGeradosEPagosNoMesCorreto(pdf: any, startX: number, currentY: 
               [
                   { content: 'Total', styles: { fontStyle: 'bold' } },
                   '',
+                  '',
                   { content: `R$ ${totalValue.toFixed(2)}`, styles: { fontStyle: 'bold' } }
               ]
           ], 
