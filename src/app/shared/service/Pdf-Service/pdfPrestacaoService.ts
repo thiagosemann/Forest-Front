@@ -235,12 +235,13 @@ private addRateiosGeradosEPagosNoMesCorreto(pdf: any, startX: number, currentY: 
       // Cria a tabela utilizando a função auxiliar
       currentY = this.generateTable(pdf, startX, currentY,
           [
-              'Apartamento', 'Data', 'Valor (R$)',
+              'Apartamento', 'Data Competência ',  'Data Pagamento ', 'Valor (R$)',
           ], 
           [
               ...data.rateiosGeradosEPagosNoMesCorreto.map((item: any) => [
                   item.apt_name,
                   `${item.data_vencimento}`,
+                  `${item.data_pagamento}`,
                   `R$ ${parseFloat(item.valor).toFixed(2)}`,             
               ]),
               // Adiciona o item "Total" ao final da tabela
@@ -250,7 +251,7 @@ private addRateiosGeradosEPagosNoMesCorreto(pdf: any, startX: number, currentY: 
                   { content: `R$ ${totalValue.toFixed(2)}`, styles: { fontStyle: 'bold' } }
               ]
           ], 
-          [67, 66, 66], 9
+          [50, 50, 50, 50], 9
       );
   }
  
