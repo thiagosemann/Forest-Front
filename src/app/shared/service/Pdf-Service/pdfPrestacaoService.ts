@@ -142,12 +142,12 @@ async generatePdfPrestacao(data: any): Promise<string> {
         [
             ...groupedExpenses.map((item: any) => [
                 item.tipo_Gasto_Extra,
-                `R$ ${item.valor.toFixed(2)}`,
+                this.formatCurrency(item.valor),
             ]),
             // Adiciona o item "Total" ao final da tabela
             [
                 { content: 'Total', styles: { fontStyle: 'bold' } },
-                { content: `R$ ${totalValue.toFixed(2)}`, styles: { fontStyle: 'bold' } },
+                { content: this.formatCurrency(totalValue), styles: { fontStyle: 'bold' } }
             ]
         ], 
         [120, 80 ], 10);
@@ -171,18 +171,18 @@ async generatePdfPrestacao(data: any): Promise<string> {
         [
             ...data.gastosIndividuais.map((item: any) => [
                 item.apt_name,
-                `R$ ${parseFloat(item.aguaValor).toFixed(2)}`,
-                `R$ ${parseFloat(item.gasValor).toFixed(2)}`,
-                `R$ ${parseFloat(item.lazer).toFixed(2)}`,
-                `R$ ${parseFloat(item.lavanderia).toFixed(2)}`,
-                `R$ ${parseFloat(item.multa).toFixed(2)}`,
-                `R$ ${(parseFloat(item.aguaValor) + parseFloat(item.gasValor) + parseFloat(item.lazer) + parseFloat(item.lavanderia) + parseFloat(item.multa)).toFixed(2)}`
+                this.formatCurrency(item.aguaValor),
+                this.formatCurrency(item.gasValor),
+                this.formatCurrency(item.lazer),
+                this.formatCurrency(item.lavanderia),
+                this.formatCurrency(item.multa),
+                this.formatCurrency(parseFloat(item.aguaValor) + parseFloat(item.gasValor) + parseFloat(item.lazer) + parseFloat(item.lavanderia) + parseFloat(item.multa))
             ]),
             // Adiciona o item "Total" ao final da tabela
             [
                 { content: 'Total', styles: { fontStyle: 'bold' } },
                 '', '', '', '', '', 
-                { content: `R$ ${totalValue.toFixed(2)}`, styles: { fontStyle: 'bold' } }
+                { content:  this.formatCurrency(totalValue), styles: { fontStyle: 'bold' } }
             ]
         ], 
         [45, 25, 25, 25, 30, 25, 25], 9
@@ -208,13 +208,13 @@ private addRateiosNaoPagos(pdf: any, startX: number, currentY: number, data: any
             ...data.rateiosNaoPagos.map((item: any) => [
                 item.apt_name,
                 `${item.data_vencimento}`,
-                `R$ ${parseFloat(item.valor).toFixed(2)}`,             
+                this.formatCurrency(item.valor)          
             ]),
             // Adiciona o item "Total" ao final da tabela
             [
               { content: 'Total', styles: { fontStyle: 'bold' } },
               '',
-              { content: `R$ ${totalValue.toFixed(2)}`, styles: { fontStyle: 'bold' } }
+              { content:  this.formatCurrency(totalValue), styles: { fontStyle: 'bold' } }
           ]
         ], 
         [67, 66, 66], 9
@@ -242,14 +242,14 @@ private addRateiosGeradosEPagosNoMesCorreto(pdf: any, startX: number, currentY: 
                   item.apt_name,
                   `${item.data_vencimento}`,
                   `${item.data_pagamento}`,
-                  `R$ ${parseFloat(item.valor).toFixed(2)}`,             
+                  this.formatCurrency(item.valor)            
               ]),
               // Adiciona o item "Total" ao final da tabela
               [
                   { content: 'Total', styles: { fontStyle: 'bold' } },
                   '',
                   '',
-                  { content: `R$ ${totalValue.toFixed(2)}`, styles: { fontStyle: 'bold' } }
+                  { content:  this.formatCurrency(totalValue), styles: { fontStyle: 'bold' } }
               ]
           ], 
           [50, 50, 50, 50], 9
@@ -285,8 +285,8 @@ private addRateiosPagosGeradosEmMesesDiferentes(pdf: any, startX: number, curren
               { content: 'Total', styles: { fontStyle: 'bold' } },
               '',
               '',
-              { content: `R$ ${totalValue.toFixed(2)}`, styles: { fontStyle: 'bold' } },
-              { content: `R$ ${totalValuePagamento.toFixed(2)}`, styles: { fontStyle: 'bold' } }
+              { content:   this.formatCurrency(totalValue), styles: { fontStyle: 'bold' } },
+              { content:  this.formatCurrency(totalValuePagamento), styles: { fontStyle: 'bold' } }
           ]
       ], 
       [40, 40, 40,40,40], 9
@@ -318,7 +318,7 @@ private addRateiosPagosGeradosEmMesesDiferentes(pdf: any, startX: number, curren
             // Adiciona o item "Total" ao final da tabela
             [
                 { content: 'Total', styles: { fontStyle: 'bold' } },
-                { content: `R$ ${totalProvisoes.toFixed(2)}`, styles: { fontStyle: 'bold' } },
+                { content:  this.formatCurrency(totalProvisoes), styles: { fontStyle: 'bold' } },
   
             ]
         ], 
@@ -342,12 +342,12 @@ private addRateiosPagosGeradosEmMesesDiferentes(pdf: any, startX: number, curren
         [
             ...data.fundos.map((item: any) => [
                 item.tipo_fundo,
-                `R$ ${(Number(item.porcentagem)* totalValue).toFixed(2)}`,
+                this.formatCurrency(Number(item.porcentagem)),
             ]),
             // Adiciona o item "Total" ao final da tabela
             [
                 { content: 'Total', styles: { fontStyle: 'bold' } },
-                { content: `R$ ${totalFundos.toFixed(2)}`, styles: { fontStyle: 'bold' } },
+                { content:  this.formatCurrency(totalFundos), styles: { fontStyle: 'bold' } },
   
             ]
         ], 
@@ -388,19 +388,19 @@ private addRateiosPagosGeradosEmMesesDiferentes(pdf: any, startX: number, curren
       [
         [
           { content: 'Conta Corrente' },
-          { content: `R$ ${contaValue.toFixed(2)}` },
+          { content:  this.formatCurrency(contaValue)},
         ],
         [
           { content: 'Tipo de Investimento 1' },
-          { content: `R$ ${investimento1Value.toFixed(2)}` },
+          { content: this.formatCurrency(investimento1Value) },
         ],
         [
           { content: 'Tipo de Investimento 2' },
-          { content: `R$ ${investimento2Value.toFixed(2)}`},
+          { content: this.formatCurrency(investimento2Value)},
         ],
         [
           { content: 'Total', styles: { fontStyle: 'bold' } },
-          { content: `R$ ${(Number(contaValue)+Number(investimento1Value)+Number(investimento2Value)).toFixed(2)}`, styles: { fontStyle: 'bold' } },
+          { content: this.formatCurrency(Number(contaValue)+Number(investimento1Value)+Number(investimento2Value)), styles: { fontStyle: 'bold' } },
   
       ]
       ],
@@ -506,6 +506,15 @@ private addRateiosPagosGeradosEmMesesDiferentes(pdf: any, startX: number, curren
     });
   
     return (pdf as any).lastAutoTable.finalY + 10;
+  }
+  
+  private formatCurrency(value: number): string {
+    return new Intl.NumberFormat('pt-BR', { 
+      style: 'currency', 
+      currency: 'BRL', 
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(value);
   }
   
 }
