@@ -331,27 +331,30 @@ private addRateiosPagosGeradosEmMesesDiferentes(pdf: any, startX: number, curren
     this.configText(pdf, 'bold', 15);
     pdf.text('Fundos ', startX, currentY);
   
-    // Calcula o total das provisoes
-    const totalFundos = data.fundos.reduce((sum: number, item: any) => {
-      return sum + (Number(item.porcentagem)* totalValue || 0);
+
+    const totalSaldoFundos = data.fundos.reduce((sum: number, item: any) => {
+      return sum + (Number(item.saldo) || 0);
     }, 0);
-  
     // Cria a tabela utilizando a função auxiliar
     currentY = this.generateTable(pdf, startX, currentY , 
-        ['Categoria', 'Valor Mensal'],
+        ['Categoria', 'Porcentagem', 'Saldo'],
         [
             ...data.fundos.map((item: any) => [
                 item.tipo_fundo,
-                this.formatCurrency(Number(item.porcentagem)),
+                Number(item.porcentagem)*100+"%",
+                this.formatCurrency(Number(item.saldo)),
+                
             ]),
             // Adiciona o item "Total" ao final da tabela
             [
                 { content: 'Total', styles: { fontStyle: 'bold' } },
-                { content:  this.formatCurrency(totalFundos), styles: { fontStyle: 'bold' } },
+               '',
+                { content:  this.formatCurrency(totalSaldoFundos), styles: { fontStyle: 'bold' } },
+                
   
             ]
         ], 
-        [120, 80], 10);
+        [67, 66, 66], 9);
   
     return currentY;
   }
@@ -360,9 +363,6 @@ private addRateiosPagosGeradosEmMesesDiferentes(pdf: any, startX: number, curren
     // Configurações iniciais de fonte e título
     this.configText(pdf, 'bold', 15);
     pdf.text('Saldo ', startX, currentY); 
-    
-
-    
     // Encontrar o saldo em uso para cada tipo
     const contaItem = data.saldos.find(
       (item: any) => item.type === 'conta' && item.isInUse === 1
