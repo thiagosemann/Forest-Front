@@ -440,6 +440,12 @@ export class RateioComponent implements OnInit {
     })
     return this.formatCurrency(soma)
   }
+
+
+  
+
+  //-------------------------------------------------CNAB 400-------------------------------------------//
+  //-------------------------------------------------CNAB 400-------------------------------------------//
   async downloadCNAB400(): Promise<void> {
     this.loading = true;
     this.downloading = true;
@@ -472,6 +478,7 @@ export class RateioComponent implements OnInit {
     const trailer = this.createCNABTrailer(detalhes.length);
     return header + '\r\n' + detalhes.join('\r\n') + '\r\n' + trailer;
   }
+
   
   // HEADER (Posições 1-400)
   private createCNABHeader(): string {
@@ -594,4 +601,155 @@ export class RateioComponent implements OnInit {
   private getSequencialRemessa(): string {
     return '0000001'; // Implemente lógica de incremento
   }
+
+
+  //-------------------------------------------------CNAB 240-------------------------------------------//
+  //-------------------------------------------------CNAB 240-------------------------------------------//
+
+  async downloadCNAB240(): Promise<void> {
+    this.loading = true;
+    this.downloading = true;
+    this.textoLoading = 'Gerando arquivo CNAB240...';
+
+    try {
+      // 1. Gerar conteúdo do CNAB240
+      const cnab = this.generateCNAB240Content();
+
+      // 2. Nome do arquivo (padrão exemplo)
+      const numeroSequencial = this.getSequencialRemessa().padStart(7, '0');
+      const nomeArquivo = `C0240_001_${numeroSequencial}.REM`;
+
+      // 3. Criar Blob e baixar
+      const blob = new Blob([cnab], { type: 'text/plain;charset=iso-8859-1' });
+      saveAs(blob, nomeArquivo);
+
+      this.toastr.success('Arquivo CNAB240 gerado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao gerar CNAB240:', error);
+      this.toastr.error('Erro ao gerar arquivo CNAB240');
+    } finally {
+      this.loading = false;
+      this.downloading = false;
+    }
+  }
+
+  private generateCNAB240Content(): string {
+    const headerArquivo  = this.createCNAB240HeaderArquivo();
+    const headerLote    = this.createCNAB240HeaderLote();
+    const detalhes      = this.createCNAB240Detalhes();        // array de linhas
+    const trailerLote   = this.createCNAB240TrailerLote(detalhes.length + 2);
+    const trailerArquivo= this.createCNAB240TrailerArquivo(1);  // 1 lote
+
+    // concatena tudo com fim de linha CRLF
+    return [
+      headerArquivo,
+      headerLote,
+      ...detalhes,
+      trailerLote,
+      trailerArquivo
+    ].join('\r\n');
+  }
+
+  //
+  // 1) HEADER DE ARQUIVO (240 chars)
+  //
+  private createCNAB240HeaderArquivo(): string {
+    const data = this.formatCNABDate(new Date());  // DDMMAA
+    const seq  = this.getSequencialRemessa().padStart(7, '0');
+
+    return [
+      '0',                  // 001 – identificação do registro
+      '1',                  // 002 – operacao (1=remessa)
+      'C',                  // 003 – literal ‘REMESSA’
+      ''.padEnd(7, ' '),    // 004-010 – literal remessa
+      '01',                 // 011-012 – código do serviço
+      'COBRANCA'.padEnd(15,' '), // 013-027 – literal serviço
+      ''.padEnd(240-27-9,' '),   // brancos até posição 231
+      seq,                  // 232-238 – número remessa
+      ''.padEnd(2,' '),     // 239-240 – complemento
+    ].join('').slice(0,240);
+  }
+
+  //
+  // 2) HEADER DE LOTE (240 chars)
+  //
+  private createCNAB240HeaderLote(): string {
+    // …mesma lógica do header arquivo, mas com registro tipo 1, lote = '0001', etc.
+    // Preencha campos como código do banco, agência, conta, nomes…
+    const lote = '0001';
+    const seqLote = '000001';
+    return [
+      '1',                  // 001 – registro header de lote
+      lote,                 // 002-005 – número do lote
+      '1',                  // 006 – tipo de registro
+      'C',                  // 007 – tipo da operação
+      ' ',                  // 008 – código serviço
+      ''.padEnd(15,' '),    // 009-023 – literal serviço
+      ''.padEnd(1,' '),     // 024 – versao layout
+      ''.padEnd(1,' '),     // 025 – forma de lancamento
+      ''.padEnd(240-25,' '),// preencha o restante conforme spec
+      seqLote               // 239-240 sequencial dentro do lote
+    ].join('').slice(0,240);
+  }
+
+  //
+  // 3) DETALHES (segmentos P/Q, um por boleto) – cada linha 240 chars
+  //
+  private createCNAB240Detalhes(): string[] {
+    const building = this.buildings.find(b => b.id === this.selectedBuildingId);
+    return this.usersRateio.map((user, idx) => {
+      // Calcule valor em centavos e formate campos
+      const valorTotal = (user.valorComum||0)+(user.valorFundos||0)+(user.valorProvisoes||0)+(user.valorIndividual||0);
+      const valorCent = Math.round(valorTotal*100).toString().padStart(15,'0');
+
+      // SEGMENTO P (informações cobrança)
+      const segP = [
+        '3',                  // 001 – registro detalhe
+        '0001',               // 002-005 – lote
+        '3',                  // 006 – segmento P
+        ' ',                  // 007 – campo exclusivo CNAB
+        '01',                 // 008-009 – tipo inscrição pagador
+        '12345678000195',     // 010-023 – CNPJ pagador
+        user.apt_name.padEnd(40,' '),    // 024-063 – nome pagador
+        // … demais campos até posição 240 …
+        valorCent,            // 140-154 – valor do título
+        ''.padEnd(240-154,' ')// complete o restante
+      ].join('').slice(0,240);
+
+      // SEGMENTO Q (informações complemento, ex.: endereço, multa, descontos…)
+      const segQ = ''.padEnd(240,' '); // monte conforme layout do segmento Q
+
+      return [segP, segQ].join('\r\n');
+    }).flat();
+  }
+
+  //
+  // 4) TRAILER DE LOTE (240 chars)
+  //
+  private createCNAB240TrailerLote(totalRegistros: number): string {
+    const lote = '0001';
+    const quantidade = totalRegistros.toString().padStart(6,'0');
+    return [
+      '5',            // 001 – registro trailer de lote
+      lote,           // 002-005 – lote
+      '5',            // 006 – tipo registro
+      quantidade,     // 007-012 – qtde registros no lote
+      ''.padEnd(240-12,' ')
+    ].join('').slice(0,240);
+  }
+
+  //
+  // 5) TRAILER DE ARQUIVO (240 chars)
+  //
+  private createCNAB240TrailerArquivo(totalLotes: number): string {
+    const qtLotes = totalLotes.toString().padStart(6,'0');
+    const qtRegistros = (totalLotes * 2 + 2).toString().padStart(6,'0');
+    return [
+      '9',            // 001 – registro trailer
+      qtLotes,        // 002-007 – qtde lotes
+      qtRegistros,    // 008-013 – qtde registros
+      ''.padEnd(240-13,' ')
+    ].join('').slice(0,240);
+  }
+
 }
