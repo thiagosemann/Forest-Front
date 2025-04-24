@@ -19,7 +19,7 @@ import { UserApartamento } from 'src/app/shared/utilitarios/userApartamento';
 export class ApartamentosControlComponent {
   showEditComponent = false;
   showAddApartamentosLoteComponent = false;
-  showApartamentosComponent = false;
+  showApartamentosComponent = true;
   isEditing: boolean = false;  // Flag para indicar se está editando
   buildingId: number | null = null;
   buildings: Building[] = [];

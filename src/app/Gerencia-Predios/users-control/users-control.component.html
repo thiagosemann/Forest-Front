@@ -1,163 +1,191 @@
-
-<div class="container">
-
-<ng-container *ngIf="showUsuariosComponent || showAddUsuariosLoteComponent || showCreateUserComponent "> 
-    <form [formGroup]="myGroup">
-      <select id="building_id" name="building_id" class="form-control" formControlName="building_id" required  (change)="onBuildingSelect($event)">
-        <option value="" disabled selected>Selecione o prédio</option>
-        <option *ngFor="let building of buildings" [value]="building.id">{{ building.nome }}</option>
-      </select>
-    </form>
-
-</ng-container>
-
-<div *ngIf="showUsuariosComponent" >
-    <div *ngIf="buildingId"  style="margin-top: 15px;">
-      <button class="btn btn-primary" (click)="createNewUser()">Add Usuário</button>
-      <button class="btn btn-primary" style="margin-left:5px;" (click)="manageScreens('usuariosLote')">Add Usuário Lote</button>
-    </div>
-    <div class="table-wrapper"  style="margin-top: 15px;">
-      <table class="table narrow-table">
-        <thead>
-          <tr>
-            <th scope="col" style="width: 20%;">Nome</th>
-            <th scope="col" style="width: 20%;" class="hidden-small-screen">Sobrenome</th>
-            <th scope="col" style="width: 20%;" class="hidden-small-screen">Cpf</th>
-            <th scope="col" style="width: 25%;" class="hidden-small-screen">E-mail</th>
-            <th scope="col" style="width: 5%;">Editar</th>
-            <th scope="col" style="width: 5%;">Reset</th>
-            <th scope="col" style="width: 5%;">Excluir</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let usuario of users; let i = index" [ngClass]="{'table-light': i % 2 === 0, 'table-light-gray': i % 2 !== 0}">
-            <td>{{ usuario.first_name }}</td>
-            <td class="hidden-small-screen">{{ usuario.last_name }}</td>
-            <td class="hidden-small-screen" >{{ formatarCPF(usuario.cpf) }}</td>
-            <td class="hidden-small-screen">{{ usuario.email }}</td>
-            <td> <button class="btn btn-primary btn-sm" (click)="editUser(usuario)"  *ngIf="usuario.role!='admin' || user.role =='admin' "><i class="fas fa-edit"></i></button></td>
-            <td> <button class="btn btn-warning btn-sm" (click)="resetPassword(usuario)" *ngIf="usuario.role!='admin' || user.role =='admin'"><i class="fa fa-refresh" aria-hidden="true"></i></button></td>
-            <td> <button class="btn btn-danger btn-sm" (click)="deleteUser(usuario)" *ngIf="usuario.role!='admin' || user.role =='admin'"><i class="fas fa-trash"></i></button></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-</div>
-
-<div *ngIf="showAddUsuariosLoteComponent" >
-      <div class="row">
-        <div *ngIf="loading" class="spinner-border text-success col-md-5" role="status">
-          <span class="visually-hidden">Carregando...</span>
+<div class="container py-4">
+  <div class="card border-success shadow-lg">
+    <div class="card-header bg-success text-white py-3">
+      <div class="row align-items-center">
+        <form [formGroup]="myGroup" class="row align-items-center">
+        <div class="col-md-6">
+          <select id="building_id" class="form-control search-input" 
+                  formControlName="building_id" required  
+                  (change)="onBuildingSelect($event)">
+            <option value="" disabled selected>Selecione o prédio</option>
+            <option *ngFor="let building of buildings" [value]="building.id">
+              {{ building.nome }}
+            </option>
+          </select>
         </div>
-        <div  *ngIf="!loading" class="col-md-5">
-          <ng-container *ngIf="saveData">
-            <button class="btn btn-save" (click)="saveUsersInBatch()">
-              <i class="fas fa-save"></i>Salvar
-            </button>
-            <button class="btn btn-danger" style="margin-left: 5px;" (click)="cancelUsersInBatch()">
-              <i class="fas fa-cancel"></i>Cancelar
-            </button>
-          </ng-container>
-          <ng-container *ngIf="!saveData && buildingId">
-            <div style="margin-top: 15px;">
-              <label class="btn btn-success" >
-                <i class="fas fa-upload"></i> Inserir
-                <input type="file" style="display: none;" (change)="handleFileInput($event)">
-                <span *ngIf="uploading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-              </label>
-              <button class="btn btn-primary" (click)="downloadModel()" style="margin-left: 5px;">
-                <i class="fas fa-download"></i> Modelo
-              </button>
-              <button class="btn btn-secondary" (click)="manageScreens('usuarios')" style="margin-left: 5px;">
-                Voltar
-             </button>
-            </div>
-          </ng-container>       
+        </form>
+      </div>
+    </div>
+
+    <div class="card-body p-0">
+      <!-- TELA DE LISTAGEM DE USUÁRIOS -->
+      <div *ngIf="showUsuariosComponent" class="table-wrapper">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-success align-middle">
+              <tr>
+                <th class="py-3">Nome</th>
+                <th class="py-3 hidden-small-screen">Sobrenome</th>
+                <th class="py-3 hidden-small-screen">CPF</th>
+                <th class="py-3 hidden-small-screen">E-mail</th>
+                <th class="py-3">Tipo</th>
+                <th class="py-3 text-end">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let usuario of users; let i = index" class="align-middle">
+                <td class="fw-medium">{{ usuario.first_name }}</td>
+                <td class="hidden-small-screen">{{ usuario.last_name }}</td>
+                <td class="hidden-small-screen">{{ formatarCPF(usuario.cpf) }}</td>
+                <td class="hidden-small-screen">{{ usuario.email }}</td>
+                <td>
+                  <span class="badge bg-success-subtle text-success">
+                    {{ usuario.role | titlecase }}
+                  </span>
+                </td>
+                <td class="text-end">
+                  <div class="d-flex justify-content-end gap-2">
+                    <button class="btn btn-sm btn-outline-success" 
+                            *ngIf="usuario.role!='admin' || user.role=='admin'"
+                            (click)="openUserModal('edit', usuario)">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-warning" 
+                            (click)="resetPassword(usuario)" 
+                            *ngIf="usuario.role!='admin' || user.role=='admin'">
+                      <i class="fa fa-refresh"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" 
+                            (click)="deleteUser(usuario)" 
+                            *ngIf="usuario.role!='admin' || user.role=='admin'">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
-      <table class="table" *ngIf="!loading && usersInsert.length>0">
-        <thead>
-          <tr>
-            <th scope="col" style="width: 20%;">Primeiro Nome</th>
-            <th scope="col" style="width: 20%;">Sobrenome</th>
-            <th scope="col" style="width: 20%;">CPF</th>
-            <th scope="col" style="width: 25%;">E-mail</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Itera sobre os dados dos usuários e preenche as linhas da tabela -->
-          <ng-container *ngFor="let user of usersInsert; let i = index">
-            <tr [ngClass]="{'table-light': i % 2 === 0, 'table-light-gray': i % 2 !== 0}">
-              <td>{{ user.first_name }}</td>
-              <td>{{ user.last_name }}</td>
-              <td>{{ user.cpf }}</td>
-              <td>{{ user.email }}</td>
-            </tr>
-          </ng-container>
-        </tbody>
-      </table>
-      
-</div>
 
-  <div *ngIf="showEditComponent || showCreateUserComponent" >
-    <div class="scrollable-container ">
-          <div class="row d-flex justify-content-center align-items-center">
-            <div class="col-md-8 col-lg-6 col-xl-5">
-              <form [formGroup]="registerForm" (ngSubmit)="criarOuEditarUsuario()" class="p-4 p-md-5 border rounded bg-light">
-                <h4 class="text-center mb-2">{{telaEditaCriar}}</h4>
-                <!-- Nome e Sobrenome na mesma linha -->
-                <div class="row mb-3">
-                  <div class="col-md-6">
-                    <div class="form-group mb-3">
-                      <label class="form-label" for="first_name">Primeiro Nome:</label>
-                      <input type="text" id="first_name" name="first_name" class="form-control" placeholder="Primeiro nome" formControlName="first_name" required/>
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <div class="form-group mb-3">
-                      <label class="form-label" for="last_name">Sobrenome:</label>
-                      <input type="text" id="last_name" name="last_name" class="form-control" placeholder="Sobrenome" formControlName="last_name" required/>
-                    </div>
-                  </div>
-                </div>
-                <!-- CPF e Telefone na mesma linha -->
-                <div class="row mb-3">
-                  <div class="col-md-6">
-                    <div class="form-group mb-3">
-                      <label class="form-label" for="cpfInput">CPF:</label>
-                      <input type="text" id="cpfInput" name="cpfInput" class="form-control" placeholder="Insira seu CPF" formControlName="cpf"  mask="000.000.000-00" required/>
-                    </div>
-                  </div>
-        
-                </div>
+      <!-- TELA DE ADIÇÃO EM LOTE -->
+      <div *ngIf="showAddUsuariosLoteComponent" class="p-4">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <button class="btn btn-outline-success" (click)="downloadModel()">
+            <i class="fas fa-download me-2"></i>Baixar Modelo
+          </button>
+          <input type="file" accept=".xlsx" (change)="handleFileInput($event)" />
+        </div>
 
-                <div class="col-md-12">
-                  <div class="form-group mb-3">
-                    <label class="form-label" for="email">Endereço de e-mail:</label>
-                    <input type="email" id="email" name="email" class="form-control" [class.invalid]="registerForm.get('emailGroup')?.errors?.['mismatch']" placeholder="Insira um e-mail válido" formControlName="email" required autocomplete="username"/>
-                  </div>
-                </div>
-                <div class="form-group mb-3">
-                  <label class="form-label" for="role">Função do Usuário:</label>
-                  <select id="role" name="role" class="form-control"  formControlName="role" *ngIf="user">
-                    <option value="sindico">Síndico</option>
-                    <option value="admin"  >Administrador</option>
-                    <option value="morador">Morador</option>
-                  </select>
-                </div>
-                <div class="text-center text-md-start mt-4 pt-2">
-                  <div class="row">
-                    <div class="col-md-6 mb-3">
-                      <button type="submit" class="btn btn-success btn-lg px-4">{{botaoForm}}</button>
-                    </div>
-                    <div class="col-md-6">
-                      <button type="button" class="btn btn-danger btn-lg px-4" (click)="cancelarEdit()">Cancelar</button>
-                    </div>
-                  </div>
-                </div>
-              </form>
+        <div *ngIf="usersInsert.length > 0" class="table-responsive mb-3">
+          <table class="table table-bordered table-hover">
+            <thead class="table-success">
+              <tr>
+                <th>Nome</th>
+                <th>Sobrenome</th>
+                <th>CPF</th>
+                <th>E-mail</th>
+                <th>Tipo</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let u of usersInsert; let i = index">
+                <td>{{ u.first_name }}</td>
+                <td>{{ u.last_name }}</td>
+                <td>{{ formatarCPF(u.cpf) }}</td>
+                <td>{{ u.email }}</td>
+                <td>
+                  <span class="badge bg-success-subtle text-success">
+                    {{ u.role | titlecase }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button class="btn btn-success" 
+                  (click)="saveUsersInBatch()" 
+                  [disabled]="loading || usersInsert.length === 0">
+            <i class="fas fa-save me-2"></i>Salvar em Lote
+          </button>
+          <button class="btn btn-danger" (click)="cancelUsersInBatch()">
+            <i class="fas fa-times me-2"></i>Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-footer bg-transparent">
+      <div class="d-flex justify-content-between">
+        <div *ngIf="showUsuariosComponent">
+          <button class="btn btn-addUser" (click)="openUserModal('create')" >
+            <i class="fas fa-plus me-2"></i>Novo Usuário
+          </button>
+          <button class="btn btn-addUser" 
+                  (click)="manageScreens('usuariosLote')">
+            <i class="fas fa-upload me-2"></i>Adicionar em Lote
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal" *ngIf="showModal">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h3 class="mb-0">{{ modalTitle }}</h3>
+        <button class="close-btn" (click)="closeUserModal()">×</button>
+      </div>
+      <form [formGroup]="registerForm" (ngSubmit)="criarOuEditarUsuario()">
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="section-header mb-3">
+                <h5 class="section-title"><i class="fas fa-user-circle me-2"></i>Dados do Usuário</h5>
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-medium">Primeiro Nome</label>
+                <input formControlName="first_name" class="form-control border-success">
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-medium">Sobrenome</label>
+                <input formControlName="last_name" class="form-control border-success">
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-medium">CPF</label>
+                <input formControlName="cpf" class="form-control border-success" mask="000.000.000-00">
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <div class="section-header mb-3">
+                <h5 class="section-title"><i class="fas fa-envelope me-2"></i>Contato</h5>
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-medium">E-mail</label>
+                <input formControlName="email" type="email" class="form-control border-success">
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-medium">Tipo de Usuário</label>
+                <select formControlName="role" class="form-select border-success">
+                  <option value="sindico">Síndico</option>
+                  <option value="admin">Administrador</option>
+                  <option value="morador">Morador</option>
+                </select>
+              </div>
             </div>
           </div>
-      </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeUserModal()">Cancelar</button>
+          <button type="submit" class="btn btn-success" [disabled]="registerForm.invalid">
+            <i class="fas fa-save me-2"></i>{{ botaoForm }}
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>

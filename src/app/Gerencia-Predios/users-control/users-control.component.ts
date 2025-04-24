@@ -50,6 +50,8 @@ export class UsersControlComponent implements OnInit {
   usersInsert: User[] = [];
   saveData:boolean =false;
   uploading: boolean = false;
+  showModal: boolean = false;
+  modalTitle = '';
 
 
 
@@ -201,59 +203,30 @@ export class UsersControlComponent implements OnInit {
       }
     }
     criarOuEditarUsuario(): void {
-        if (this.registerForm.valid) {
-          if (this.userEditing) {
-              const { id } = this.userEditing;
-              const updatedUser = { id, ...this.registerForm.value};
-      
-              this.userService.updateUser(updatedUser).subscribe(
-                  (response) => {
-                      // Encontrar o índice do usuário no array
-                      const index = this.users.findIndex(user => user.id === updatedUser.id);
-                      if (index !== -1) {
-                          // Substituir o usuário atualizado pelo antigo no array
-                          this.users[index] = updatedUser;
-                      }
-      
-                      // Lógica após a atualização bem-sucedida (por exemplo, exibir uma mensagem de sucesso)
-                      let event ={
-                          target:{
-                              value:this.userEditing!.building_id
-                          }
-                      }
-                      this.toastr.success(response.message);
-                      this.showEditComponent = false; // Feche o componente de edição após a atualização
-                  },
-                  (error) => {
-                      console.error('Erro ao atualizar o usuário:', error);
-                      // Lógica para lidar com erros (por exemplo, exibir uma mensagem de erro)
-                      this.toastr.error('Erro ao atualizar o usuário');
-                  }
-              );
-          }else{
-            // Criar novo prédio
-            const data = this.registerForm.value;
-            data.predio_id =  this.buildingId;
-            data.password =  "12345678";
-            
-            this.userService.addUser(data).subscribe(
-              (newUser: Building) => {
-                this.toastr.success('Usuário criado com sucesso!');
-                this.showEditComponent = false; // Ocultar componente de edição após criação bem-sucedida
-              },
-              (error) => {
-                console.error('Erro ao criar edifício:', error);
-                this.toastr.error(error.error.error);
-              }
-            );
-          } 
+      if (this.registerForm.invalid) return;
+      const formValue = this.registerForm.value;
+  
+      if (this.userEditing) {
+        // Atualização
+        const updatedUser = { id: this.userEditing.id, ...formValue, building_id: this.buildingId };
+        this.userService.updateUser(updatedUser).subscribe(
+          res => {
+            const idx = this.users.findIndex(u => u.id === updatedUser.id);
+            if (idx > -1) this.users[idx] = updatedUser;
+            this.toastr.success(res.message);
+            this.closeUserModal();
+          }, err => this.toastr.error('Erro ao atualizar usuário')
+        );
       } else {
-          for (const controlName in this.registerForm.controls) {
-              const control = this.registerForm.get(controlName);
-              if (control && control.invalid) {
-                  this.toastr.error(this.errorMessages[controlName]);
-              }
-          }
+        // Criação
+        const newUser = { ...formValue, building_id: this.buildingId, password: '12345678' };
+        this.userService.addUser(newUser).subscribe(
+          res => {
+            this.toastr.success('Usuário criado com sucesso!');
+            this.getUsersByBuilding();
+            this.closeUserModal();
+          }, err => this.toastr.error('Erro ao criar usuário')
+        );
       }
     }
 
@@ -287,6 +260,8 @@ export class UsersControlComponent implements OnInit {
     cancelUsersInBatch():void{
       this.saveData = false;
       this.usersInsert = [];
+      this.showUsuariosComponent = true;
+      this.showAddUsuariosLoteComponent = false;
     }
     handleFileInput(event: any): void {
       // Começar a girar o spinner
@@ -387,4 +362,29 @@ export class UsersControlComponent implements OnInit {
       return true; // Retorna verdadeiro se o CPF é válido
     }
     
+    
+    openUserModal(mode: 'create' | 'edit', user?: User) {
+      this.registerForm.reset();
+      if (mode === 'create') {
+        this.modalTitle = 'Criar Usuário';
+        this.botaoForm = 'Criar';
+        this.userEditing = undefined;
+      } else {
+        this.modalTitle = 'Editar Usuário';
+        this.botaoForm = 'Atualizar';
+        this.userEditing = user;
+        this.registerForm.patchValue({
+          first_name: user!.first_name,
+          last_name:  user!.last_name,
+          cpf:        user!.cpf,
+          email:      user!.email,
+          role:       user!.role
+        });
+      }
+      this.showModal = true;
+    }
+  
+    closeUserModal() {
+      this.showModal = false;
+    }
 }
