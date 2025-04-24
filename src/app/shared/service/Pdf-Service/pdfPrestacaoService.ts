@@ -82,7 +82,7 @@ async generatePdfPrestacao(data: any): Promise<string> {
     // Texto auxiliar
     const month = months[Number(data.selectedMonth)-1];
     const textAux =
-      `Declaramos ter examinado as contas, documentos e papéis que compõem esta prestação de contas ao mês de ${month.toLowerCase()} de 2024, sendo que os documentos estão em ordem e as contas exatas, em conformidade com a Lei 4.591/64 e regimento interno do condomínio.`;
+      `Declaramos ter examinado as contas, documentos e papéis que compõem esta prestação de contas ao mês de ${month.toLowerCase()} de ${data.selectedYear}, sendo que os documentos estão em ordem e as contas exatas, em conformidade com a Lei 4.591/64 e regimento interno do condomínio.`;
     this.addTextBlock(pdf, 'normal', 14, textAux, startX + 30, 80, 160);
     // Síndico
     this.addSignatureBlock(pdf,'Síndico',data.building.sindico,startX,115,145);
