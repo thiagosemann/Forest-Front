@@ -19,6 +19,9 @@ import { Rateio } from '../../shared/utilitarios/rateio';
 import { RateioPorApartamentoService } from '../../shared/service/Banco_de_Dados/rateioPorApartamento_service';
 import { SaldoPorPredioService } from '../../shared/service/Banco_de_Dados/saldo_por_predio_service';
 import { SaldoPredio } from '../../shared/utilitarios/saldoPredio';
+import { UsersApartamentosService } from 'src/app/shared/service/Banco_de_Dados/userApartamento_service';
+import { User } from 'src/app/shared/utilitarios/user';
+import { lastValueFrom } from 'rxjs';
 
 
 @Component({
@@ -33,7 +36,7 @@ export class RateioComponent implements OnInit {
   gastoIndividualValorTotal:number=0;
   apartamentos: Apartamento[] = [];
   gastosIndividuais:GastoIndividual[]=[];
-  usersRateio:any[]=[];
+  rateiosPorApartamento:any[]=[];
   provisoesRateadas:number=0;
   fundosRateados:number=0;
   mensagemErro: string = '';
@@ -60,6 +63,7 @@ export class RateioComponent implements OnInit {
     private rateioService: RateioService,
     private rateioPorApartamento: RateioPorApartamentoService,
     private saldoPorPredioService: SaldoPorPredioService,
+    private userApartamentoService: UsersApartamentosService
 
   ) {}
   ngOnInit(): void {
@@ -114,8 +118,8 @@ export class RateioComponent implements OnInit {
           this.rateioGerado=true;
             this.rateioPorApartamento.getRateiosPorApartamentoByRateioId(resp[resp.length-1].id).subscribe(
               (resp: any) => {
-                this.usersRateio = resp
-                this.usersRateio.forEach(user => {
+                this.rateiosPorApartamento = resp
+                this.rateiosPorApartamento.forEach(user => {
                   // Converte as propriedades 'valorIndividual', 'valorComum', 'valorProvisoes' e 'valorFundos' para Number
                   user.valor = Number(user.valor);
                   user.valorIndividual = Number(user.valorIndividual);
@@ -130,27 +134,27 @@ export class RateioComponent implements OnInit {
               (error) => {
                 this.loading = false; // Encerrar o loading
                 this.mensagemErro = 'Erro ao carregar os dados: ' + error.message;
-                this.usersRateio = [];
+                this.rateiosPorApartamento = [];
               }
             );
-           // this.usersRateio = resp.rateio;
+           // this.rateiosPorApartamento = resp.rateio;
           } else {
             this.rateioGerado=false;
             this.calculateRateioService.getRateioByBuildingAndMonth(this.selectedBuildingId, this.selectedMonth, this.selectedYear).subscribe(
               (resp: any) => {
                 this.loading = false; // Encerrar o loading
                 if (resp.rateio) {
-                  this.usersRateio = resp.rateio;
-                  console.log( this.usersRateio)
+                  this.rateiosPorApartamento = resp.rateio;
+                  console.log( this.rateiosPorApartamento)
                 } else {
                   this.mensagemErro = 'Insira todos os dados necessários para se realizar o rateio.';
-                  this.usersRateio = [];
+                  this.rateiosPorApartamento = [];
                 }
               },
               (error) => {
                 this.loading = false; // Encerrar o loading
                 this.mensagemErro = 'Erro ao carregar os dados: ' + error.message;
-                this.usersRateio = [];
+                this.rateiosPorApartamento = [];
               }
             );
           }
@@ -158,7 +162,7 @@ export class RateioComponent implements OnInit {
         (error) => {
           this.loading = false; // Encerrar o loading
           this.mensagemErro = 'Erro ao carregar os dados: ' + error.message;
-          this.usersRateio = [];
+          this.rateiosPorApartamento = [];
         }
       );
 
@@ -288,7 +292,7 @@ export class RateioComponent implements OnInit {
     this.textoLoading = "Preparando para gerar rateios...";  // Mensagem inicial
     this.cancelDownload = false;  // Resetando o estado de cancelamento
   
-    if (this.usersRateio.length === 0) {
+    if (this.rateiosPorApartamento.length === 0) {
       this.loading = false;
       this.textoLoading = "Carregando dados...";
       this.toastr.warning('Nenhum rateio disponível para download.');
@@ -297,9 +301,9 @@ export class RateioComponent implements OnInit {
   
     const zip = new JSZip();
     let index = 1;
-    const totalUsers = this.usersRateio.length;
+    const totalUsers = this.rateiosPorApartamento.length;
   
-    for (const user of this.usersRateio) {
+    for (const user of this.rateiosPorApartamento) {
       if (this.cancelDownload) {
         this.textoLoading = "Download cancelado.";
         this.loading = false;
@@ -333,7 +337,7 @@ export class RateioComponent implements OnInit {
         mes: this.selectedMonth,
         ano:this.selectedYear,
         predio_id: this.selectedBuildingId,
-        usersRateio:this.usersRateio
+        rateiosPorApartamento:this.rateiosPorApartamento
       };
       this.rateioService.createRateio(rateio).subscribe(
         (response) => {
@@ -431,7 +435,7 @@ export class RateioComponent implements OnInit {
   somaRateios(): string {
     let soma=0;
 
-    this.usersRateio.forEach(user=>{
+    this.rateiosPorApartamento.forEach(user=>{
       let valorFundos =  user.valorFundos|| 0;
       let valorProvisoes =  user.valorProvisoes|| 0;
       let valorIndividual =  user.valorIndividual|| 0;
@@ -446,23 +450,27 @@ export class RateioComponent implements OnInit {
 
   //-------------------------------------------------CNAB 400-------------------------------------------//
   //-------------------------------------------------CNAB 400-------------------------------------------//
+  async getUserFromApartamento(apartamentoId: number): Promise<User[]> {
+    return lastValueFrom(
+      this.userApartamentoService.getUsersByApartamentoId(apartamentoId)
+    );
+  }
+
   async downloadCNAB400(): Promise<void> {
     this.loading = true;
     this.downloading = true;
-    this.textoLoading = "Gerando arquivo CNAB400...";
+    this.textoLoading = 'Gerando arquivo CNAB400...';
 
     try {
-      // 1. Gerar conteúdo do CNAB400
-      const cnabContent = this.generateCNAB400Content();
-      
-      // 2. Nome do arquivo conforme padrão do Inter
-      const numeroSequencial = this.getSequencialRemessa(); // Implemente essa função
+      // Agora generateCNAB400Content é async
+      const cnabContent = await this.generateCNAB400Content();
+
+      const numeroSequencial = this.getSequencialRemessa();
       const nomeArquivo = `C1400_001_${numeroSequencial}.REM`;
-  
-      // 3. Criar Blob e fazer download
+
       const blob = new Blob([cnabContent], { type: 'text/plain;charset=iso-8859-1' });
       saveAs(blob, nomeArquivo);
-      
+
       this.toastr.success('Arquivo CNAB400 gerado com sucesso!');
     } catch (error) {
       console.error('Erro ao gerar CNAB400:', error);
@@ -472,13 +480,14 @@ export class RateioComponent implements OnInit {
       this.downloading = false;
     }
   }
-  private generateCNAB400Content(): string {
+
+  // 2) generateCNAB400Content agora é async
+  private async generateCNAB400Content(): Promise<string> {
     const header = this.createCNABHeader();
-    const detalhes = this.createCNABDetails();
+    const detalhes = await this.createCNABDetails(); // aguarda detalhes
     const trailer = this.createCNABTrailer(detalhes.length);
     return header + '\r\n' + detalhes.join('\r\n') + '\r\n' + trailer;
   }
-
   
   // HEADER (Posições 1-400)
   private createCNABHeader(): string {
@@ -505,65 +514,87 @@ export class RateioComponent implements OnInit {
   }
   
   // DETALHES (Registro Tipo 1 - Posições 1-400)
-  private createCNABDetails(): string[] {
-    let building = this.buildings.find((building) => building.id === this.selectedBuildingId);
-    console.log(building)
+   // 3) createCNABDetails convertido para async + loop for…of
+  private async createCNABDetails(): Promise<string[]> {
+    const detalhes: string[] = [];
+    const building = this.buildings.find(b => b.id === this.selectedBuildingId);
 
-    return this.usersRateio.map((user, index) => {
-      const valorTotal = (user.valorComum || 0) + (user.valorFundos || 0) + (user.valorProvisoes || 0) + (user.valorIndividual || 0);
-      const valorEmCentavos = Math.round(valorTotal * 100).toString().padStart(13, '0');
-      // Gerar "Seu número" (user.apt_name + mês com 2 dígitos)
-      const mesFormatado = this.selectedMonth.toString().padStart(2, '0'); // Ex: "03" para março
-      const codigoBoleto = (user.apt_name.slice(0, 8) + mesFormatado) // Limita a 10 caracteres
-        .toUpperCase() // Remove acentos e mantém maiúsculas
-        .replace(/[^A-Z0-9]/g, '') // Remove caracteres especiais
-        .padEnd(10, ' '); // Completa com espaços se necessário
-      return [
+    for (let index = 0; index < this.rateiosPorApartamento.length; index++) {
+      const apartamento = this.rateiosPorApartamento[index];
+
+      // 4) busca usuários e pega o primeiro
+      const users = await this.getUserFromApartamento(apartamento.apartamento_id);
+      const userToUse = users[0];  // garante que sempre pegue o primeiro
+      if (!userToUse) {
+        this.toastr.warning(`Apartamento ${apartamento.apt_name} sem usuários.`);
+        continue;
+      }
+
+      const valorTotal =
+        (apartamento.valorComum || 0) +
+        (apartamento.valorFundos || 0) +
+        (apartamento.valorProvisoes || 0) +
+        (apartamento.valorIndividual || 0);
+
+      const valorEmCentavos = Math.round(valorTotal * 100)
+        .toString()
+        .padStart(13, '0');
+
+      const mesFormatado = this.selectedMonth.toString().padStart(2, '0');
+      const codigoBoleto = (
+        apartamento.apt_name.slice(0, 8) +
+        mesFormatado
+      )
+        .toUpperCase()
+        .replace(/[^A-Z0-9]/g, '')
+        .padEnd(10, ' ');
+
+      const registro = [
         '1', // Identificação do Registro (1)
-        ''.padEnd(19, ' '), // Brancos (2-20)
-        '112', // Carteira (21-23) (112 = padrão Inter)
-        '0001', // Agência (24-27)
-        '123456789'.padStart(9, '0'), // Conta Corrente (28-36) (Ajustar para sua conta)
-        '0', // DV da Conta (37) (Ajustar)
-        user.apt_name.padEnd(25, ' '), // Número Controle (38-62) (Nome do usuário)
-        ''.padEnd(3, ' '), // Brancos (63-65)
-        '1', // Campo de Multa (66)
-        '0000000000000', // Valor Multa (67-79)
-        '0002', // Percentual Multa (80-83)
-        '000000', // Data Multa (84-89)
-        '00000000000', // Nosso Número (90-100) (Preencher conforme faixa reservada)
-        ''.padEnd(8, ' '), // Brancos (101-108)
-        '01', // Identificação da Ocorrência (109-110) (01 = Remessa)
-        codigoBoleto, // Seu Número (111-120)
-        this.dateVencimentoCNAB(), // Data Vencimento (121-126)
-        valorEmCentavos, // Valor do Título (127-139)
-        '60', // Data Limite Pagamento (140-141) (60 dias após vencimento)
-        ''.padEnd(6, ' '), // Brancos (142-147)
-        '01', // Espécie do Título (148-149)
-        'N', // Identificação (150)
-        ''.padEnd(6, ' '), // Data Emissão (151-156)
-        ''.padEnd(3, ' '), // Brancos (157-159)
-        '1', // Juros/Mora (160)
-        '0000000000000', // Valor Juros (161-173)
-        '0001', // Taxa Juros (174-177)
-        '000000', // Data Mora (178-183)
-        '0', // Descontos (184)
-        '0000000000000', // Valor Desconto 1 (185-197)
-        '0000', // Percentual Desconto 1 (198-201)
-        '000000', // Data Desconto 1 (202-207)
-        ''.padEnd(13, ' '), // Brancos (208-220)
-        '02', // Tipo Inscrição Pagador (221-222) (02 = CNPJ)
-        '12345678000195'.padStart(14, '0'), // CNPJ Pagador (223-236)
-        user.apt_name.padEnd(40, ' '), // Nome Pagador (237-276)
-        'Endereço Pagador'.padEnd(38, ' '), // Endereço (277-314)
-        'PR', // UF (315-316)
-        building?.cep, // CEP (317-324)
-        ''.padEnd(70, ' '), // Mensagem 1 (325-394)
-        (index + 1).toString().padStart(6, '0') // Sequencial (395-400)
+        ''.padEnd(19, ' '),
+        '112', // Carteira
+        '0001', // Agência
+        '123456789'.padStart(9, '0'), // Conta
+        '0', // DV
+        apartamento.apt_name.padEnd(25, ' '), // Controle
+        ''.padEnd(3, ' '),
+        '1', // Multa
+        '0000000000000',
+        '0002',
+        '000000',
+        '00000000000',
+        ''.padEnd(8, ' '),
+        '01', // Ocorrência
+        codigoBoleto, // Seu Número
+        this.dateVencimentoCNAB(), // Vencimento
+        valorEmCentavos,
+        '60',
+        ''.padEnd(6, ' '),
+        '01',
+        'N',
+        ''.padEnd(6, ' '),
+        ''.padEnd(3, ' '),
+        '1',
+        '0000000000000',
+        '0001',
+        '000000',
+        '0',
+        '0000000000000',
+        '0000',
+        '000000',
+        ''.padEnd(13, ' '),
+        '01', // Tipo Inscrição Pagador (01 = CPF)
+        userToUse.cpf.replace(/\D/g, '').padStart(14, '0'),  // CPF (posições 223–236)
+        userToUse.first_name.padEnd(40, ' '),                      // Nome (posições 237–276)
+        ''.padEnd(118, ' '),                                 // Endereço(38) + UF(2) + CEP(8) + Mensagem(70)
+        (index + 1).toString().padStart(6, '0'),             // Sequencial (395–400)
       ].join('');
-    });
+
+      detalhes.push(registro);
+    }
+
+    return detalhes;
   }
-  
   // TRAILER (Posições 1-400)
   private createCNABTrailer(totalRegistros: number): string {
     return [
@@ -610,19 +641,17 @@ export class RateioComponent implements OnInit {
     this.loading = true;
     this.downloading = true;
     this.textoLoading = 'Gerando arquivo CNAB240...';
-
+  
     try {
-      // 1. Gerar conteúdo do CNAB240
-      const cnab = this.generateCNAB240Content();
-
-      // 2. Nome do arquivo (padrão exemplo)
-      const numeroSequencial = this.getSequencialRemessa().padStart(7, '0');
-      const nomeArquivo = `C0240_001_${numeroSequencial}.REM`;
-
-      // 3. Criar Blob e baixar
+      // AGORA usa await aqui
+      const cnab = await this.generateCNAB240Content();
+  
+      const seq = this.getSequencialRemessa().padStart(7, '0');
+      const nomeArquivo = `C0240_001_${seq}.REM`;
+  
       const blob = new Blob([cnab], { type: 'text/plain;charset=iso-8859-1' });
       saveAs(blob, nomeArquivo);
-
+  
       this.toastr.success('Arquivo CNAB240 gerado com sucesso!');
     } catch (error) {
       console.error('Erro ao gerar CNAB240:', error);
@@ -633,14 +662,17 @@ export class RateioComponent implements OnInit {
     }
   }
 
-  private generateCNAB240Content(): string {
+  private async generateCNAB240Content(): Promise<string> {
     const headerArquivo  = this.createCNAB240HeaderArquivo();
-    const headerLote    = this.createCNAB240HeaderLote();
-    const detalhes      = this.createCNAB240Detalhes();        // array de linhas
-    const trailerLote   = this.createCNAB240TrailerLote(detalhes.length + 2);
-    const trailerArquivo= this.createCNAB240TrailerArquivo(1);  // 1 lote
-
-    // concatena tudo com fim de linha CRLF
+    const headerLote     = this.createCNAB240HeaderLote();
+  
+    // AQUI: usa await para resolver a Promise<string[]>
+    const detalhes       = await this.createCNAB240Detalhes();
+  
+    // Agora detalhes é um string[], então .length funciona
+    const trailerLote    = this.createCNAB240TrailerLote(detalhes.length + 2);
+    const trailerArquivo = this.createCNAB240TrailerArquivo(1);
+  
     return [
       headerArquivo,
       headerLote,
@@ -649,7 +681,7 @@ export class RateioComponent implements OnInit {
       trailerArquivo
     ].join('\r\n');
   }
-
+  
   //
   // 1) HEADER DE ARQUIVO (240 chars)
   //
@@ -695,33 +727,58 @@ export class RateioComponent implements OnInit {
   //
   // 3) DETALHES (segmentos P/Q, um por boleto) – cada linha 240 chars
   //
-  private createCNAB240Detalhes(): string[] {
-    const building = this.buildings.find(b => b.id === this.selectedBuildingId);
-    return this.usersRateio.map((user, idx) => {
-      // Calcule valor em centavos e formate campos
-      const valorTotal = (user.valorComum||0)+(user.valorFundos||0)+(user.valorProvisoes||0)+(user.valorIndividual||0);
-      const valorCent = Math.round(valorTotal*100).toString().padStart(15,'0');
+private async createCNAB240Detalhes(): Promise<string[]> {
+  const building = this.buildings.find(b => b.id === this.selectedBuildingId);
+  const detalhes: string[] = [];
 
-      // SEGMENTO P (informações cobrança)
-      const segP = [
-        '3',                  // 001 – registro detalhe
-        '0001',               // 002-005 – lote
-        '3',                  // 006 – segmento P
-        ' ',                  // 007 – campo exclusivo CNAB
-        '01',                 // 008-009 – tipo inscrição pagador
-        '12345678000195',     // 010-023 – CNPJ pagador
-        user.apt_name.padEnd(40,' '),    // 024-063 – nome pagador
-        // … demais campos até posição 240 …
-        valorCent,            // 140-154 – valor do título
-        ''.padEnd(240-154,' ')// complete o restante
-      ].join('').slice(0,240);
+  for (let idx = 0; idx < this.rateiosPorApartamento.length; idx++) {
+    const userRateio = this.rateiosPorApartamento[idx];
 
-      // SEGMENTO Q (informações complemento, ex.: endereço, multa, descontos…)
-      const segQ = ''.padEnd(240,' '); // monte conforme layout do segmento Q
+    // busca usuários e pega o primeiro
+    const users = await this.getUserFromApartamento(userRateio.apartamento_id);
+    const userToUse = users[0];
+    if (!userToUse) {
+      this.toastr.warning(`Apartamento ${userRateio.apt_name} sem usuários.`);
+      continue;
+    }
 
-      return [segP, segQ].join('\r\n');
-    }).flat();
+    // calcula valor em centavos
+    const valorTotal = 
+      (userRateio.valorComum || 0) +
+      (userRateio.valorFundos || 0) +
+      (userRateio.valorProvisoes || 0) +
+      (userRateio.valorIndividual || 0);
+    const valorCent = Math.round(valorTotal * 100).toString().padStart(15, '0');
+
+    // --- SEGMENTO P (240 posições) ---
+    const segP = [
+      '3',                   // registro detalhe
+      '0001',                // lote
+      '3',                   // segmento P
+      ' ',                   // CNAB exclusivo
+      '01',                  // Tipo Inscrição (01 = CPF)
+      userToUse.cpf.replace(/\D/g,'').padStart(14,'0'), // CPF (14 dígitos)
+      userToUse.first_name.padEnd(40, ' '),             // Nome Pagador (40 chars)
+      // ... preencha os demais campos obrigatórios do P ...
+      valorCent,             // Valor do Título (positions 140-154)
+      ''.padEnd(240 - /*até aqui*/154, ' ')
+    ].join('').slice(0, 240);
+
+    // --- SEGMENTO Q (240 posições) ---
+    const segQ = [
+      '3',                   // registro detalhe
+      '0001',                // lote
+      '4',                   // segmento Q
+      ' ',                   // CNAB exclusivo
+      // você pode usar apenas os campos de multa/desconto ou deixar brancos
+      ''.padEnd(240 - 4, ' ')
+    ].join('').slice(0, 240);
+
+    detalhes.push(segP, segQ);
   }
+
+  return detalhes;
+}
 
   //
   // 4) TRAILER DE LOTE (240 chars)

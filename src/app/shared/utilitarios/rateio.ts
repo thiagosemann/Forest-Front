@@ -3,6 +3,6 @@ export interface Rateio {
     mes: number;
     ano: number;
     predio_id: number;
-    usersRateio:any[];
+    rateiosPorApartamento:any[];
 }
   

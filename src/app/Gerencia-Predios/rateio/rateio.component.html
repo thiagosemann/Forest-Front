@@ -16,16 +16,13 @@
 
   </div>
   
-  
-  
-
   <!-- Mensagem de erro personalizada -->
-  <div *ngIf="!loading && !usersRateio.length && mensagemErro" class="error-message">
+  <div *ngIf="!loading && !rateiosPorApartamento.length && mensagemErro" class="error-message">
     <p>{{ mensagemErro }}</p>
   </div>
 
   <!-- Tabela de contas -->
-  <div *ngIf="!loading && usersRateio.length">
+  <div *ngIf="!loading && rateiosPorApartamento.length">
     <div class="d-flex justify-content-end mb-2">
       <button class="btn btn-secondary" (click)="downloadAllRateios('preview')">
         <i class="fas fa-download"></i> Prévia
@@ -58,7 +55,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let user of usersRateio">
+          <tr *ngFor="let user of rateiosPorApartamento">
             <td>{{ user.apt_name }}</td>
             <td class="tooltip-container">
               <span class="tooltip-text">{{ formatFracaoTotal(user.fracao_total) }}</span>
