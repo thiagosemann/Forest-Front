@@ -112,10 +112,6 @@ async generatePdfPrestacao(data: any): Promise<string> {
     pdf.addImage(logoData, 'JPEG', startX+10, currentY, 30, 30, undefined, 'FAST');
     currentY+=30;
     currentY = this.addGastosIndividuais(pdf,startX,currentY,data,months)
-    currentY = this.addRateiosNaoPagos(pdf,startX,currentY,data,months)
-    currentY = this.addRateiosGeradosEPagosNoMesCorreto(pdf,startX,currentY,data,months)
-    currentY = this.addRateiosPagosGeradosEmMesesDiferentes(pdf,startX,currentY,data,months)
-
     
   }
 
@@ -189,112 +185,6 @@ async generatePdfPrestacao(data: any): Promise<string> {
     );
 
     return currentY;
-}
-
-private addRateiosNaoPagos(pdf: any, startX: number, currentY: number, data: any, months: any): number {
-
-  if(data.rateiosNaoPagos.length>0){
-    this.configText(pdf, 'bold', 15);
-    pdf.text('Inadimplentes', startX, currentY);
-    // Calcula o total dos valores
-    const totalValue = data.rateiosNaoPagos.reduce((sum: number, item: any) => sum + parseFloat(item.valor), 0);
-
-    // Cria a tabela utilizando a função auxiliar
-    currentY = this.generateTable(pdf, startX, currentY,
-        [
-            'Apartamento', 'Data', 'Valor (R$)',
-        ], 
-        [
-            ...data.rateiosNaoPagos.map((item: any) => [
-                item.apt_name,
-                `${item.data_vencimento}`,
-                this.formatCurrency(item.valor)          
-            ]),
-            // Adiciona o item "Total" ao final da tabela
-            [
-              { content: 'Total', styles: { fontStyle: 'bold' } },
-              '',
-              { content:  this.formatCurrency(totalValue), styles: { fontStyle: 'bold' } }
-          ]
-        ], 
-        [67, 66, 66], 9
-    );
-  }
-  return currentY;
-}
-
-private addRateiosGeradosEPagosNoMesCorreto(pdf: any, startX: number, currentY: number, data: any, months: any): number {
-
-  if(data.rateiosGeradosEPagosNoMesCorreto.length>0){
-    this.configText(pdf, 'bold', 15);
-    pdf.text('Boletos pagos no mês', startX, currentY);
-  
-      // Calcula o total dos valores
-      const totalValue = data.rateiosGeradosEPagosNoMesCorreto.reduce((sum: number, item: any) => sum + parseFloat(item.valor), 0);
-
-      // Cria a tabela utilizando a função auxiliar
-      currentY = this.generateTable(pdf, startX, currentY,
-          [
-              'Apartamento', 'Data Competência ',  'Data Pagamento ', 'Valor (R$)',
-          ], 
-          [
-              ...data.rateiosGeradosEPagosNoMesCorreto.map((item: any) => [
-                  item.apt_name,
-                  `${item.data_vencimento}`,
-                  `${item.data_pagamento}`,
-                  this.formatCurrency(item.valor)            
-              ]),
-              // Adiciona o item "Total" ao final da tabela
-              [
-                  { content: 'Total', styles: { fontStyle: 'bold' } },
-                  '',
-                  '',
-                  { content:  this.formatCurrency(totalValue), styles: { fontStyle: 'bold' } }
-              ]
-          ], 
-          [50, 50, 50, 50], 9
-      );
-  }
- 
-  return currentY;
-}
-private addRateiosPagosGeradosEmMesesDiferentes(pdf: any, startX: number, currentY: number, data: any, months: any): number {
-
-  if(data.rateiosPagosGeradosEmMesesDiferentes.length>0){
-    this.configText(pdf, 'bold', 15);
-    pdf.text('Inadimplentes pagos', startX, currentY);
-     // Calcula o total dos valores
-  const totalValue = data.rateiosPagosGeradosEmMesesDiferentes.reduce((sum: number, item: any) => sum + parseFloat(item.valor), 0);
-  const totalValuePagamento = data.rateiosPagosGeradosEmMesesDiferentes.reduce((sum: number, item: any) => sum + parseFloat(item.valor_pagamento), 0);
-  
-  // Cria a tabela utilizando a função auxiliar
-  currentY = this.generateTable(pdf, startX, currentY,
-      [
-          'Apartamento', 'Data Competência ',  'Data Pagamento ','Valor Original (R$)', 'Valor Pago (R$)' ,
-      ], 
-      [
-          ...data.rateiosPagosGeradosEmMesesDiferentes.map((item: any) => [
-              item.apt_name,
-              `${item.data_vencimento}`,
-              `${item.data_pagamento}`,
-              `R$ ${parseFloat(item.valor).toFixed(2)}`, 
-              `R$ ${parseFloat(item.valor_pagamento).toFixed(2)}`,             
-          ]),
-          // Adiciona o item "Total" ao final da tabela
-          [
-              { content: 'Total', styles: { fontStyle: 'bold' } },
-              '',
-              '',
-              { content:   this.formatCurrency(totalValue), styles: { fontStyle: 'bold' } },
-              { content:  this.formatCurrency(totalValuePagamento), styles: { fontStyle: 'bold' } }
-          ]
-      ], 
-      [40, 40, 40,40,40], 9
-    );
-  }
- 
-
-  return currentY;
 }
 
 

@@ -100,9 +100,6 @@ export class PdfPrestacaoComponent implements OnInit {
           fundos,
           saldos,
           gastosIndividuais,
-          rateiosNaoPagos,
-          rateiosGeradosEPagosNoMesCorreto,
-          rateiosPagosGeradosEmMesesDiferentes,
           pdfCobrancaBoletos
         } = await this.loadValues();
   
@@ -111,9 +108,6 @@ export class PdfPrestacaoComponent implements OnInit {
         data.fundos = fundos;
         data.saldos = saldos;
         data.gastosIndividuais = gastosIndividuais;
-        data.rateiosNaoPagos = rateiosNaoPagos;
-        data.rateiosGeradosEPagosNoMesCorreto = rateiosGeradosEPagosNoMesCorreto;
-        data.rateiosPagosGeradosEmMesesDiferentes = rateiosPagosGeradosEmMesesDiferentes;
         data.pdfCobrancaBoletos = pdfCobrancaBoletos;
   
         // Gera o PDF da capa (cover)
@@ -156,9 +150,7 @@ export class PdfPrestacaoComponent implements OnInit {
     fundos: any[]; 
     saldos: any[]; 
     gastosIndividuais: any[];
-    rateiosNaoPagos: any[];
-    rateiosGeradosEPagosNoMesCorreto: any[];
-    rateiosPagosGeradosEmMesesDiferentes: any[];
+
     pdfCobrancaBoletos: any[];
   }> {
     // Cada chamada é envelopada em um catch para retornar [] em caso de erro.
@@ -197,32 +189,13 @@ export class PdfPrestacaoComponent implements OnInit {
       return [];
     });
   
-    const rateiosNaoPagosPromise = firstValueFrom(
-      this.rateioPorApartamentoService.getRateiosNaoPagosPorPredioId(this.selectedBuildingId, this.selectedMonth, this.selectedYear)
-    ).catch(error => {
-      console.error("Erro em getRateiosNaoPagosPorPredioId:", error);
-      return [];
-    });
-  
-    const rateiosGeradosEPagosNoMesCorretoPromise = firstValueFrom(
-      this.rateioPorApartamentoService.getRateiosGeradosEPagosNoMesCorreto(this.selectedBuildingId, this.selectedMonth, this.selectedYear)
-    ).catch(error => {
-      console.error("Erro em getRateiosGeradosEPagosNoMesCorreto:", error);
-      return [];
-    });
-  
     const pdfCobrancaBoletosPromise = firstValueFrom(
       this.prestacaoCobrancaBoletoService.getPrestacaoCobrancaBoletoByBuildingAndMonth(this.selectedBuildingId, this.selectedMonth, this.selectedYear)
     ).catch(error => {
       console.error("Erro em getRateiosGeradosEPagosNoMesCorreto:", error);
       return [];
     });
-    const rateiosPagosGeradosEmMesesDiferentesPromise = firstValueFrom(
-      this.rateioPorApartamentoService.getRateiosPagosGeradosEmMesesDiferentes(this.selectedBuildingId, this.selectedMonth, this.selectedYear)
-    ).catch(error => {
-      console.error("Erro em getRateiosPagosGeradosEmMesesDiferentes:", error);
-      return [];
-    });
+
   
     // Executa todas as promises em paralelo
     const [
@@ -231,9 +204,6 @@ export class PdfPrestacaoComponent implements OnInit {
       fundos, 
       saldos, 
       gastosIndividuais,
-      rateiosNaoPagos,
-      rateiosGeradosEPagosNoMesCorreto,
-      rateiosPagosGeradosEmMesesDiferentes,
       pdfCobrancaBoletos
     ] = await Promise.all([
       expensesPromise,
@@ -241,9 +211,6 @@ export class PdfPrestacaoComponent implements OnInit {
       fundosPromise,
       saldosPromise,
       gastosIndividuaisPromise,
-      rateiosNaoPagosPromise,
-      rateiosGeradosEPagosNoMesCorretoPromise,
-      rateiosPagosGeradosEmMesesDiferentesPromise,
       pdfCobrancaBoletosPromise
     ]);
   
@@ -253,9 +220,6 @@ export class PdfPrestacaoComponent implements OnInit {
       fundos, 
       saldos, 
       gastosIndividuais,
-      rateiosNaoPagos,
-      rateiosGeradosEPagosNoMesCorreto,
-      rateiosPagosGeradosEmMesesDiferentes,
       pdfCobrancaBoletos
     };
   }
