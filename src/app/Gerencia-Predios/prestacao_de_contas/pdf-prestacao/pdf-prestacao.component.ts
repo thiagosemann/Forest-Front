@@ -306,14 +306,19 @@ export class PdfPrestacaoComponent implements OnInit {
         if (item.arquivoPdfBase64 && typeof item.arquivoPdfBase64 === 'string') {
           // Converte Base64 para Uint8Array
           const pdfBytes = new Uint8Array(atob(item.arquivoPdfBase64).split('').map(c => c.charCodeAt(0)));
-          const pdfDoc = await PDFDocument.load(pdfBytes);
+          const pdfDoc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
           const copiedPages = await mergedPdf.copyPages(pdfDoc, pdfDoc.getPageIndices());
           copiedPages.forEach(page => mergedPdf.addPage(page));
         }
       }
 
       const mergedPdfBytes = await mergedPdf.save();
-      return new Blob([mergedPdfBytes], { type: 'application/pdf' });
+      // Use ArrayBuffer slice to ensure BlobPart type compatibility across TS DOM lib versions
+      const arrayBuffer = mergedPdfBytes.buffer.slice(
+        mergedPdfBytes.byteOffset,
+        mergedPdfBytes.byteOffset + mergedPdfBytes.byteLength
+      ) as ArrayBuffer;
+      return new Blob([arrayBuffer], { type: 'application/pdf' });
     } catch (error) {
       console.error('Error merging PDFs:', error);
       return null;
