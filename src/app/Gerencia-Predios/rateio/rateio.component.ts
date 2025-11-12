@@ -118,6 +118,7 @@ export class RateioComponent implements OnInit {
           this.rateioGerado=true;
             this.rateioPorApartamento.getRateiosPorApartamentoByRateioId(resp[resp.length-1].id).subscribe(
               (resp: any) => {
+                console.log(resp)
                 this.rateiosPorApartamento = resp
                 this.rateiosPorApartamento.forEach(user => {
                   // Converte as propriedades 'valorIndividual', 'valorComum', 'valorProvisoes' e 'valorFundos' para Number
